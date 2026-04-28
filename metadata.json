@@ -1,0 +1,7 @@
+{
+  "name": "App Arjun - Inventario Zofri",
+  "description": "Gestión industrial de inventario para Iquique. Integración WinFac y OCR inteligente para Notas de Venta Kingnex.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
