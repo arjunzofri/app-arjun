@@ -9,7 +9,7 @@ export const ProductoSchema = z.object({
   codigo: z.string().min(1, "Código requerido"),
   descripcion: z.string().min(1, "Descripción requerida"),
   codigoPersonal: z.string().optional(),
-  packing: z.coerce.number().int().positive().default(1),
+  packing: z.number().int().positive(),
   ubicacion: z.string().optional(),
   observaciones: z.string().optional(),
 });
@@ -17,8 +17,8 @@ export const ProductoSchema = z.object({
 export const EntradaSchema = z.object({
   productoId: z.string().uuid(),
   bodegaId: z.string().uuid(),
-  cantidad: z.coerce.number().int().positive(),
-  precioUnitario: z.coerce.number().optional(),
+  cantidad: z.number().int().positive(),
+  precioUnitario: z.number().optional(),
   notaVentaNumero: z.string().optional(),
   proveedor: z.enum(["vida_digital", "kingnex"]).optional(),
   origen: z.enum(["winfac", "kingnex", "manual"]).default("manual"),
@@ -28,7 +28,7 @@ export const SalidaSchema = z.object({
   productoId: z.string().uuid(),
   bodegaOrigenId: z.string().uuid(),
   moduloDestinoId: z.string().uuid(),
-  cantidad: z.coerce.number().int().positive(),
+  cantidad: z.number().int().positive(),
   observaciones: z.string().optional(),
 });
 

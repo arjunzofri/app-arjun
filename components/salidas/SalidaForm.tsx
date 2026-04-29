@@ -2,7 +2,8 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { SalidaSchema, SalidaInput } from "@/lib/validations";
+import { SalidaSchema } from "@/lib/validations";
+import type { SalidaInput } from "@/lib/validations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,14 +23,22 @@ export default function SalidaForm({
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<SalidaInput>({
+  const form = useForm<SalidaInput>({
     resolver: zodResolver(SalidaSchema),
+    defaultValues: {
+      productoId: "",
+      bodegaOrigenId: "",
+      moduloDestinoId: "",
+      cantidad: 1,
+      observaciones: "",
+    }
   });
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = form;
 
   const selectedProductoId = watch("productoId");
   const selectedBodegaId = watch("bodegaOrigenId");
 
-  async function onSubmit(data: SalidaInput) {
+  const onSubmit = async (data: SalidaInput) => {
     setLoading(true);
     try {
       await registrarSalida(data);
@@ -40,14 +49,14 @@ export default function SalidaForm({
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
           <Label>Producto</Label>
-          <Select onValueChange={(val) => setValue("productoId", val)}>
+          <Select onValueChange={(val) => setValue("productoId", val as string)}>
             <SelectTrigger className="bg-slate-900 border-slate-800">
               <SelectValue placeholder="Seleccionar producto" />
             </SelectTrigger>
@@ -63,7 +72,7 @@ export default function SalidaForm({
 
         <div className="space-y-2">
           <Label>Bodega Origen</Label>
-          <Select onValueChange={(val) => setValue("bodegaOrigenId", val)}>
+          <Select onValueChange={(val) => setValue("bodegaOrigenId", val as string)}>
             <SelectTrigger className="bg-slate-900 border-slate-800">
               <SelectValue placeholder="Seleccionar origen" />
             </SelectTrigger>
@@ -77,7 +86,7 @@ export default function SalidaForm({
 
         <div className="space-y-2">
           <Label>Módulo Destino</Label>
-          <Select onValueChange={(val) => setValue("moduloDestinoId", val)}>
+          <Select onValueChange={(val) => setValue("moduloDestinoId", val as string)}>
             <SelectTrigger className="bg-slate-900 border-slate-800">
               <SelectValue placeholder="Seleccionar destino" />
             </SelectTrigger>
@@ -93,7 +102,7 @@ export default function SalidaForm({
           <Label>Cantidad</Label>
           <Input 
             type="number" 
-            {...register("cantidad")}
+            {...register("cantidad", { valueAsNumber: true })}
             className="bg-slate-900 border-slate-800" 
           />
         </div>

@@ -2,7 +2,8 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ProductoSchema, ProductoInput } from "@/lib/validations";
+import { ProductoSchema } from "@/lib/validations";
+import type { ProductoInput } from "@/lib/validations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,12 +15,20 @@ import { useToast } from "@/hooks/use-toast"; // assuming use-toast is available
 export default function ProductoForm({ initialData }: { initialData?: any }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const { register, handleSubmit, formState: { errors } } = useForm<ProductoInput>({
+  const form = useForm<ProductoInput>({
     resolver: zodResolver(ProductoSchema),
-    defaultValues: initialData || { packing: 1 },
+    defaultValues: {
+      codigo: "",
+      descripcion: "",
+      codigoPersonal: "",
+      packing: 1,
+      ubicacion: "",
+      observaciones: "",
+    }
   });
+  const { register, handleSubmit, formState: { errors } } = form;
 
-  async function onSubmit(data: ProductoInput) {
+  const onSubmit = async (data: ProductoInput) => {
     setLoading(true);
     try {
       await createOrUpdateProducto({ ...data, id: initialData?.id });
@@ -29,7 +38,7 @@ export default function ProductoForm({ initialData }: { initialData?: any }) {
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -64,7 +73,7 @@ export default function ProductoForm({ initialData }: { initialData?: any }) {
           <Label>Packing (U/Caja)</Label>
           <Input 
             type="number" 
-            {...register("packing")} 
+            {...register("packing", { valueAsNumber: true })} 
             className="bg-slate-900 border-slate-800" 
           />
         </div>
