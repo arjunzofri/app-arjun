@@ -9,18 +9,27 @@ import { Label } from "@/components/ui/label"
 type WinFacProducto = {
   codigo: string
   detalle: string
-  nroingreso: string
   cantcaja: number
   costo: number
   saldo: number
-  empresa_id: number
+}
+
+type Encabezado = {
+  knumfoli: string
+  visaadua: string
+  fechanvt: string
+  val_doc: number
+  canbulto: number
+  cliente: string
+  empresa: string
 }
 
 type Bodega = { id: string; nombre: string }
 
 export default function WinFacPanel({ bodegasData }: { bodegasData: Bodega[] }) {
-  const [nroingreso, setNroingreso] = useState("")
+  const [query, setQuery] = useState("")
   const [productos, setProductos] = useState<WinFacProducto[]>([])
+  const [encabezado, setEncabezado] = useState<Encabezado | null>(null)
   const [bodegaId, setBodegaId] = useState("")
   const [loading, setLoading] = useState(false)
   const [importing, setImporting] = useState(false)
@@ -28,21 +37,19 @@ export default function WinFacPanel({ bodegasData }: { bodegasData: Bodega[] }) 
   const [success, setSuccess] = useState(false)
 
   const buscar = async () => {
-    if (!nroingreso.trim()) return
+    if (!query.trim()) return
     setLoading(true)
     setError(null)
     setProductos([])
+    setEncabezado(null)
     setSuccess(false)
 
     try {
-      const res = await fetch(`/api/entradas/winfac?nroingreso=${encodeURIComponent(nroingreso.trim())}`)
+      const res = await fetch(`/api/entradas/winfac?q=${encodeURIComponent(query)}`)
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || "Error al buscar")
-      if (data.productos.length === 0) {
-        setError("No se encontraron productos para esa Nota de Venta")
-      } else {
-        setProductos(data.productos)
-      }
+      setEncabezado(data.encabezado)
+      setProductos(data.productos)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al buscar")
     } finally {
@@ -65,7 +72,7 @@ export default function WinFacPanel({ bodegasData }: { bodegasData: Bodega[] }) 
           bodegaId,
           cantidad: p.saldo > 0 ? p.saldo : p.cantcaja,
           precioUnitario: p.costo,
-          notaVentaNumero: p.nroingreso,
+          notaVentaNumero: encabezado?.knumfoli,
           origen: "winfac",
           codigoExterno: p.codigo,
           descripcionExterna: p.detalle,
@@ -74,7 +81,8 @@ export default function WinFacPanel({ bodegasData }: { bodegasData: Bodega[] }) 
       }
       setSuccess(true)
       setProductos([])
-      setNroingreso("")
+      setEncabezado(null)
+      setQuery("")
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al importar")
     } finally {
@@ -95,12 +103,37 @@ export default function WinFacPanel({ bodegasData }: { bodegasData: Bodega[] }) 
         </div>
       )}
 
+      {encabezado && (
+        <div className="rounded-lg border border-slate-700 bg-slate-800/50 p-4 text-sm space-y-1">
+          <div className="flex justify-between">
+            <span className="text-slate-400">NV:</span>
+            <span className="font-mono text-amber-400 font-bold">{parseInt(encabezado.knumfoli)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-slate-400">Visación:</span>
+            <span className="font-mono text-slate-200">{encabezado.visaadua}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-slate-400">Fecha:</span>
+            <span className="text-slate-200">{new Date(encabezado.fechanvt).toLocaleDateString('es-CL')}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-slate-400">Total USD:</span>
+            <span className="font-bold text-slate-100">${encabezado.val_doc?.toLocaleString()}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-slate-400">Bultos:</span>
+            <span className="text-slate-200">{encabezado.canbulto}</span>
+          </div>
+        </div>
+      )}
+
       <div className="flex gap-2">
         <Input
-          value={nroingreso}
-          onChange={e => setNroingreso(e.target.value)}
+          value={query}
+          onChange={e => setQuery(e.target.value)}
           onKeyDown={e => e.key === "Enter" && buscar()}
-          placeholder="Ej: 101-25-037038-009-GLP"
+          placeholder="NV (ej: 335) o visación (ej: 254348)"
           className="bg-slate-950 border-slate-800 font-mono text-sm"
         />
         <Button
