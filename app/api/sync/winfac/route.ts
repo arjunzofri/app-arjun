@@ -28,6 +28,7 @@ export async function GET(req: NextRequest) {
     AND visaadua IS NOT NULL
     AND knumfoli > ${ultimaNV}
     ORDER BY knumfoli ASC
+    LIMIT 5
   `
 
   const nvsSanjh = await winfac`
@@ -37,6 +38,7 @@ export async function GET(req: NextRequest) {
     AND visaadua IS NOT NULL
     AND knumfoli > ${ultimaNV}
     ORDER BY knumfoli ASC
+    LIMIT 5
   `
 
   const todasNVs = [...nvsVida.map((r: any) => ({ ...r, empresa: 'vida' })), 
