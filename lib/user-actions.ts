@@ -10,7 +10,7 @@ import { revalidatePath } from "next/cache";
 
 export async function createOrUpdateUsuario(data: any) {
   const session = await auth();
-  if (!session || session.user.role !== "admin") throw new Error("Acceso denegado");
+  if (!session || session.user?.role !== "admin") throw new Error("Acceso denegado");
 
   const validated = UsuarioSchema.parse(data);
   const id = data.id;
@@ -42,13 +42,13 @@ export async function createOrUpdateUsuario(data: any) {
     });
   }
 
-  revalidatePath("/dashboard/usuarios");
+  revalidatePath("/usuarios");
 }
 
 export async function eliminarUsuario(id: string) {
   const session = await auth();
-  if (!session || session.user.role !== "admin") throw new Error("Acceso denegado");
+  if (!session || session.user?.role !== "admin") throw new Error("Acceso denegado");
   
   await db.delete(usuarios).where(eq(usuarios.id, id));
-  revalidatePath("/dashboard/usuarios");
+  revalidatePath("/usuarios");
 }

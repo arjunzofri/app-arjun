@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import UsuarioModal from "@/components/usuarios/UsuarioModal"
 import { Shield, UserPlus, Mail } from "lucide-react";
 
 export default async function UsuariosPage() {
@@ -31,9 +32,13 @@ export default async function UsuariosPage() {
           <h1 className="text-3xl font-bold text-white">Gestión de Usuarios</h1>
           <p className="text-slate-400">Control de acceso y roles para el personal de Arjun.</p>
         </div>
-        <Button className="bg-amber-500 font-bold text-slate-950 hover:bg-amber-600">
-          <UserPlus className="mr-2 h-4 w-4" /> Invitar Usuario
-        </Button>
+        <UsuarioModal
+          trigger={
+            <Button className="bg-amber-500 font-bold text-slate-950 hover:bg-amber-600">
+              <UserPlus className="mr-2 h-4 w-4" /> Invitar Usuario
+            </Button>
+          }
+        />
       </div>
 
       <div className="rounded-xl border border-slate-800 bg-slate-900">
@@ -66,7 +71,14 @@ export default async function UsuariosPage() {
                   {new Date(u.createdAt).toLocaleDateString()}
                 </TableCell>
                 <TableCell className="text-right">
-                  <Button variant="outline" size="sm" className="border-slate-800 text-slate-400">Editar</Button>
+                  <UsuarioModal
+                    usuario={{ id: u.id, nombre: u.nombre, email: u.email, rol: u.rol }}
+                    trigger={
+                      <Button variant="outline" size="sm" className="border-slate-800 text-slate-400">
+                        Editar
+                      </Button>
+                    }
+                  />
                 </TableCell>
               </TableRow>
             ))}
