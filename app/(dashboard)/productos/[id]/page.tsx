@@ -8,9 +8,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProductoForm from "@/components/productos/ProductoForm";
 import { Warehouse, History, Settings } from "lucide-react";
 
-export default async function ProductoDetallePage({ params }: { params: { id: string } }) {
+export default async function ProductoDetallePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const product = await db.query.productos.findFirst({
-    where: eq(productos.id, params.id),
+    where: eq(productos.id, id),
     with: {
       stock: {
         with: {
