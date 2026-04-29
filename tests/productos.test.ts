@@ -53,6 +53,6 @@ describe("Heredar Ubicación", () => {
 
     const result = await createOrUpdateProducto(newData);
 
-    expect(result.ubicacion).toBe("PASILLO-1");
+    expect(result?.ubicacion).toBe("PASILLO-1");
   });
 });

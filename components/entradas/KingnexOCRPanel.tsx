@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -27,7 +27,7 @@ export default function KingnexOCRPanel({
     setLoading(true);
     try {
       const buffer = Buffer.from(await file.arrayBuffer());
-      const data = await analyzeInvoice(buffer, file.type);
+      const data = await analyzeInvoice(buffer.toString('base64'), file.type);
       setResults(data);
     } catch (error) {
       alert("Error processing image: " + (error instanceof Error ? error.message : "Unknown error"));
@@ -153,3 +153,4 @@ export default function KingnexOCRPanel({
     </div>
   );
 }
+
