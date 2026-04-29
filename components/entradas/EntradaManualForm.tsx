@@ -20,6 +20,7 @@ export default function EntradaManualForm({
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
   const [form, setForm] = useState({
     productoId: "",
     bodegaId: "",
@@ -32,6 +33,7 @@ export default function EntradaManualForm({
     e.preventDefault()
     setLoading(true)
     setError(null)
+    setSuccess(false)
 
     try {
       await registrarEntrada({
@@ -42,7 +44,8 @@ export default function EntradaManualForm({
         notaVentaNumero: form.notaVentaNumero || undefined,
         origen: "manual",
       })
-      router.push("/productos")
+      setSuccess(true)
+      setTimeout(() => router.push("/entradas"), 1500)
       router.refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al registrar entrada")
@@ -56,6 +59,11 @@ export default function EntradaManualForm({
       {error && (
         <div className="rounded-md border border-red-900/50 bg-red-900/10 p-3 text-sm text-red-400">
           {error}
+        </div>
+      )}
+      {success && (
+        <div className="rounded-md border border-green-900/50 bg-green-900/10 p-3 text-sm text-green-400">
+          ✅ Entrada registrada con éxito
         </div>
       )}
 

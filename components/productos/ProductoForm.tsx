@@ -15,6 +15,8 @@ import { useToast } from "@/hooks/use-toast"; // assuming use-toast is available
 export default function ProductoForm({ initialData }: { initialData?: any }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
   const form = useForm<ProductoInput>({
     resolver: zodResolver(ProductoSchema),
     defaultValues: {
@@ -30,11 +32,14 @@ export default function ProductoForm({ initialData }: { initialData?: any }) {
 
   const onSubmit = async (data: ProductoInput) => {
     setLoading(true);
+    setError(null);
+    setSuccess(false);
     try {
       await createOrUpdateProducto({ ...data, id: initialData?.id });
-      router.push("/productos");
-    } catch (error) {
-      console.error(error);
+      setSuccess(true)
+      setTimeout(() => router.push("/productos"), 1500)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al guardar producto")
     } finally {
       setLoading(false);
     }
@@ -42,6 +47,16 @@ export default function ProductoForm({ initialData }: { initialData?: any }) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {error && (
+        <div className="rounded-md border border-red-900/50 bg-red-900/10 p-3 text-sm text-red-400">
+          ❌ {error}
+        </div>
+      )}
+      {success && (
+        <div className="rounded-md border border-green-900/50 bg-green-900/10 p-3 text-sm text-green-400">
+          ✅ Producto guardado con éxito
+        </div>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
           <Label>Código Proveedor</Label>

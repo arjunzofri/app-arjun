@@ -23,6 +23,8 @@ export default function SalidaForm({
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
   const form = useForm<SalidaInput>({
     resolver: zodResolver(SalidaSchema),
     defaultValues: {
@@ -40,12 +42,15 @@ export default function SalidaForm({
 
   const onSubmit = async (data: SalidaInput) => {
     setLoading(true);
+    setError(null);
+    setSuccess(false);
     try {
       await registrarSalida(data);
-      router.refresh();
-      alert("Despacho registrado correctamente");
+      setSuccess(true)
+      router.refresh()
+      setTimeout(() => setSuccess(false), 3000)
     } catch (error: any) {
-      alert(error.message || "Error al registrar salida");
+      setError(error.message || "Error al registrar salida")
     } finally {
       setLoading(false);
     }
@@ -53,6 +58,16 @@ export default function SalidaForm({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {error && (
+        <div className="rounded-md border border-red-900/50 bg-red-900/10 p-3 text-sm text-red-400">
+          ❌ {error}
+        </div>
+      )}
+      {success && (
+        <div className="rounded-md border border-green-900/50 bg-green-900/10 p-3 text-sm text-green-400">
+          ✅ Despacho registrado con éxito
+        </div>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
           <Label>Producto</Label>
