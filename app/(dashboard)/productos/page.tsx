@@ -18,9 +18,10 @@ import { Plus, Search, Eye } from "lucide-react";
 export default async function ProductListPage({
   searchParams,
 }: {
-  searchParams: { q?: string };
+  searchParams: Promise<{ q?: string }>;
 }) {
-  const query = searchParams.q || "";
+  const { q } = await searchParams;
+  const query = q || "";
 
   const products = await db.select({
     id: productos.id,

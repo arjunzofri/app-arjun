@@ -32,7 +32,7 @@ export default function ProductoForm({ initialData }: { initialData?: any }) {
     setLoading(true);
     try {
       await createOrUpdateProducto({ ...data, id: initialData?.id });
-      router.push("/dashboard/productos");
+      router.push("/productos");
     } catch (error) {
       console.error(error);
     } finally {
