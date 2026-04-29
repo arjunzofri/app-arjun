@@ -3,6 +3,7 @@ import { bodegas, productos } from "@/db/schema";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import KingnexOCRPanel from "@/components/entradas/KingnexOCRPanel";
 import EntradaManualForm from "@/components/entradas/EntradaManualForm"
+import WinFacPanel from "@/components/entradas/WinFacPanel"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowDownLeft, FileText, Cpu } from "lucide-react";
 
@@ -40,20 +41,15 @@ export default async function EntradasPage() {
         </TabsContent>
 
         <TabsContent value="winfac" className="py-6">
-           <Card className="bg-slate-900 border-slate-800 max-w-2xl">
-             <CardHeader>
-               <CardTitle>Integración WinFac (Vida Digital)</CardTitle>
-             </CardHeader>
-             <CardContent>
-               <div className="space-y-4">
-                 <p className="text-sm text-slate-400">Ingresa el número de Nota de Venta para importar productos desde la base de datos de Vida Digital.</p>
-                 <div className="flex gap-2">
-                   <input className="flex-1 bg-slate-950 border border-slate-800 rounded-md px-3 py-2 text-sm" placeholder="Número de NV..." />
-                   <Button variant="secondary">Buscar</Button>
-                 </div>
-               </div>
-             </CardContent>
-           </Card>
+          <Card className="bg-slate-900 border-slate-800 max-w-4xl">
+            <CardHeader>
+              <CardTitle>Integración WinFac (Vida Digital)</CardTitle>
+              <p className="text-sm text-slate-400">Ingresa el número de Nota de Venta para importar productos desde la base de datos de Vida Digital.</p>
+            </CardHeader>
+            <CardContent>
+              <WinFacPanel bodegasData={allBodegas} />
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="kingnex" className="py-6">
@@ -61,18 +57,5 @@ export default async function EntradasPage() {
         </TabsContent>
       </Tabs>
     </div>
-  );
-}
-
-function Button({ children, variant = "primary", ...props }: any) {
-  return (
-    <button 
-      className={`px-4 py-2 rounded-md text-sm font-bold transition-colors ${
-        variant === "primary" ? "bg-amber-500 text-slate-950 hover:bg-amber-600" : "bg-slate-800 text-slate-100 hover:bg-slate-700"
-      }`} 
-      {...props}
-    >
-      {children}
-    </button>
   );
 }
