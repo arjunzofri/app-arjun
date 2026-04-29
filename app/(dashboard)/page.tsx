@@ -219,7 +219,7 @@ export default async function DashboardPage() {
               <p className="text-[10px] mt-1 font-medium opacity-80 uppercase leading-tight">Registro inmediato de salida a módulos Zofri</p>
             </div>
             <div className="mt-8">
-              <Link href="/dashboard/salidas">
+              <Link href="/salidas">
                 <button className="w-full py-4 bg-slate-950 text-white font-bold text-xs uppercase tracking-widest hover:bg-slate-800 transition-colors rounded-sm shadow-xl cursor-pointer">
                   INICIAR NUEVA SALIDA
                 </button>

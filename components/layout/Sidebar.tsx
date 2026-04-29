@@ -18,22 +18,22 @@ const NAV_GROUPS = [
   {
     title: "Inventario",
     items: [
-      { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-      { label: "Productos", href: "/dashboard/productos", icon: Package },
+      { label: "Dashboard", href: "/", icon: LayoutDashboard },
+      { label: "Productos", href: "/productos", icon: Package },
     ]
   },
   {
     title: "Operaciones",
     items: [
-      { label: "Entradas", href: "/dashboard/entradas", icon: ArrowDownLeft },
-      { label: "Salidas", href: "/dashboard/salidas", icon: ArrowUpRight },
+      { label: "Entradas", href: "/entradas", icon: ArrowDownLeft },
+      { label: "Salidas", href: "/salidas", icon: ArrowUpRight },
     ]
   },
   {
     title: "Administración",
     adminOnly: true,
     items: [
-      { label: "Usuarios", href: "/dashboard/usuarios", icon: Users },
+      { label: "Usuarios", href: "/usuarios", icon: Users },
     ]
   }
 ];

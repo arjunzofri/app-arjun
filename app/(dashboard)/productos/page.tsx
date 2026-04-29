@@ -52,7 +52,7 @@ export default async function ProductListPage({
           <h1 className="text-3xl font-bold tracking-tight text-white">Inventario</h1>
           <p className="text-slate-400">Listado general de productos y stock consolidado.</p>
         </div>
-        <Link href="/dashboard/productos/nuevo">
+        <Link href="/productos/nuevo">
           <Button className="bg-amber-500 font-bold text-slate-950 hover:bg-amber-600">
             <Plus className="mr-2 h-4 w-4" /> Nuevo Producto
           </Button>
@@ -62,7 +62,7 @@ export default async function ProductListPage({
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
-          <form action="/dashboard/productos" method="GET">
+          <form action="/productos" method="GET">
             <Input 
               name="q"
               placeholder="Buscar por código, descripción o código personal..." 
@@ -107,7 +107,7 @@ export default async function ProductListPage({
                   </span>
                 </TableCell>
                 <TableCell className="text-right">
-                  <Link href={`/dashboard/productos/${p.id}`}>
+                  <Link href={`/productos/${p.id}`}>
                     <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white">
                       <Eye className="h-4 w-4" />
                     </Button>

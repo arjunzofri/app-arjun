@@ -17,7 +17,7 @@ import { Shield, UserPlus, Mail } from "lucide-react";
 export default async function UsuariosPage() {
   const session = await auth();
   if (session?.user.role !== "admin") {
-    redirect("/dashboard");
+    redirect("/");
   }
 
   const allUsers = await db.query.usuarios.findMany({
