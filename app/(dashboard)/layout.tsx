@@ -18,7 +18,7 @@ export default async function DashboardLayout({
   const sinBodegaCount = sinBodegaResult.length
 
   return (
-    <div className="min-h-screen bg-slate-950">
+    <div className="min-h-screen bg-[#f9f9ff]">
       <Sidebar 
         userRole={session?.user?.role || "operador"} 
         userName={session?.user?.name || "Usuario"} 

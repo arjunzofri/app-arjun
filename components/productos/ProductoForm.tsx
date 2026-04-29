@@ -48,12 +48,12 @@ export default function ProductoForm({ initialData }: { initialData?: any }) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {error && (
-        <div className="rounded-md border border-red-900/50 bg-red-900/10 p-3 text-sm text-red-400">
+        <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-600">
           ❌ {error}
         </div>
       )}
       {success && (
-        <div className="rounded-md border border-green-900/50 bg-green-900/10 p-3 text-sm text-green-400">
+        <div className="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">
           ✅ Producto guardado con éxito
         </div>
       )}
@@ -62,7 +62,7 @@ export default function ProductoForm({ initialData }: { initialData?: any }) {
           <Label>Código Proveedor</Label>
           <Input 
             {...register("codigo")} 
-            className="bg-slate-900 border-slate-800" 
+            className="bg-white border-[#c4c6cf]" 
             placeholder="Ej: K-1234"
           />
           {errors.codigo && <p className="text-red-500 text-xs">{errors.codigo.message}</p>}
@@ -71,7 +71,7 @@ export default function ProductoForm({ initialData }: { initialData?: any }) {
           <Label>Código Personal (Opcional)</Label>
           <Input 
             {...register("codigoPersonal")} 
-            className="bg-slate-900 border-slate-800" 
+            className="bg-white border-[#c4c6cf]" 
             placeholder="Ej: CARG-IPH-W"
           />
         </div>
@@ -79,7 +79,7 @@ export default function ProductoForm({ initialData }: { initialData?: any }) {
           <Label>Descripción</Label>
           <Input 
             {...register("descripcion")} 
-            className="bg-slate-900 border-slate-800" 
+            className="bg-white border-[#c4c6cf]" 
             placeholder="Descripción detallada del producto"
           />
           {errors.descripcion && <p className="text-red-500 text-xs">{errors.descripcion.message}</p>}
@@ -89,14 +89,14 @@ export default function ProductoForm({ initialData }: { initialData?: any }) {
           <Input 
             type="number" 
             {...register("packing", { valueAsNumber: true })} 
-            className="bg-slate-900 border-slate-800" 
+            className="bg-white border-[#c4c6cf]" 
           />
         </div>
         <div className="space-y-2">
           <Label>Ubicación</Label>
           <Input 
             {...register("ubicacion")} 
-            className="bg-slate-900 border-slate-800" 
+            className="bg-white border-[#c4c6cf]" 
             placeholder="Ej: Pasillo 2, Estante B"
           />
         </div>
@@ -104,7 +104,7 @@ export default function ProductoForm({ initialData }: { initialData?: any }) {
           <Label>Observaciones (Interno)</Label>
           <Input 
             {...register("observaciones")} 
-            className="bg-slate-900 border-slate-800" 
+            className="bg-white border-[#c4c6cf]" 
           />
         </div>
       </div>
@@ -112,7 +112,7 @@ export default function ProductoForm({ initialData }: { initialData?: any }) {
       <div className="flex gap-4">
         <Button 
           type="submit" 
-          className="bg-amber-500 text-slate-950 font-bold hover:bg-amber-600"
+          className="bg-[#16a34a] text-white font-bold hover:bg-[#15803d]"
           disabled={loading}
         >
           {loading ? "Guardando..." : "GUARDAR CAMBIOS"}
@@ -121,7 +121,7 @@ export default function ProductoForm({ initialData }: { initialData?: any }) {
           type="button" 
           variant="outline" 
           onClick={() => router.back()}
-          className="border-slate-800 text-slate-300"
+          className="border-[#c4c6cf] text-[#43474e]"
         >
           CANCELAR
         </Button>

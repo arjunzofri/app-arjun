@@ -57,12 +57,12 @@ export default function EntradaManualForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="rounded-md border border-red-900/50 bg-red-900/10 p-3 text-sm text-red-400">
+        <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-600">
           {error}
         </div>
       )}
       {success && (
-        <div className="rounded-md border border-green-900/50 bg-green-900/10 p-3 text-sm text-green-400">
+        <div className="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">
           ✅ Entrada registrada con éxito
         </div>
       )}
@@ -74,7 +74,7 @@ export default function EntradaManualForm({
             required
             value={form.productoId}
             onChange={e => setForm({ ...form, productoId: e.target.value })}
-            className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+            className="w-full rounded-md border border-[#c4c6cf] bg-[#f9f9ff] px-3 py-2 text-sm text-[#111c2d]"
           >
             <option value="">Seleccionar producto...</option>
             {productos.map(p => (
@@ -91,7 +91,7 @@ export default function EntradaManualForm({
             required
             value={form.bodegaId}
             onChange={e => setForm({ ...form, bodegaId: e.target.value })}
-            className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+            className="w-full rounded-md border border-[#c4c6cf] bg-[#f9f9ff] px-3 py-2 text-sm text-[#111c2d]"
           >
             <option value="">Seleccionar bodega...</option>
             {bodegas.map(b => (
@@ -110,7 +110,7 @@ export default function EntradaManualForm({
             required
             value={form.cantidad}
             onChange={e => setForm({ ...form, cantidad: Number(e.target.value) })}
-            className="bg-slate-950 border-slate-800"
+            className="bg-[#f9f9ff] border-[#c4c6cf]"
           />
         </div>
 
@@ -122,7 +122,7 @@ export default function EntradaManualForm({
             step="0.01"
             value={form.precioUnitario}
             onChange={e => setForm({ ...form, precioUnitario: e.target.value })}
-            className="bg-slate-950 border-slate-800"
+            className="bg-[#f9f9ff] border-[#c4c6cf]"
             placeholder="0.00"
           />
         </div>
@@ -132,7 +132,7 @@ export default function EntradaManualForm({
           <Input
             value={form.notaVentaNumero}
             onChange={e => setForm({ ...form, notaVentaNumero: e.target.value })}
-            className="bg-slate-950 border-slate-800"
+            className="bg-[#f9f9ff] border-[#c4c6cf]"
             placeholder="Ej: NV-2024-001"
           />
         </div>
@@ -142,7 +142,7 @@ export default function EntradaManualForm({
         <Button
           type="submit"
           disabled={loading}
-          className="bg-amber-500 text-slate-950 font-bold hover:bg-amber-600"
+          className="bg-[#16a34a] text-white font-bold hover:bg-[#15803d]"
         >
           {loading ? "Registrando..." : "REGISTRAR ENTRADA"}
         </Button>

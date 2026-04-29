@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Login - App Arjun</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed": "#dbe1ff",
+                        "surface-bright": "#f9f9ff",
+                        "surface-tint": "#455f87",
+                        "tertiary": "#002a0d",
+                        "error-container": "#ffdad6",
+                        "on-primary": "#ffffff",
+                        "on-background": "#111c2d",
+                        "on-tertiary-fixed": "#002109",
+                        "on-secondary": "#ffffff",
+                        "surface": "#f9f9ff",
+                        "background": "#f9f9ff",
+                        "on-secondary-container": "#fefcff",
+                        "surface-dim": "#cfdaf2",
+                        "on-tertiary": "#ffffff",
+                        "inverse-on-surface": "#ecf1ff",
+                        "secondary-container": "#316bf3",
+                        "on-secondary-fixed-variant": "#003ea8",
+                        "on-primary-container": "#8aa4cf",
+                        "on-error": "#ffffff",
+                        "inverse-surface": "#263143",
+                        "surface-container": "#e7eeff",
+                        "secondary": "#0051d5",
+                        "surface-container-high": "#dee8ff",
+                        "surface-container-low": "#f0f3ff",
+                        "on-surface-variant": "#43474e",
+                        "on-primary-fixed": "#001c3b",
+                        "outline": "#74777f",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed-dim": "#b4c5ff",
+                        "surface-variant": "#d8e3fb",
+                        "surface-container-highest": "#d8e3fb",
+                        "primary-fixed-dim": "#adc8f5",
+                        "tertiary-fixed": "#7ffc97",
+                        "on-tertiary-fixed-variant": "#005320",
+                        "primary": "#022448",
+                        "tertiary-fixed-dim": "#62df7d",
+                        "on-surface": "#111c2d",
+                        "on-error-container": "#93000a",
+                        "inverse-primary": "#adc8f5",
+                        "on-primary-fixed-variant": "#2d486d",
+                        "error": "#ba1a1a",
+                        "primary-container": "#1e3a5f",
+                        "primary-fixed": "#d5e3ff",
+                        "tertiary-container": "#004319",
+                        "on-secondary-fixed": "#00174b",
+                        "outline-variant": "#c4c6cf",
+                        "on-tertiary-container": "#38b95d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "lg": "24px",
+                        "sm": "8px",
+                        "gutter": "16px",
+                        "md": "16px",
+                        "unit": "4px",
+                        "xl": "32px",
+                        "margin": "24px",
+                        "container-max": "1440px"
+                    },
+                    "fontFamily": {
+                        "h2": ["Inter"], "h1": ["Inter"], "label-md": ["Inter"], "body-lg": ["Inter"], "code": ["monospace"], "body-md": ["Inter"], "h3": ["Inter"], "label-sm": ["Inter"], "body-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "h2": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "h1": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "code": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "h3": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body {
+            background-color: #F8FAFC;
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-surface m-0 p-0">
+<!-- Login Container -->
+<main class="min-h-screen flex items-center justify-center p-margin relative overflow-hidden">
+<!-- Background Decorative Element -->
+<div class="absolute inset-0 z-0 opacity-20 pointer-events-none">
+<div class="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-surface-variant blur-3xl"></div>
+<div class="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-secondary-fixed blur-3xl"></div>
+</div>
+<!-- Login Card -->
+<section class="relative z-10 w-full max-w-[440px] bg-white border border-outline-variant shadow-[0px_1px_3px_rgba(0,0,0,0.05)] rounded-xl p-xl flex flex-col gap-lg">
+<!-- Branding Header -->
+<header class="flex flex-col items-center text-center gap-sm">
+<!-- Logo Icon (Blue Box) -->
+<div class="w-12 h-12 bg-primary-container rounded-xl flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-white text-3xl" data-icon="inventory_2">inventory_2</span>
+</div>
+<div class="mt-sm">
+<h1 class="font-h1 text-h1 text-primary tracking-tight">APP ARJUN</h1>
+<p class="font-body-sm text-on-surface-variant">Inventory Management Systems</p>
+</div>
+</header>
+<!-- Authentication Form -->
+<form class="flex flex-col gap-md">
+<!-- Email Field -->
+<div class="flex flex-col gap-unit">
+<label class="font-label-md text-label-md text-on-surface-variant px-xs" for="email">Email</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-outline text-[20px]" data-icon="mail">mail</span>
+<input class="w-full pl-[44px] pr-md py-[10px] bg-white border border-outline-variant rounded-lg font-body-sm text-on-surface placeholder:text-outline focus:ring-2 focus:ring-secondary focus:border-secondary transition-all outline-none" id="email" placeholder="nombre@empresa.com" required="" type="email"/>
+</div>
+</div>
+<!-- Password Field -->
+<div class="flex flex-col gap-unit">
+<div class="flex justify-between items-center px-xs">
+<label class="font-label-md text-label-md text-on-surface-variant" for="password">Contraseña</label>
+<a class="font-label-sm text-label-sm text-secondary hover:underline" href="#">¿Olvidó su contraseña?</a>
+</div>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-outline text-[20px]" data-icon="lock">lock</span>
+<input class="w-full pl-[44px] pr-[44px] py-[10px] bg-white border border-outline-variant rounded-lg font-body-sm text-on-surface placeholder:text-outline focus:ring-2 focus:ring-secondary focus:border-secondary transition-all outline-none" id="password" placeholder="••••••••" required="" type="password"/>
+<button class="absolute right-md top-1/2 -translate-y-1/2 text-outline hover:text-on-surface-variant" type="button">
+<span class="material-symbols-outlined text-[20px]" data-icon="visibility">visibility</span>
+</button>
+</div>
+</div>
+<!-- Remember Me Toggle -->
+<div class="flex items-center gap-sm px-xs mt-xs">
+<input class="w-4 h-4 rounded border-outline-variant text-secondary focus:ring-secondary" id="remember" type="checkbox"/>
+<label class="font-body-sm text-on-surface-variant cursor-pointer select-none" for="remember">Recordar sesión en este equipo</label>
+</div>
+<!-- Submit Button (Green) -->
+<button class="w-full mt-sm py-md bg-[#16A34A] hover:bg-[#15803d] active:scale-[0.98] transition-all text-white font-label-md rounded-lg flex items-center justify-center gap-sm shadow-sm" type="submit">
+                    ACCEDER AL PANEL
+                    <span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</form>
+<!-- Footer Links/Security Info -->
+<footer class="mt-sm pt-md border-t border-outline-variant flex flex-col items-center gap-sm">
+<div class="flex items-center gap-xs text-on-surface-variant opacity-70">
+<span class="material-symbols-outlined text-sm" data-icon="verified_user">verified_user</span>
+<span class="font-label-sm">Conexión segura SSL de 256 bits</span>
+</div>
+<div class="w-full h-40 mt-sm overflow-hidden rounded-lg">
+<img alt="Inventory Warehouse" class="w-full h-full object-cover" data-alt="A vast and highly organized modern industrial warehouse with high-key lighting illuminating tall racks of meticulously stacked shipping pallets. The scene is captured in a crisp, light-mode corporate aesthetic, emphasizing cleanliness and professional efficiency. The color palette is dominated by neutral grays and whites, reflecting the precision of a global inventory management system. The mood is calm, secure, and technologically advanced." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA0ZOW1eNEVxgvrv-a5HIzMDPX2bruCoXmJz3KbTRP9lnwwvqosuMg9dmm0Ln2MCgX23eQ-DGGA0L2GFqVswybj6wfzkf9h6DCjhBBHm2X5SAnGi1cIc-XzFQQiGqZiFjSl4v6vLjzWM0rQDUzqy7YeObsM0R9vYgEWgsTRwAhRT3mPAEff2ORmoQx35FL8mJKzoJ6qoumhRMAQnfH3JTcnZm-CBfQsgYPzhMl-xUKJzwjLGva45bBIYZ5IvKaBMboGlrcVO89v4e8"/>
+</div>
+<p class="font-label-sm text-outline mt-md">© 2024 Arjun Logistics. Todos los derechos reservados.</p>
+</footer>
+</section>
+</main>
+</body></html>

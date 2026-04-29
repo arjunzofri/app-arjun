@@ -1,9 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
 @import "tailwindcss";
 @import "tw-animate-css";
 
 @theme {
-  --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-mono), ui-mono-serif, system-ui, monospace;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -40,35 +42,36 @@
 
 @layer base {
   :root {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    /* Light corporate theme — DESIGN.md */
+    --background: 210 40% 98.8%;        /* #f8fafc — page bg */
+    --foreground: 222.2 47.4% 11.2%;    /* #1e293b — slate-800 */
 
-    --card: 222 47% 11%;
-    --card-foreground: 210 40% 98%;
+    --card: 0 0% 100%;                  /* white — cards */
+    --card-foreground: 222.2 47.4% 11.2%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 47.4% 11.2%;
 
-    --primary: 38 92% 50%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 142 76% 36%;             /* #16a34a — green action CTA */
+    --primary-foreground: 0 0% 100%;    /* white */
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 219 91% 56%;           /* #2563eb — blue accent */
+    --secondary-foreground: 0 0% 100%;  /* white */
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 210 40% 96.1%;             /* #f1f5f9 — slate-100 */
+    --muted-foreground: 215.4 16.3% 46.9%; /* #64748b — slate-500 */
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 219 91% 56%;              /* #2563eb — blue */
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 72.2% 50.6%;       /* #dc2626 */
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 38 92% 50%;
+    --border: 214.3 31.8% 91.4%;        /* #e2e8f0 — slate-200 */
+    --input: 214.3 31.8% 91.4%;
+    --ring: 219 91% 56%;                /* blue focus ring */
 
-    --radius: 0.5rem;
+    --radius: 0.25rem;                  /* 4px — DESIGN.md spec */
   }
 }
 
@@ -77,6 +80,6 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-slate-950 text-slate-100 font-sans antialiased;
+    @apply bg-[#f8fafc] text-[#1e293b] font-sans antialiased;
   }
 }

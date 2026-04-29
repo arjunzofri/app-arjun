@@ -34,17 +34,17 @@ export default async function ProductoDetallePage({ params }: { params: Promise<
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <Badge className="bg-amber-500/10 text-amber-500 border-amber-500/20 font-mono">
+            <Badge className="bg-[#dbe1ff] text-[#0051d5] border-[#0051d5]/20 font-mono">
               {product.codigo}
             </Badge>
-            <h1 className="text-3xl font-bold text-white">{product.descripcion}</h1>
+            <h1 className="text-3xl font-bold text-[#111c2d]">{product.descripcion}</h1>
           </div>
-          <p className="text-slate-400 font-mono mt-1">ID interno: {product.id}</p>
+          <p className="text-[#74777f] font-mono mt-1">ID interno: {product.id}</p>
         </div>
       </div>
 
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="bg-slate-900 border border-slate-800 mb-6">
+        <TabsList className="bg-white border border-[#c4c6cf] mb-6">
           <TabsTrigger value="overview">Resumen</TabsTrigger>
           <TabsTrigger value="edit">Editar</TabsTrigger>
           <TabsTrigger value="history">Historial Código</TabsTrigger>
@@ -52,46 +52,46 @@ export default async function ProductoDetallePage({ params }: { params: Promise<
 
         <TabsContent value="overview" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-             <Card className="bg-slate-900 border-slate-800">
+             <Card className="bg-white border-[#c4c6cf]">
                <CardHeader className="pb-2">
-                 <CardTitle className="text-sm font-mono uppercase text-slate-400">Stock Actual</CardTitle>
+                 <CardTitle className="text-sm font-mono uppercase text-[#74777f]">Stock Actual</CardTitle>
                </CardHeader>
                <CardContent>
                  <div className="space-y-4">
                    {product.stock.map(s => (
                      <div key={s.id} className="flex justify-between items-center text-sm">
-                       <span className="text-slate-300">{s.bodega.nombre}</span>
-                       <span className="font-bold text-white">{s.cantidadActual}</span>
+                       <span className="text-[#43474e]">{s.bodega.nombre}</span>
+                       <span className="font-bold text-[#111c2d]">{s.cantidadActual}</span>
                      </div>
                    ))}
-                   {product.stock.length === 0 && <p className="text-slate-500 text-sm">Sin unidades en bodega</p>}
+                   {product.stock.length === 0 && <p className="text-[#74777f] text-sm">Sin unidades en bodega</p>}
                  </div>
                </CardContent>
              </Card>
 
-             <Card className="bg-slate-900 border-slate-800">
+             <Card className="bg-white border-[#c4c6cf]">
                <CardHeader className="pb-2">
-                 <CardTitle className="text-sm font-mono uppercase text-slate-400">Info Logística</CardTitle>
+                 <CardTitle className="text-sm font-mono uppercase text-[#74777f]">Info Logística</CardTitle>
                </CardHeader>
                <CardContent className="space-y-2">
                  <div className="flex justify-between text-sm">
-                   <span className="text-slate-500">Packing:</span>
-                   <span className="text-slate-200">{product.packing} u/caja</span>
+                   <span className="text-[#74777f]">Packing:</span>
+                   <span className="text-[#111c2d]">{product.packing} u/caja</span>
                  </div>
                  <div className="flex justify-between text-sm">
-                   <span className="text-slate-500">Ubicación:</span>
-                   <span className="text-amber-500 font-mono uppercase">{product.ubicacion || "N/A"}</span>
+                   <span className="text-[#74777f]">Ubicación:</span>
+                   <span className="text-[#0051d5] font-mono uppercase">{product.ubicacion || "N/A"}</span>
                  </div>
                </CardContent>
              </Card>
 
-             <Card className="bg-slate-900 border-slate-800">
+             <Card className="bg-white border-[#c4c6cf]">
                <CardHeader className="pb-2">
-                 <CardTitle className="text-sm font-mono uppercase text-slate-400">Código Personal</CardTitle>
+                 <CardTitle className="text-sm font-mono uppercase text-[#74777f]">Código Personal</CardTitle>
                </CardHeader>
                <CardContent>
-                 <div className="text-2xl font-bold text-white">
-                   {product.codigoPersonal || <span className="text-slate-700 italic">No asignado</span>}
+                 <div className="text-2xl font-bold text-[#111c2d]">
+                   {product.codigoPersonal || <span className="text-[#94a3b8] italic">No asignado</span>}
                  </div>
                </CardContent>
              </Card>
@@ -99,27 +99,27 @@ export default async function ProductoDetallePage({ params }: { params: Promise<
         </TabsContent>
 
         <TabsContent value="edit">
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-8">
+          <div className="bg-white border border-[#c4c6cf] rounded-xl p-8">
             <ProductoForm initialData={product} />
           </div>
         </TabsContent>
 
         <TabsContent value="history">
-          <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
-            <div className="p-4 border-b border-slate-800 bg-slate-800/50">
+          <div className="bg-white border border-[#c4c6cf] rounded-xl overflow-hidden">
+            <div className="p-4 border-b border-[#c4c6cf] bg-[#f0f3ff]">
               <h3 className="font-bold">Historial de Cambios en Código Personal</h3>
             </div>
-            <div className="divide-y divide-slate-800">
+            <div className="divide-y divide-[#e2e8f0]">
               {product.auditoriaCodigo.map(log => (
                 <div key={log.id} className="p-4 flex items-center justify-between text-sm">
                   <div>
-                    <p className="text-slate-400">De <span className="text-slate-500 line-through">{log.valorAnterior || "NULL"}</span> a <span className="text-white font-bold">{log.valorNuevo || "NULL"}</span></p>
-                    <p className="text-xs text-slate-600 mt-1">Cambiado por {(log.usuario as { nombre: string } | null)?.nombre ?? 'Usuario desconocido'} • {new Date(log.changedAt).toLocaleString()}</p>
+                    <p className="text-[#74777f]">De <span className="text-[#74777f] line-through">{log.valorAnterior || "NULL"}</span> a <span className="text-[#111c2d] font-bold">{log.valorNuevo || "NULL"}</span></p>
+                    <p className="text-xs text-[#64748b] mt-1">Cambiado por {(log.usuario as { nombre: string } | null)?.nombre ?? 'Usuario desconocido'} • {new Date(log.changedAt).toLocaleString()}</p>
                   </div>
-                  <History className="h-4 w-4 text-slate-700" />
+                  <History className="h-4 w-4 text-[#64748b]" />
                 </div>
               ))}
-              {product.auditoriaCodigo.length === 0 && <p className="p-8 text-center text-slate-600">No hay cambios registrados</p>}
+              {product.auditoriaCodigo.length === 0 && <p className="p-8 text-center text-[#64748b]">No hay cambios registrados</p>}
             </div>
           </div>
         </TabsContent>

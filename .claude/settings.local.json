@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:api.anthropic.com)",
+      "Bash(cp \"C:\\\\Users\\\\Usuario\\\\.claude\\\\projects\\\\C--Users-Usuario-Documents-app-arjun\\\\a8544f47-0d63-421a-9a3e-bd0680d015bc\\\\tool-results\\\\webfetch-1777497548282-kmvxy6.bin\" /tmp/design.tar.gz)",
+      "Bash(cd /tmp)",
+      "Bash(mkdir -p design_extract)",
+      "Bash(tar -xzf design.tar.gz -C design_extract)",
+      "Bash(gzip -d -c design.tar.gz)",
+      "Bash(cp \"/tmp/design_extract/app-arjun-design-system/project/assets/mark.svg\" \"C:\\\\Users\\\\Usuario\\\\Documents\\\\app-arjun\\\\public/mark.svg\")",
+      "Bash(cp \"/tmp/design_extract/app-arjun-design-system/project/assets/wordmark.svg\" \"C:\\\\Users\\\\Usuario\\\\Documents\\\\app-arjun\\\\public/wordmark.svg\")",
+      "Bash(npx tsc *)",
+      "Bash(git *)"
+    ]
+  }
+}

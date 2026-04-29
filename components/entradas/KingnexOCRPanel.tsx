@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -73,7 +73,7 @@ export default function KingnexOCRPanel({
 
   return (
     <div className="space-y-6">
-      <div className="rounded-xl border-2 border-dashed border-slate-800 p-10 text-center hover:border-amber-500/50 transition-colors">
+      <div className="rounded-xl border-2 border-dashed border-[#c4c6cf] p-10 text-center hover:border-[#0051d5]/50 transition-colors">
         <Input 
           type="file" 
           accept="image/*" 
@@ -82,9 +82,9 @@ export default function KingnexOCRPanel({
           id="ocr-upload"
         />
         <label htmlFor="ocr-upload" className="cursor-pointer flex flex-col items-center gap-2">
-          <Upload className="h-10 w-10 text-slate-500" />
-          <p className="text-slate-400">Arrastra o haz click para subir Nota de Venta Kingnex</p>
-          {file && <p className="text-amber-500 font-bold mt-2">Archivo: {file.name}</p>}
+          <Upload className="h-10 w-10 text-[#74777f]" />
+          <p className="text-[#74777f]">Arrastra o haz click para subir Nota de Venta Kingnex</p>
+          {file && <p className="text-[#0051d5] font-bold mt-2">Archivo: {file.name}</p>}
         </label>
       </div>
 
@@ -92,7 +92,7 @@ export default function KingnexOCRPanel({
         <Button 
           onClick={handleUpload} 
           disabled={loading}
-          className="w-full bg-slate-100 text-slate-900 font-bold"
+          className="w-full bg-[#2563eb] text-white font-bold hover:bg-[#1d4ed8]"
         >
           {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "PROCESAR CON IA"}
         </Button>
@@ -100,14 +100,14 @@ export default function KingnexOCRPanel({
 
       {results && (
         <div className="space-y-4 animate-in fade-in">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+          <div className="flex items-center justify-between border-b border-[#c4c6cf] pb-4">
             <div>
-              <h3 className="font-bold text-white">NV Extrayendo: {results.numero_nv}</h3>
-              <p className="text-xs text-slate-500 font-mono">Fecha: {results.fecha}</p>
+              <h3 className="font-bold text-[#111c2d]">NV Extrayendo: {results.numero_nv}</h3>
+              <p className="text-xs text-[#74777f] font-mono">Fecha: {results.fecha}</p>
             </div>
             
             <select 
-              className="bg-slate-900 border-slate-800 text-sm rounded-md p-2"
+              className="bg-white border-[#c4c6cf] text-sm rounded-md p-2"
               value={selectedBodegaId}
               onChange={(e) => setSelectedBodegaId(e.target.value)}
             >
@@ -118,10 +118,10 @@ export default function KingnexOCRPanel({
             </select>
           </div>
 
-          <div className="overflow-x-auto rounded-lg border border-slate-800">
+          <div className="overflow-x-auto rounded-lg border border-[#c4c6cf]">
             <Table>
               <TableHeader>
-                <TableRow className="border-slate-800 bg-slate-900">
+                <TableRow className="border-[#c4c6cf] bg-white">
                   <TableHead>SKU</TableHead>
                   <TableHead>Descripción</TableHead>
                   <TableHead>Cant.</TableHead>
@@ -130,9 +130,9 @@ export default function KingnexOCRPanel({
               </TableHeader>
               <TableBody>
                 {results.items.map((item: any, i: number) => (
-                  <TableRow key={i} className="border-slate-800">
-                    <TableCell className="font-mono text-amber-500">{item.sku}</TableCell>
-                    <TableCell className="text-xs text-slate-400">{item.descripcion}</TableCell>
+                  <TableRow key={i} className="border-[#c4c6cf]">
+                    <TableCell className="font-mono text-[#0051d5]">{item.sku}</TableCell>
+                    <TableCell className="text-xs text-[#74777f]">{item.descripcion}</TableCell>
                     <TableCell className="font-bold">{item.cantidad}</TableCell>
                     <TableCell className="font-mono text-xs">${item.precio_unitario}</TableCell>
                   </TableRow>
@@ -142,7 +142,7 @@ export default function KingnexOCRPanel({
           </div>
 
           <Button 
-            className="w-full bg-green-600 hover:bg-green-700 font-bold" 
+            className="w-full bg-[#16a34a] text-white hover:bg-[#15803d] font-bold"
             onClick={handleConfirm}
             disabled={loading || !selectedBodegaId}
           >

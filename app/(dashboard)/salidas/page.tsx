@@ -24,13 +24,13 @@ export default async function SalidasPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-white">Despachos (Salidas)</h1>
-        <p className="text-slate-400">Registra el movimiento de mercadería desde bodegas hacia módulos del Mall Zofri.</p>
+        <h1 className="text-3xl font-bold text-[#111c2d]">Despachos (Salidas)</h1>
+        <p className="text-[#74777f]">Registra el movimiento de mercadería desde bodegas hacia módulos del Mall Zofri.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1">
-          <Card className="bg-slate-900 border-slate-800">
+          <Card className="bg-white border-[#c4c6cf]">
             <CardHeader>
               <CardTitle>Nuevo Registro</CardTitle>
             </CardHeader>
@@ -45,15 +45,15 @@ export default async function SalidasPage() {
         </div>
 
         <div className="lg:col-span-2">
-          <Card className="bg-slate-900 border-slate-800">
+          <Card className="bg-white border-[#c4c6cf]">
             <CardHeader>
               <CardTitle>Historial de Movimientos</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="rounded-md border border-slate-800">
+              <div className="rounded-md border border-[#c4c6cf]">
                 <Table>
                   <TableHeader>
-                    <TableRow className="border-slate-800">
+                    <TableRow className="border-[#c4c6cf]">
                       <TableHead className="font-mono text-xs uppercase">Fecha/Hora</TableHead>
                       <TableHead className="font-mono text-xs uppercase">Producto</TableHead>
                       <TableHead className="font-mono text-xs uppercase">Origen</TableHead>
@@ -63,17 +63,17 @@ export default async function SalidasPage() {
                   </TableHeader>
                   <TableBody>
                     {history.map((h) => (
-                      <TableRow key={h.id} className="border-slate-800">
-                        <TableCell className="text-[10px] font-mono text-slate-500">
+                      <TableRow key={h.id} className="border-[#c4c6cf]">
+                        <TableCell className="text-[10px] font-mono text-[#74777f]">
                           {new Date(h.timestampSalida).toLocaleString()}
                         </TableCell>
-                        <TableCell className="text-slate-200">
+                        <TableCell className="text-[#111c2d]">
                           <p className="font-bold">{h.producto.codigo}</p>
-                          <p className="text-[10px] text-slate-500 truncate max-w-[120px]">{h.producto.descripcion}</p>
+                          <p className="text-[10px] text-[#74777f] truncate max-w-[120px]">{h.producto.descripcion}</p>
                         </TableCell>
-                        <TableCell className="text-xs text-slate-400">{h.bodega.nombre.replace('Bodega ', '')}</TableCell>
-                        <TableCell className="text-xs text-amber-500 font-bold">{h.modulo.nombre}</TableCell>
-                        <TableCell className="text-center font-bold text-white">{h.cantidad}</TableCell>
+                        <TableCell className="text-xs text-[#74777f]">{h.bodega.nombre.replace('Bodega ', '')}</TableCell>
+                        <TableCell className="text-xs text-[#0051d5] font-bold">{h.modulo.nombre}</TableCell>
+                        <TableCell className="text-center font-bold text-[#111c2d]">{h.cantidad}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

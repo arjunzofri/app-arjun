@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary-fixed": "#dbe1ff",
+                    "surface-bright": "#f9f9ff",
+                    "surface-tint": "#455f87",
+                    "tertiary": "#002a0d",
+                    "error-container": "#ffdad6",
+                    "on-primary": "#ffffff",
+                    "on-background": "#111c2d",
+                    "on-tertiary-fixed": "#002109",
+                    "on-secondary": "#ffffff",
+                    "surface": "#f9f9ff",
+                    "background": "#f9f9ff",
+                    "on-secondary-container": "#fefcff",
+                    "surface-dim": "#cfdaf2",
+                    "on-tertiary": "#ffffff",
+                    "inverse-on-surface": "#ecf1ff",
+                    "secondary-container": "#316bf3",
+                    "on-secondary-fixed-variant": "#003ea8",
+                    "on-primary-container": "#8aa4cf",
+                    "on-error": "#ffffff",
+                    "inverse-surface": "#263143",
+                    "surface-container": "#e7eeff",
+                    "secondary": "#0051d5",
+                    "surface-container-high": "#dee8ff",
+                    "surface-container-low": "#f0f3ff",
+                    "on-surface-variant": "#43474e",
+                    "on-primary-fixed": "#001c3b",
+                    "outline": "#74777f",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary-fixed-dim": "#b4c5ff",
+                    "surface-container-highest": "#d8e3fb",
+                    "primary-fixed-dim": "#adc8f5",
+                    "tertiary-fixed": "#7ffc97",
+                    "on-tertiary-fixed-variant": "#005320",
+                    "primary": "#022448",
+                    "tertiary-fixed-dim": "#62df7d",
+                    "on-surface": "#111c2d",
+                    "on-error-container": "#93000a",
+                    "inverse-primary": "#adc8f5",
+                    "on-primary-fixed-variant": "#2d486d",
+                    "error": "#ba1a1a",
+                    "primary-container": "#1e3a5f",
+                    "primary-fixed": "#d5e3ff",
+                    "tertiary-container": "#004319",
+                    "on-secondary-fixed": "#00174b",
+                    "outline-variant": "#c4c6cf",
+                    "on-tertiary-container": "#38b95d"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "xs": "4px",
+                    "lg": "24px",
+                    "sm": "8px",
+                    "gutter": "16px",
+                    "md": "16px",
+                    "unit": "4px",
+                    "xl": "32px",
+                    "margin": "24px",
+                    "container-max": "1440px"
+            },
+            "fontFamily": {
+                    "h2": ["Inter"],
+                    "h1": ["Inter"],
+                    "label-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "code": ["monospace"],
+                    "body-md": ["Inter"],
+                    "h3": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "body-sm": ["Inter"]
+            },
+            "fontSize": {
+                    "h2": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "h1": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "code": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "h3": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-background text-on-background">
+<!-- SideNavBar -->
+<aside class="w-[260px] h-screen fixed left-0 top-0 bg-[#1E3A5F] dark:bg-slate-950 text-white font-['Inter'] text-sm font-medium tracking-tight border-r border-slate-700 dark:border-slate-800 shadow-xl flex flex-col py-6 z-50">
+<div class="px-6 mb-10">
+<div class="text-xl font-black text-white tracking-widest uppercase">ARJUN v1.0</div>
+<div class="text-[10px] text-slate-400 uppercase tracking-widest mt-1">Inventory Management</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-700/50 rounded-md mx-2 transition-colors" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-700/50 rounded-md mx-2 transition-colors" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="inventory_2">inventory_2</span>
+<span>Productos</span>
+</a>
+<!-- Active Tab: Entradas -->
+<a class="flex items-center px-4 py-3 bg-[#2563EB] text-white rounded-md mx-2 transition-all" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="input">input</span>
+<span>Entradas</span>
+</a>
+<a class="flex items-center px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-700/50 rounded-md mx-2 transition-colors" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="output">output</span>
+<span>Salidas</span>
+</a>
+<a class="flex items-center px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-700/50 rounded-md mx-2 transition-colors" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="group">group</span>
+<span>Usuarios</span>
+</a>
+</nav>
+<div class="pt-6 border-t border-slate-700 mx-2 mt-auto">
+<a class="flex items-center px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-700/50 rounded-md transition-colors" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="person">person</span>
+<span>Perfil</span>
+</a>
+<a class="flex items-center px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-700/50 rounded-md transition-colors" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="settings">settings</span>
+<span>Configuración</span>
+</a>
+</div>
+</aside>
+<!-- TopNavBar -->
+<header class="fixed top-0 right-0 w-[calc(100%-260px)] h-16 bg-white dark:bg-slate-900 text-[#1E3A5F] dark:text-white border-b border-slate-200 dark:border-slate-800 shadow-sm flex justify-between items-center px-8 z-40 ml-[260px]">
+<div class="flex items-center flex-1">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" data-icon="search">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-full text-sm focus:ring-2 focus:ring-secondary/20" placeholder="Global search..." type="text"/>
+</div>
+</div>
+<div class="flex items-center space-x-4">
+<button class="hover:bg-slate-50 dark:hover:bg-slate-800 p-2 rounded-full transition-all active:scale-95">
+<span class="material-symbols-outlined" data-icon="sync">sync</span>
+</button>
+<button class="hover:bg-slate-50 dark:hover:bg-slate-800 p-2 rounded-full transition-all active:scale-95">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="hover:bg-slate-50 dark:hover:bg-slate-800 p-2 rounded-full transition-all active:scale-95">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</button>
+<div class="flex items-center ml-4 pl-4 border-l border-slate-200 dark:border-slate-700">
+<span class="text-xs font-bold mr-3">ADMIN USER</span>
+<img alt="Usuario" class="w-8 h-8 rounded-full bg-slate-200" data-alt="A clean, professional headshot avatar of a corporate administrator in a minimalist digital art style. The character is set against a solid, soft grey background that matches the high-density enterprise UI layout of a modern logistics application. The lighting is flat and even, characteristic of modern web design icons." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBb__TgiXxTlzH_m7MlIN7HcK0p4gn3vc_8Gkd77mNCYNMI_Gr69udRKiZ5aK2DnGvhKRjfSx2eiOFAf_xflzRUHVGkHXh4ml0zLT4rot4YvAT0Td8ID9eCMK-fqsbKT8hlD52LIFTsMjTvPh5vTsC7ei91Y0PlItmT_TRRDB4sddtiL4eEB8LLZN2xeE6lE-AX1Eng2heXCgAl3lgX10757TMY_8nUBm0xetgJSKQw85uurKoS997fC6PB3t-kUtgYzwZAoHmRhRk"/>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="ml-[260px] pt-16 min-h-screen bg-[#F8FAFC]">
+<div class="p-lg max-w-container-max mx-auto">
+<!-- Page Header & Tab Navigation -->
+<div class="mb-lg">
+<h1 class="font-h1 text-h1 text-primary mb-md">Entradas de Stock</h1>
+<div class="flex border-b border-slate-200 space-x-8">
+<button class="py-4 font-label-md text-label-md text-slate-500 hover:text-primary transition-colors border-b-2 border-transparent">
+                        Manual
+                    </button>
+<button class="py-4 font-label-md text-label-md text-secondary border-b-2 border-secondary">
+                        WinFac
+                    </button>
+<button class="py-4 font-label-md text-label-md text-slate-500 hover:text-primary transition-colors border-b-2 border-transparent flex items-center">
+                        Kingnex <span class="ml-2 px-2 py-0.5 bg-tertiary-fixed text-on-tertiary-fixed-variant rounded-full text-[10px] font-bold">OCR IA</span>
+</button>
+</div>
+</div>
+<!-- Bento Layout Content -->
+<div class="grid grid-cols-12 gap-gutter">
+<!-- Search & Filters -->
+<div class="col-span-12 lg:col-span-12">
+<div class="bg-white border border-slate-200 rounded-xl p-md shadow-sm flex flex-col md:flex-row items-end gap-md">
+<div class="flex-1 w-full">
+<label class="block font-label-sm text-label-sm text-slate-500 mb-xs uppercase tracking-wider">Número de Nota de Venta (NV)</label>
+<input class="w-full h-10 border-slate-300 rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary/20" placeholder="Ej: NV-2023-9001" type="text"/>
+</div>
+<button class="bg-[#16A34A] text-white px-xl h-10 rounded-lg font-label-md flex items-center justify-center hover:opacity-90 active:scale-95 transition-all w-full md:w-auto">
+<span class="material-symbols-outlined mr-2" data-icon="search">search</span>
+                            BUSCAR NV
+                        </button>
+</div>
+</div>
+<!-- Result Card (Asymmetric Layout) -->
+<div class="col-span-12 lg:col-span-4 h-full">
+<div class="bg-primary-container text-white border border-slate-700 rounded-xl p-lg shadow-xl h-full flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start mb-md">
+<span class="bg-secondary px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase">NV ACTIVA</span>
+<span class="text-surface-variant font-code text-label-sm">REF: WF-77821</span>
+</div>
+<h2 class="text-[32px] font-extrabold leading-none mb-sm">NV-2023-882</h2>
+<p class="text-surface-variant text-body-sm mb-lg">Resultado de búsqueda en WinFac ERP</p>
+</div>
+<div class="space-y-4">
+<div class="flex justify-between items-center border-b border-white/10 pb-2">
+<span class="text-surface-variant text-label-sm uppercase">Visación</span>
+<span class="font-bold text-h3">8,442-1</span>
+</div>
+<div class="flex justify-between items-center border-b border-white/10 pb-2">
+<span class="text-surface-variant text-label-sm uppercase">Fecha</span>
+<span class="font-bold text-body-md">24 Oct, 2023</span>
+</div>
+<div class="flex justify-between items-center border-b border-white/10 pb-2">
+<span class="text-surface-variant text-label-sm uppercase">Bultos</span>
+<span class="font-bold text-body-md">12 CTNS</span>
+</div>
+<div class="flex justify-between items-center pt-2">
+<span class="text-tertiary-fixed text-label-sm uppercase">Total USD</span>
+<span class="font-black text-h2 text-tertiary-fixed">$12,450.00</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Products Table -->
+<div class="col-span-12 lg:col-span-8">
+<div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden flex flex-col h-full">
+<div class="p-md border-b border-slate-100 flex justify-between items-center">
+<h3 class="font-h3 text-h3 text-primary">Detalle de Productos</h3>
+<span class="text-label-sm text-slate-500">Mostrando 4 registros</span>
+</div>
+<div class="overflow-x-auto flex-1">
+<table class="w-full text-left">
+<thead class="bg-surface-container-low border-b border-slate-200">
+<tr>
+<th class="px-md py-3 font-label-md text-label-md text-slate-600">Código</th>
+<th class="px-md py-3 font-label-md text-label-md text-slate-600">Descripción</th>
+<th class="px-md py-3 font-label-md text-label-md text-slate-600">Packing</th>
+<th class="px-md py-3 font-label-md text-label-md text-slate-600 text-right">Saldo</th>
+<th class="px-md py-3 font-label-md text-label-md text-slate-600 text-right">Costo USD</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100">
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-md py-4 font-code text-secondary font-bold">AJ-0012-P</td>
+<td class="px-md py-4 font-body-sm text-slate-700">Perno Hexagonal Zincado 1/2 x 3</td>
+<td class="px-md py-4 font-body-sm text-slate-500">Caja 100u</td>
+<td class="px-md py-4 text-right">
+<span class="px-2 py-1 bg-tertiary-fixed/20 text-on-tertiary-fixed-variant rounded-md font-bold">50</span>
+</td>
+<td class="px-md py-4 font-bold text-right">$4.50</td>
+</tr>
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-md py-4 font-code text-secondary font-bold">AJ-0883-M</td>
+<td class="px-md py-4 font-body-sm text-slate-700">Malla Electrosoldada 2.5mm</td>
+<td class="px-md py-4 font-body-sm text-slate-500">Rollo 25m</td>
+<td class="px-md py-4 text-right">
+<span class="px-2 py-1 bg-tertiary-fixed/20 text-on-tertiary-fixed-variant rounded-md font-bold">12</span>
+</td>
+<td class="px-md py-4 font-bold text-right">$125.00</td>
+</tr>
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-md py-4 font-code text-secondary font-bold">AJ-9921-X</td>
+<td class="px-md py-4 font-body-sm text-slate-700">Taladro Inalámbrico Pro 18V</td>
+<td class="px-md py-4 font-body-sm text-slate-500">Set x 1</td>
+<td class="px-md py-4 text-right">
+<span class="px-2 py-1 bg-tertiary-fixed/20 text-on-tertiary-fixed-variant rounded-md font-bold">5</span>
+</td>
+<td class="px-md py-4 font-bold text-right">$89.90</td>
+</tr>
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-md py-4 font-code text-secondary font-bold">AJ-1044-K</td>
+<td class="px-md py-4 font-body-sm text-slate-700">Kit Guantes Seguridad Reforzados</td>
+<td class="px-md py-4 font-body-sm text-slate-500">Par</td>
+<td class="px-md py-4 text-right">
+<span class="px-2 py-1 bg-tertiary-fixed/20 text-on-tertiary-fixed-variant rounded-md font-bold">120</span>
+</td>
+<td class="px-md py-4 font-bold text-right">$2.15</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Bottom Confirmation Area -->
+<div class="col-span-12">
+<div class="bg-white border border-slate-200 rounded-xl p-lg shadow-md flex flex-col md:flex-row items-center justify-between gap-lg">
+<div class="w-full md:w-1/3">
+<label class="block font-label-sm text-label-sm text-slate-500 mb-xs uppercase tracking-wider">Bodega de Destino</label>
+<div class="relative">
+<select class="w-full h-12 appearance-none border-slate-300 rounded-lg text-body-md px-md focus:border-secondary focus:ring-1 focus:ring-secondary/20 bg-surface-container-low">
+<option>BODEGA CENTRAL (ZONA A)</option>
+<option>BODEGA PUERTO (ZONA B)</option>
+<option>TRANSITO / ADUANA</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400" data-icon="expand_more">expand_more</span>
+</div>
+</div>
+<div class="flex items-center space-x-md w-full md:w-auto">
+<button class="flex-1 md:flex-none px-lg py-3 border border-slate-300 rounded-lg font-label-md text-primary hover:bg-slate-50 transition-all">
+                                CANCELAR
+                            </button>
+<button class="flex-1 md:flex-none px-xl py-3 bg-[#16A34A] text-white rounded-lg font-label-md text-body-lg flex items-center justify-center hover:bg-[#15803d] active:scale-95 transition-all shadow-lg shadow-green-200">
+<span class="material-symbols-outlined mr-2" data-icon="check_circle">check_circle</span>
+                                CONFIRMAR INGRESO
+                            </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Contextual Information Card Float -->
+<div class="fixed bottom-lg right-lg w-72 bg-white border border-slate-200 p-md rounded-xl shadow-2xl z-50">
+<div class="flex items-center mb-sm">
+<span class="material-symbols-outlined text-secondary mr-2" data-icon="info">info</span>
+<span class="font-label-md text-primary">Estado de Integración</span>
+</div>
+<p class="text-body-sm text-slate-600 leading-tight">Sincronización WinFac activa. La información se actualiza cada 5 minutos automáticamente.</p>
+<div class="mt-md pt-md border-t border-slate-100 flex items-center justify-between">
+<span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Última sync: 2 min ago</span>
+<span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+</div>
+</div>
+</body></html>

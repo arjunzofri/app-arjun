@@ -59,12 +59,12 @@ export default function SalidaForm({
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {error && (
-        <div className="rounded-md border border-red-900/50 bg-red-900/10 p-3 text-sm text-red-400">
+        <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-600">
           ❌ {error}
         </div>
       )}
       {success && (
-        <div className="rounded-md border border-green-900/50 bg-green-900/10 p-3 text-sm text-green-400">
+        <div className="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">
           ✅ Despacho registrado con éxito
         </div>
       )}
@@ -72,10 +72,10 @@ export default function SalidaForm({
         <div className="space-y-2">
           <Label>Producto</Label>
           <Select onValueChange={(val) => setValue("productoId", val as string)}>
-            <SelectTrigger className="bg-slate-900 border-slate-800">
+            <SelectTrigger className="bg-white border-[#c4c6cf]">
               <SelectValue placeholder="Seleccionar producto" />
             </SelectTrigger>
-            <SelectContent className="bg-slate-950 border-slate-800">
+            <SelectContent className="bg-[#f9f9ff] border-[#c4c6cf]">
               {productosData.map(p => (
                 <SelectItem key={p.id} value={p.id}>
                   {p.codigo} - {p.descripcion}
@@ -88,10 +88,10 @@ export default function SalidaForm({
         <div className="space-y-2">
           <Label>Bodega Origen</Label>
           <Select onValueChange={(val) => setValue("bodegaOrigenId", val as string)}>
-            <SelectTrigger className="bg-slate-900 border-slate-800">
+            <SelectTrigger className="bg-white border-[#c4c6cf]">
               <SelectValue placeholder="Seleccionar origen" />
             </SelectTrigger>
-            <SelectContent className="bg-slate-950 border-slate-800">
+            <SelectContent className="bg-[#f9f9ff] border-[#c4c6cf]">
               {bodegasData.map(b => (
                 <SelectItem key={b.id} value={b.id}>{b.nombre}</SelectItem>
               ))}
@@ -102,10 +102,10 @@ export default function SalidaForm({
         <div className="space-y-2">
           <Label>Módulo Destino</Label>
           <Select onValueChange={(val) => setValue("moduloDestinoId", val as string)}>
-            <SelectTrigger className="bg-slate-900 border-slate-800">
+            <SelectTrigger className="bg-white border-[#c4c6cf]">
               <SelectValue placeholder="Seleccionar destino" />
             </SelectTrigger>
-            <SelectContent className="bg-slate-950 border-slate-800">
+            <SelectContent className="bg-[#f9f9ff] border-[#c4c6cf]">
               {modulosData.map(m => (
                 <SelectItem key={m.id} value={m.id}>{m.nombre}</SelectItem>
               ))}
@@ -118,7 +118,7 @@ export default function SalidaForm({
           <Input 
             type="number" 
             {...register("cantidad", { valueAsNumber: true })}
-            className="bg-slate-900 border-slate-800" 
+            className="bg-white border-[#c4c6cf]" 
           />
         </div>
 
@@ -126,7 +126,7 @@ export default function SalidaForm({
           <Label>Observaciones</Label>
           <Input 
             {...register("observaciones")}
-            className="bg-slate-900 border-slate-800" 
+            className="bg-white border-[#c4c6cf]" 
             placeholder="Ej: Entrega urgente módulo 180"
           />
         </div>
@@ -134,7 +134,7 @@ export default function SalidaForm({
 
       <Button 
         type="submit" 
-        className="w-full bg-amber-500 text-slate-950 font-bold hover:bg-amber-600"
+        className="w-full bg-[#16a34a] text-white font-bold hover:bg-[#15803d]"
         disabled={loading}
       >
         {loading ? "PROCESANDO DESPACHO..." : "REGISTRAR SALIDA"}

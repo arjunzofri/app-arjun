@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary-fixed": "#dbe1ff",
+                    "surface-bright": "#f9f9ff",
+                    "surface-tint": "#455f87",
+                    "tertiary": "#002a0d",
+                    "error-container": "#ffdad6",
+                    "on-primary": "#ffffff",
+                    "on-background": "#111c2d",
+                    "on-tertiary-fixed": "#002109",
+                    "on-secondary": "#ffffff",
+                    "surface": "#f9f9ff",
+                    "background": "#f9f9ff",
+                    "on-secondary-container": "#fefcff",
+                    "surface-dim": "#cfdaf2",
+                    "on-tertiary": "#ffffff",
+                    "inverse-on-surface": "#ecf1ff",
+                    "secondary-container": "#316bf3",
+                    "on-secondary-fixed-variant": "#003ea8",
+                    "on-primary-container": "#8aa4cf",
+                    "on-error": "#ffffff",
+                    "inverse-surface": "#263143",
+                    "surface-container": "#e7eeff",
+                    "secondary": "#0051d5",
+                    "surface-container-high": "#dee8ff",
+                    "surface-container-low": "#f0f3ff",
+                    "on-surface-variant": "#43474e",
+                    "on-primary-fixed": "#001c3b",
+                    "outline": "#74777f",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary-fixed-dim": "#b4c5ff",
+                    "surface-variant": "#d8e3fb",
+                    "surface-container-highest": "#d8e3fb",
+                    "primary-fixed-dim": "#adc8f5",
+                    "tertiary-fixed": "#7ffc97",
+                    "on-tertiary-fixed-variant": "#005320",
+                    "primary": "#022448",
+                    "tertiary-fixed-dim": "#62df7d",
+                    "on-surface": "#111c2d",
+                    "on-error-container": "#93000a",
+                    "inverse-primary": "#adc8f5",
+                    "on-primary-fixed-variant": "#2d486d",
+                    "error": "#ba1a1a",
+                    "primary-container": "#1e3a5f",
+                    "primary-fixed": "#d5e3ff",
+                    "tertiary-container": "#004319",
+                    "on-secondary-fixed": "#00174b",
+                    "outline-variant": "#c4c6cf",
+                    "on-tertiary-container": "#38b95d"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "xs": "4px",
+                    "lg": "24px",
+                    "sm": "8px",
+                    "gutter": "16px",
+                    "md": "16px",
+                    "unit": "4px",
+                    "xl": "32px",
+                    "margin": "24px",
+                    "container-max": "1440px"
+            },
+            "fontFamily": {
+                    "h2": ["Inter"],
+                    "h1": ["Inter"],
+                    "label-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "code": ["monospace"],
+                    "body-md": ["Inter"],
+                    "h3": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "body-sm": ["Inter"]
+            },
+            "fontSize": {
+                    "h2": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "h1": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "code": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "h3": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        body {
+            background-color: #F8FAFC;
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-surface">
+<!-- SideNavBar Shell -->
+<aside class="w-[260px] h-screen fixed left-0 top-0 bg-[#1E3A5F] dark:bg-slate-950 border-r border-slate-700 dark:border-slate-800 shadow-xl flex flex-col py-6 z-50">
+<div class="px-6 mb-10">
+<h1 class="text-xl font-black text-white tracking-widest">ARJUN v1.0</h1>
+<p class="text-slate-400 font-label-sm uppercase tracking-wider mt-1">Inventory Management</p>
+</div>
+<nav class="flex-1 space-y-1">
+<!-- Active: Dashboard -->
+<a class="flex items-center px-4 py-3 bg-[#2563EB] text-white rounded-md mx-2 font-['Inter'] text-sm font-medium tracking-tight" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="dashboard">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-700/50 rounded-md mx-2 transition-colors font-['Inter'] text-sm font-medium tracking-tight" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="inventory_2">inventory_2</span>
+                Productos
+            </a>
+<a class="flex items-center px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-700/50 rounded-md mx-2 transition-colors font-['Inter'] text-sm font-medium tracking-tight" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="input">input</span>
+                Entradas
+            </a>
+<a class="flex items-center px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-700/50 rounded-md mx-2 transition-colors font-['Inter'] text-sm font-medium tracking-tight" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="output">output</span>
+                Salidas
+            </a>
+<a class="flex items-center px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-700/50 rounded-md mx-2 transition-colors font-['Inter'] text-sm font-medium tracking-tight" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="group">group</span>
+                Usuarios
+            </a>
+</nav>
+<div class="mt-auto pt-6 border-t border-slate-700/50 mx-4 space-y-1">
+<a class="flex items-center px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-700/50 rounded-md transition-colors font-['Inter'] text-sm font-medium tracking-tight" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="person">person</span>
+                Perfil
+            </a>
+<a class="flex items-center px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-700/50 rounded-md transition-colors font-['Inter'] text-sm font-medium tracking-tight" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="settings">settings</span>
+                Configuración
+            </a>
+</div>
+</aside>
+<!-- TopNavBar Shell -->
+<header class="fixed top-0 right-0 w-[calc(100%-260px)] h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm flex justify-between items-center px-8 z-40">
+<div class="flex items-center bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1.5 w-96">
+<span class="material-symbols-outlined text-slate-400 mr-2" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm w-full font-body-sm" placeholder="Buscar productos, SKUs, facturas..." type="text"/>
+</div>
+<div class="flex items-center space-x-4">
+<button class="hover:bg-slate-50 dark:hover:bg-slate-800 p-2 rounded-full transition-all active:scale-95 text-[#1E3A5F] dark:text-white">
+<span class="material-symbols-outlined" data-icon="sync">sync</span>
+</button>
+<button class="hover:bg-slate-50 dark:hover:bg-slate-800 p-2 rounded-full transition-all active:scale-95 text-[#1E3A5F] dark:text-white relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="hover:bg-slate-50 dark:hover:bg-slate-800 p-2 rounded-full transition-all active:scale-95 text-[#1E3A5F] dark:text-white">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</button>
+<div class="h-8 w-px bg-slate-200 dark:bg-slate-700 mx-2"></div>
+<div class="flex items-center space-x-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 p-1.5 rounded-lg transition-all">
+<div class="text-right hidden lg:block">
+<p class="font-label-md text-[#1E3A5F] dark:text-white leading-tight">Admin Arjun</p>
+<p class="font-label-sm text-slate-500">Super User</p>
+</div>
+<img alt="Usuario" class="w-8 h-8 rounded-full border border-slate-200" data-alt="A professional headshot of a warehouse operations manager with a confident expression, wearing a navy blue company polo. The background is a clean, out-of-focus corporate office setting with soft daylight filtering through a window. The lighting is crisp and clear, emphasizing a high-end corporate identity with a professional, trustworthy mood." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDL_ZZXqA6Ll0ozCh4aNPK078tFiIzjn7llX7aJ2l1L5OoB2XWsbVWYVV6-jNzHqWyEvPXvM61UqdsX8BhPFYoLo14bBUsCpXB7sbHGTekhnQnU0yhlQUlYlpGcYTuJSIB88zOk5NPaHkq4KhfQAFTj2-QepNBnuFeWoN4stlYaN2jvF0BEh5EjXCAtMWUSyBo2t3DfAJ2E91wNYC-BhNTJJfkDjTQ-LR7T8D2K4ryBdIPPU6fx9s7yhVnt0RrGyc21vTBWVwTN9NY"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-[260px] pt-16 min-h-screen">
+<div class="p-lg space-y-lg">
+<!-- Page Header -->
+<div class="flex items-center justify-between">
+<div>
+<h2 class="font-h2 text-primary">Dashboard Principal</h2>
+<p class="font-body-sm text-on-surface-variant">Resumen ejecutivo y operaciones recientes de inventario.</p>
+</div>
+<button class="bg-secondary text-white px-4 py-2 rounded-xl font-label-md flex items-center shadow-sm hover:shadow-md transition-shadow">
+<span class="material-symbols-outlined mr-2 text-[20px]" data-icon="add">add</span>
+                    Nueva Entrada
+                </button>
+</div>
+<!-- Stats Row: Bento Grid Style -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<!-- Total Productos -->
+<div class="bg-white p-lg rounded-xl border border-slate-200 shadow-[0px_1px_3px_rgba(0,0,0,0.05)] flex items-center">
+<div class="w-12 h-12 bg-primary-container/10 rounded-xl flex items-center justify-center text-primary-container mr-4">
+<span class="material-symbols-outlined" data-icon="inventory_2" data-weight="fill" style="font-variation-settings: 'FILL' 1;">inventory_2</span>
+</div>
+<div>
+<p class="font-label-sm text-on-surface-variant uppercase tracking-wider">Total Productos</p>
+<h3 class="font-h1 text-primary">12,480</h3>
+<p class="font-label-sm text-tertiary-container mt-1 flex items-center">
+<span class="material-symbols-outlined text-[14px] mr-1" data-icon="trending_up">trending_up</span>
+                            +2.4% vs mes anterior
+                        </p>
+</div>
+</div>
+<!-- Stock Bodegas -->
+<div class="bg-white p-lg rounded-xl border border-slate-200 shadow-[0px_1px_3px_rgba(0,0,0,0.05)] flex items-center">
+<div class="w-12 h-12 bg-secondary/10 rounded-xl flex items-center justify-center text-secondary mr-4">
+<span class="material-symbols-outlined" data-icon="warehouse" data-weight="fill" style="font-variation-settings: 'FILL' 1;">warehouse</span>
+</div>
+<div>
+<p class="font-label-sm text-on-surface-variant uppercase tracking-wider">Stock Bodegas</p>
+<h3 class="font-h1 text-primary">8,215</h3>
+<p class="font-label-sm text-on-surface-variant mt-1">Capacidad: 85% ocupada</p>
+</div>
+</div>
+<!-- Módulos Zofri -->
+<div class="bg-white p-lg rounded-xl border border-slate-200 shadow-[0px_1px_3px_rgba(0,0,0,0.05)] flex items-center">
+<div class="w-12 h-12 bg-tertiary-container/10 rounded-xl flex items-center justify-center text-tertiary-container mr-4">
+<span class="material-symbols-outlined" data-icon="view_module" data-weight="fill" style="font-variation-settings: 'FILL' 1;">view_module</span>
+</div>
+<div>
+<p class="font-label-sm text-on-surface-variant uppercase tracking-wider">Módulos Zofri</p>
+<h3 class="font-h1 text-primary">4,265</h3>
+<p class="font-label-sm text-on-surface-variant mt-1">12 módulos activos</p>
+</div>
+</div>
+</div>
+<!-- Dashboard Body: Two Columns Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Main Table Area (Left/Center) -->
+<div class="lg:col-span-8 space-y-gutter">
+<div class="bg-white rounded-xl border border-slate-200 shadow-[0px_1px_3px_rgba(0,0,0,0.05)] overflow-hidden">
+<div class="p-md border-b border-slate-100 flex items-center justify-between bg-surface-container-low">
+<h3 class="font-h3 text-primary">Operaciones Recientes</h3>
+<button class="text-secondary font-label-md hover:underline flex items-center">
+                                Ver todas
+                                <span class="material-symbols-outlined text-[18px] ml-1" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead class="bg-[#F8FAFC]">
+<tr>
+<th class="px-md py-3 font-label-md text-on-surface-variant border-b border-slate-100">Fecha</th>
+<th class="px-md py-3 font-label-md text-on-surface-variant border-b border-slate-100">Tipo</th>
+<th class="px-md py-3 font-label-md text-on-surface-variant border-b border-slate-100">SKU</th>
+<th class="px-md py-3 font-label-md text-on-surface-variant border-b border-slate-100">Destino</th>
+<th class="px-md py-3 font-label-md text-on-surface-variant border-b border-slate-100 text-right">Cant.</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100">
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-md py-3.5 font-body-sm">24 Mayo, 14:20</td>
+<td class="px-md py-3.5">
+<span class="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-tight">ENTRADA</span>
+</td>
+<td class="px-md py-3.5 font-code text-on-surface-variant">ARJ-772-B</td>
+<td class="px-md py-3.5 font-body-sm">Bodega Central</td>
+<td class="px-md py-3.5 font-label-md text-right">500</td>
+</tr>
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-md py-3.5 font-body-sm">24 Mayo, 11:45</td>
+<td class="px-md py-3.5">
+<span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-tight">SALIDA</span>
+</td>
+<td class="px-md py-3.5 font-code text-on-surface-variant">ZFR-104-X</td>
+<td class="px-md py-3.5 font-body-sm">Módulo Zofri 4</td>
+<td class="px-md py-3.5 font-label-md text-right">120</td>
+</tr>
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-md py-3.5 font-body-sm">24 Mayo, 09:10</td>
+<td class="px-md py-3.5">
+<span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-tight">SALIDA</span>
+</td>
+<td class="px-md py-3.5 font-code text-on-surface-variant">ARJ-221-A</td>
+<td class="px-md py-3.5 font-body-sm">Exportación BOL</td>
+<td class="px-md py-3.5 font-label-md text-right">2,400</td>
+</tr>
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-md py-3.5 font-body-sm">23 Mayo, 17:30</td>
+<td class="px-md py-3.5">
+<span class="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-tight">ENTRADA</span>
+</td>
+<td class="px-md py-3.5 font-code text-on-surface-variant">ZFR-889-M</td>
+<td class="px-md py-3.5 font-body-sm">Bodega Norte</td>
+<td class="px-md py-3.5 font-label-md text-right">85</td>
+</tr>
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-md py-3.5 font-body-sm">23 Mayo, 15:05</td>
+<td class="px-md py-3.5">
+<span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-tight">SALIDA</span>
+</td>
+<td class="px-md py-3.5 font-code text-on-surface-variant">ARJ-004-C</td>
+<td class="px-md py-3.5 font-body-sm">Bodega Central</td>
+<td class="px-md py-3.5 font-label-md text-right">310</td>
+</tr>
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-md py-3.5 font-body-sm">23 Mayo, 10:20</td>
+<td class="px-md py-3.5">
+<span class="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-tight">ENTRADA</span>
+</td>
+<td class="px-md py-3.5 font-code text-on-surface-variant">ZFR-111-K</td>
+<td class="px-md py-3.5 font-body-sm">Módulo Zofri 1</td>
+<td class="px-md py-3.5 font-label-md text-right">640</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Sidebar Area (Right) -->
+<div class="lg:col-span-4 space-y-gutter">
+<!-- Alert Card -->
+<div class="bg-white rounded-xl border border-slate-200 shadow-[0px_1px_3px_rgba(0,0,0,0.05)] overflow-hidden">
+<div class="p-md border-b border-slate-100 bg-surface-container-low flex items-center">
+<span class="material-symbols-outlined text-error mr-2" data-icon="warning">warning</span>
+<h3 class="font-h3 text-primary">Alertas de Stock</h3>
+</div>
+<div class="p-md space-y-4">
+<div class="flex items-start p-3 bg-red-50 border-l-4 border-red-500 rounded">
+<div class="flex-1">
+<p class="font-label-md text-red-900 leading-tight">Stock Crítico: ARJ-772-B</p>
+<p class="font-body-sm text-red-700 mt-1">Quedan solo 12 unidades en Bodega Central.</p>
+</div>
+<button class="text-red-500 hover:text-red-700">
+<span class="material-symbols-outlined text-[20px]" data-icon="close">close</span>
+</button>
+</div>
+<div class="flex items-start p-3 bg-orange-50 border-l-4 border-orange-500 rounded">
+<div class="flex-1">
+<p class="font-label-md text-orange-900 leading-tight">Stock Bajo: ZFR-104-X</p>
+<p class="font-body-sm text-orange-700 mt-1">Próximo al límite mínimo de seguridad.</p>
+</div>
+<button class="text-orange-500 hover:text-orange-700">
+<span class="material-symbols-outlined text-[20px]" data-icon="close">close</span>
+</button>
+</div>
+<button class="w-full py-2 border border-slate-200 rounded-lg text-on-surface-variant font-label-md hover:bg-slate-50 transition-colors">
+                                Gestionar Inventario
+                            </button>
+</div>
+</div>
+<!-- Quick Action Card -->
+<div class="bg-primary-container p-lg rounded-xl shadow-lg relative overflow-hidden text-white">
+<!-- Abstract background element -->
+<div class="absolute -right-10 -bottom-10 w-40 h-40 bg-white/5 rounded-full blur-3xl"></div>
+<div class="relative z-10">
+<span class="material-symbols-outlined text-[32px] mb-4 text-tertiary-fixed" data-icon="local_shipping" data-weight="fill" style="font-variation-settings: 'FILL' 1;">local_shipping</span>
+<h3 class="font-h3 mb-2">Despacho Rápido</h3>
+<p class="font-body-sm text-slate-300 mb-6 leading-relaxed">
+                                Genera una guía de despacho inmediata para traslados internos o entregas urgentes a clientes.
+                            </p>
+<button class="w-full bg-[#16A34A] hover:bg-[#15803d] text-white font-label-md py-3 rounded-xl shadow-md active:scale-95 transition-all flex items-center justify-center">
+<span class="material-symbols-outlined mr-2" data-icon="bolt">bolt</span>
+                                INICIAR DESPACHO
+                            </button>
+</div>
+</div>
+<!-- Warehouse Image Placeholder -->
+<div class="rounded-xl overflow-hidden border border-slate-200 shadow-sm">
+<img alt="Vista Bodega" class="w-full h-48 object-cover" data-alt="A clean, highly organized modern logistics warehouse with tall yellow and silver racking systems filled with uniformly packaged boxes. The facility features polished concrete floors reflecting the bright, overhead LED panel lighting. The aesthetic is industrial yet pristine, using a palette of steel grays, safety yellows, and clean whites, embodying the corporate efficiency of App Arjun." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAhQL2bp3T_G2WPGHChg6SWNwndJ1fFYJDm0eLJEVKnO5GGctQC6SJmo8ldlvcWXH-xqXOUxMjdBvIH_gFalF9dVyYF8D2DbrfgrtpV6XiKSWdM8hoTvTXis2Y80sfP83r7DYyxiSQB3JsiMAWWHjdVKlvmgmWGSK_xTHq9dOEZN4_Ox8L9PqBx0u_nNAFCQg9AVlAJNmoQsN1_GR_iZMbSBV6TNRod-oZ6GPEztvX4Tl0F-PbBigi245Ru8GstlG2YqVBT2pbpYAM"/>
+<div class="p-md bg-white">
+<p class="font-label-sm text-on-surface-variant">Ubicación Actual: Iquique, Zofri</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

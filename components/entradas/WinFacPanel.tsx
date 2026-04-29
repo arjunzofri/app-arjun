@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useState } from "react"
 import { registrarEntrada, createOrUpdateProducto } from "@/lib/actions"
@@ -104,37 +104,37 @@ export default function WinFacPanel({ bodegasData }: { bodegasData: Bodega[] }) 
   return (
     <div className="space-y-6">
       {error && (
-        <div className="rounded-md border border-red-900/50 bg-red-900/10 p-3 text-sm text-red-400">
+        <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-600">
           ❌ {error}
         </div>
       )}
       {success && (
-        <div className="rounded-md border border-green-900/50 bg-green-900/10 p-3 text-sm text-green-400">
+        <div className="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">
           ✅ Productos importados con éxito desde WinFac
         </div>
       )}
 
       {encabezado && (
-        <div className="rounded-lg border border-slate-700 bg-slate-800/50 p-4 text-sm space-y-1">
+        <div className="rounded-lg border border-[#c4c6cf] bg-[#f0f3ff] p-4 text-sm space-y-1">
           <div className="flex justify-between">
-            <span className="text-slate-400">NV:</span>
-            <span className="font-mono text-amber-400 font-bold">{parseInt(encabezado.knumfoli)}</span>
+            <span className="text-[#74777f]">NV:</span>
+            <span className="font-mono text-[#0051d5] font-bold">{parseInt(encabezado.knumfoli)}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-slate-400">Visación:</span>
-            <span className="font-mono text-slate-200">{encabezado.visaadua}</span>
+            <span className="text-[#74777f]">Visación:</span>
+            <span className="font-mono text-[#111c2d]">{encabezado.visaadua}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-slate-400">Fecha:</span>
-            <span className="text-slate-200">{new Date(encabezado.fechanvt).toLocaleDateString('es-CL')}</span>
+            <span className="text-[#74777f]">Fecha:</span>
+            <span className="text-[#111c2d]">{new Date(encabezado.fechanvt).toLocaleDateString('es-CL')}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-slate-400">Total USD:</span>
-            <span className="font-bold text-slate-100">${encabezado.val_doc?.toLocaleString()}</span>
+            <span className="text-[#74777f]">Total USD:</span>
+            <span className="font-bold text-[#111c2d]">${encabezado.val_doc?.toLocaleString()}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-slate-400">Bultos:</span>
-            <span className="text-slate-200">{encabezado.canbulto}</span>
+            <span className="text-[#74777f]">Bultos:</span>
+            <span className="text-[#111c2d]">{encabezado.canbulto}</span>
           </div>
         </div>
       )}
@@ -145,12 +145,12 @@ export default function WinFacPanel({ bodegasData }: { bodegasData: Bodega[] }) 
           onChange={e => setQuery(e.target.value)}
           onKeyDown={e => e.key === "Enter" && buscar()}
           placeholder="NV (ej: 335) o visación (ej: 254348)"
-          className="bg-slate-950 border-slate-800 font-mono text-sm"
+          className="bg-[#f9f9ff] border-[#c4c6cf] font-mono text-sm"
         />
         <Button
           onClick={buscar}
           disabled={loading}
-          className="bg-amber-500 text-slate-950 font-bold hover:bg-amber-600 shrink-0"
+          className="bg-[#16a34a] text-white font-bold hover:bg-[#15803d] shrink-0"
         >
           {loading ? "Buscando..." : "BUSCAR NV"}
         </Button>
@@ -158,25 +158,25 @@ export default function WinFacPanel({ bodegasData }: { bodegasData: Bodega[] }) 
 
       {productos.length > 0 && (
         <div className="space-y-4">
-          <div className="rounded-lg border border-slate-800 overflow-hidden">
+          <div className="rounded-lg border border-[#c4c6cf] overflow-hidden">
             <table className="w-full text-sm">
-              <thead className="bg-slate-800">
+              <thead className="bg-[#e7eeff]">
                 <tr>
-                  <th className="text-left px-3 py-2 text-slate-400 font-mono text-xs">CÓDIGO</th>
-                  <th className="text-left px-3 py-2 text-slate-400 font-mono text-xs">DESCRIPCIÓN</th>
-                  <th className="text-right px-3 py-2 text-slate-400 font-mono text-xs">PACKING</th>
-                  <th className="text-right px-3 py-2 text-slate-400 font-mono text-xs">SALDO</th>
-                  <th className="text-right px-3 py-2 text-slate-400 font-mono text-xs">COSTO USD</th>
+                  <th className="text-left px-3 py-2 text-[#74777f] font-mono text-xs">CÓDIGO</th>
+                  <th className="text-left px-3 py-2 text-[#74777f] font-mono text-xs">DESCRIPCIÓN</th>
+                  <th className="text-right px-3 py-2 text-[#74777f] font-mono text-xs">PACKING</th>
+                  <th className="text-right px-3 py-2 text-[#74777f] font-mono text-xs">SALDO</th>
+                  <th className="text-right px-3 py-2 text-[#74777f] font-mono text-xs">COSTO USD</th>
                 </tr>
               </thead>
               <tbody>
                 {productos.map((p, i) => (
-                  <tr key={i} className="border-t border-slate-800">
-                    <td className="px-3 py-2 font-mono text-amber-400">{p.codigo}</td>
-                    <td className="px-3 py-2 text-slate-300">{p.detalle}</td>
-                    <td className="px-3 py-2 text-right text-slate-400">{p.cantcaja}</td>
-                    <td className="px-3 py-2 text-right text-slate-300 font-bold">{p.saldo}</td>
-                    <td className="px-3 py-2 text-right text-slate-400">${p.costo}</td>
+                  <tr key={i} className="border-t border-[#c4c6cf]">
+                    <td className="px-3 py-2 font-mono text-[#0051d5]">{p.codigo}</td>
+                    <td className="px-3 py-2 text-[#43474e]">{p.detalle}</td>
+                    <td className="px-3 py-2 text-right text-[#74777f]">{p.cantcaja}</td>
+                    <td className="px-3 py-2 text-right text-[#43474e] font-bold">{p.saldo}</td>
+                    <td className="px-3 py-2 text-right text-[#74777f]">${p.costo}</td>
                   </tr>
                 ))}
               </tbody>
@@ -189,7 +189,7 @@ export default function WinFacPanel({ bodegasData }: { bodegasData: Bodega[] }) 
               <select
                 value={bodegaId}
                 onChange={e => setBodegaId(e.target.value)}
-                className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+                className="w-full rounded-md border border-[#c4c6cf] bg-[#f9f9ff] px-3 py-2 text-sm text-[#111c2d]"
               >
                 <option value="">Seleccionar bodega...</option>
                 {bodegasData.map(b => (
@@ -200,7 +200,7 @@ export default function WinFacPanel({ bodegasData }: { bodegasData: Bodega[] }) 
             <Button
               onClick={confirmarIngreso}
               disabled={importing}
-              className="bg-green-600 text-white font-bold hover:bg-green-700 shrink-0"
+              className="bg-[#16a34a] text-white font-bold hover:bg-[#15803d] shrink-0"
             >
               {importing ? "Importando..." : `CONFIRMAR INGRESO (${productos.length} productos)`}
             </Button>

@@ -53,24 +53,24 @@ export default async function DashboardPage() {
     // Return early with the setup prompt if database query fails
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-6">
-        <div className="p-4 bg-amber-500/10 rounded-full border border-amber-500/20">
-          <Database className="h-12 w-12 text-amber-500" />
+        <div className="p-4 bg-[#dbe1ff] rounded-full border border-[#0051d5]/20">
+          <Database className="h-12 w-12 text-[#0051d5]" />
         </div>
         
         <div className="max-w-md space-y-2">
-          <h2 className="text-2xl font-bold text-white">Base de datos no inicializada</h2>
-          <p className="text-slate-400 text-sm">
+          <h2 className="text-2xl font-bold text-[#111c2d]">Base de datos no inicializada</h2>
+          <p className="text-[#74777f] text-sm">
             Las tablas necesarias para el funcionamiento de Arjun no se encuentran en el servidor de Neon.
           </p>
         </div>
 
         <Link href="/setup">
-          <button className="px-8 py-4 bg-amber-500 text-slate-950 font-bold uppercase tracking-widest rounded-sm hover:bg-amber-600 transition-colors shadow-lg shadow-amber-500/20 active:scale-95 cursor-pointer">
+          <button className="px-8 py-4 bg-[#16a34a] text-white font-bold uppercase tracking-widest rounded-sm hover:bg-[#15803d] transition-colors shadow-lg active:scale-95 cursor-pointer">
             INICIALIZAR SISTEMA
           </button>
         </Link>
 
-        <div className="flex items-center gap-2 text-[10px] text-slate-500 font-mono uppercase tracking-widest">
+        <div className="flex items-center gap-2 text-[10px] text-[#74777f] font-mono uppercase tracking-widest">
           <AlertTriangle className="h-3 w-3" />
           Requiere SETUP_KEY configurado
         </div>
@@ -82,20 +82,20 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-white">Panel de Control</h1>
-        <p className="text-slate-400">Resumen operativo de inventario y movimientos.</p>
+        <h1 className="text-3xl font-bold tracking-tight text-[#111c2d]">Panel de Control</h1>
+        <p className="text-[#74777f]">Resumen operativo de inventario y movimientos.</p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
-        <Card className="bg-slate-900 border-slate-800 p-1 rounded-sm relative overflow-hidden group">
+        <Card className="bg-white border-[#c4c6cf] p-1 rounded-sm relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-2 opacity-5 group-hover:opacity-10 transition-opacity">
             <Package className="w-16 h-16" />
           </div>
           <CardHeader className="pb-2">
-            <CardTitle className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Total Productos</CardTitle>
+            <CardTitle className="text-[10px] text-[#74777f] uppercase tracking-widest font-bold">Total Productos</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-4xl font-mono font-bold text-white">{productCountData.count}</div>
+            <div className="text-4xl font-mono font-bold text-[#111c2d]">{productCountData.count}</div>
             <div className="mt-4 flex items-center text-[10px] text-emerald-400 font-mono">
               <span className="bg-emerald-500/10 px-1 rounded mr-1">ACTUALIZADO</span>
               Recién sincronizado
@@ -103,18 +103,18 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-slate-900 border-slate-800 p-1 rounded-sm">
+        <Card className="bg-white border-[#c4c6cf] p-1 rounded-sm">
           <CardHeader className="pb-2">
-            <CardTitle className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Stock Bodegas (Origen)</CardTitle>
+            <CardTitle className="text-[10px] text-[#74777f] uppercase tracking-widest font-bold">Stock Bodegas (Origen)</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2 mt-1">
               {bodegaStocksData.map((b) => (
                 <div key={b.bodegaNombre} className="flex justify-between items-center text-xs font-mono">
-                  <span className="text-slate-400">{b.bodegaNombre.replace('Bodega ', '')}</span>
+                  <span className="text-[#74777f]">{b.bodegaNombre.replace('Bodega ', '')}</span>
                   <span className={cn(
                     "font-bold",
-                    b.totalStock && b.totalStock > 0 ? "text-amber-500" : "text-slate-600"
+                    b.totalStock && b.totalStock > 0 ? "text-[#2563eb]" : "text-[#94a3b8]"
                   )}>
                     {b.totalStock || 0}
                   </span>
@@ -124,16 +124,16 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-slate-900 border-slate-800 p-1 rounded-sm">
+        <Card className="bg-white border-[#c4c6cf] p-1 rounded-sm">
           <CardHeader className="pb-2">
-            <CardTitle className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Módulos Zofri (Destino)</CardTitle>
+            <CardTitle className="text-[10px] text-[#74777f] uppercase tracking-widest font-bold">Módulos Zofri (Destino)</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-2 mt-1">
               {['M180', 'M182', 'M183', 'M184', 'M193'].map((m) => (
-                <div key={m} className="bg-slate-800/40 p-2 rounded border border-slate-800/50 text-[10px] font-mono flex justify-between">
-                  <span className="text-slate-500">{m}:</span>
-                  <span className="text-slate-200 font-bold">--</span>
+                <div key={m} className="bg-[#e7eeff]/40 p-2 rounded border border-[#c4c6cf]/50 text-[10px] font-mono flex justify-between">
+                  <span className="text-[#74777f]">{m}:</span>
+                  <span className="text-[#111c2d] font-bold">--</span>
                 </div>
               ))}
             </div>
@@ -143,14 +143,14 @@ export default async function DashboardPage() {
 
       <div className="grid gap-6 grid-cols-12">
         {/* Entradas/Salidas Recent Activity */}
-        <Card className="col-span-12 lg:col-span-8 bg-slate-900 border-slate-800 rounded-sm">
-          <CardHeader className="border-b border-slate-800 flex flex-row items-center justify-between py-4">
-            <CardTitle className="text-xs font-bold uppercase tracking-widest text-slate-300">Últimas Operaciones</CardTitle>
+        <Card className="col-span-12 lg:col-span-8 bg-white border-[#c4c6cf] rounded-sm">
+          <CardHeader className="border-b border-[#c4c6cf] flex flex-row items-center justify-between py-4">
+            <CardTitle className="text-xs font-bold uppercase tracking-widest text-[#43474e]">Últimas Operaciones</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs font-mono">
-                <thead className="bg-slate-950/50 text-slate-500">
+                <thead className="bg-[#f9f9ff]/50 text-[#74777f]">
                   <tr>
                     <th className="px-5 py-3 font-normal">FECHA</th>
                     <th className="px-5 py-3 font-normal">TIPO</th>
@@ -159,7 +159,7 @@ export default async function DashboardPage() {
                     <th className="px-5 py-3 font-normal text-right">CANT.</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800">
+                <tbody className="divide-y divide-[#e2e8f0]">
                   {[...recentEntradasData.map(e => ({ ...e, type: 'ENTRADA' })), ...recentSalidasData.map(s => ({ ...s, type: 'SALIDA' }))]
                     .sort((a, b) => {
                       const dateB = 'createdAt' in b ? new Date(b.createdAt) : new Date(b.timestampSalida)
@@ -168,24 +168,24 @@ export default async function DashboardPage() {
                     })
                     .slice(0, 8)
                     .map((op: any) => (
-                      <tr key={op.id} className="hover:bg-slate-800/30 transition-colors">
-                        <td className="px-5 py-3 text-slate-500 whitespace-nowrap">
+                      <tr key={op.id} className="hover:bg-[#f0f3ff]/30 transition-colors">
+                        <td className="px-5 py-3 text-[#74777f] whitespace-nowrap">
                           {new Date(op.createdAt || op.timestampSalida).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}
                         </td>
                         <td className={cn(
                           "px-5 py-3 font-bold",
-                          op.type === 'ENTRADA' ? "text-emerald-500" : "text-amber-500"
+                          op.type === 'ENTRADA' ? "text-emerald-500" : "text-[#0051d5]"
                         )}>
                           {op.type}
                         </td>
                         <td className="px-5 py-3 whitespace-nowrap">
-                          <span className="text-slate-300">{op.producto.codigo}</span>
-                          <span className="text-slate-500 ml-2 hidden md:inline">({op.producto.descripcion.substring(0, 20)}...)</span>
+                          <span className="text-[#43474e]">{op.producto.codigo}</span>
+                          <span className="text-[#74777f] ml-2 hidden md:inline">({op.producto.descripcion.substring(0, 20)}...)</span>
                         </td>
-                        <td className="px-5 py-3 text-slate-400 capitalize">
+                        <td className="px-5 py-3 text-[#74777f] capitalize">
                           {op.bodega?.nombre.replace('Bodega ', '') || op.modulo?.nombre}
                         </td>
-                        <td className="px-5 py-3 text-right font-bold text-slate-200">
+                        <td className="px-5 py-3 text-right font-bold text-[#111c2d]">
                           {op.type === 'ENTRADA' ? '+' : '-'}{op.cantidad}
                         </td>
                       </tr>
@@ -198,29 +198,29 @@ export default async function DashboardPage() {
 
         {/* Action Column */}
         <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">
-          <Card className="bg-slate-900 border-slate-800 rounded-sm">
+          <Card className="bg-white border-[#c4c6cf] rounded-sm">
             <CardHeader>
-              <CardTitle className="text-xs font-bold uppercase tracking-widest text-slate-300">Alertas de Stock</CardTitle>
+              <CardTitle className="text-xs font-bold uppercase tracking-widest text-[#43474e]">Alertas de Stock</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center gap-3 p-3 bg-red-500/5 border border-red-500/20 rounded">
                 <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
                 <div className="flex-1">
                   <p className="text-[10px] font-mono font-bold text-red-400">CRÍTICO: STOCK CERO</p>
-                  <p className="text-[9px] text-slate-500 uppercase">Sin movimientos hoy</p>
+                  <p className="text-[9px] text-[#74777f] uppercase">Sin movimientos hoy</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <div className="flex-1 bg-amber-500 p-6 rounded-sm text-slate-950 flex flex-col justify-between shadow-lg shadow-amber-500/10">
+          <div className="flex-1 bg-[#16a34a] p-6 rounded-sm text-white flex flex-col justify-between shadow-lg">
             <div>
               <h3 className="text-sm font-bold uppercase tracking-widest">Atajo de Despacho</h3>
               <p className="text-[10px] mt-1 font-medium opacity-80 uppercase leading-tight">Registro inmediato de salida a módulos Zofri</p>
             </div>
             <div className="mt-8">
               <Link href="/salidas">
-                <button className="w-full py-4 bg-slate-950 text-white font-bold text-xs uppercase tracking-widest hover:bg-slate-800 transition-colors rounded-sm shadow-xl cursor-pointer">
+                <button className="w-full py-4 bg-white/10 text-white font-bold text-xs uppercase tracking-widest hover:bg-white/20 transition-colors rounded-sm shadow-xl cursor-pointer border border-white/20">
                   INICIAR NUEVA SALIDA
                 </button>
               </Link>

@@ -55,18 +55,18 @@ export default function UsuarioModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div className="w-full max-w-md rounded-xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
-        <h2 className="text-lg font-bold text-white mb-4">
+      <div className="w-full max-w-md rounded-xl border border-[#c4c6cf] bg-white p-6 shadow-2xl">
+        <h2 className="text-lg font-bold text-[#111c2d] mb-4">
           {usuario?.id ? "Editar Usuario" : "Invitar Usuario"}
         </h2>
 
         {error && (
-          <div className="mb-4 rounded-md border border-red-900/50 bg-red-900/10 p-3 text-sm text-red-400">
+          <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-600">
             ❌ {error}
           </div>
         )}
         {success && (
-          <div className="mb-4 rounded-md border border-green-900/50 bg-green-900/10 p-3 text-sm text-green-400">
+          <div className="mb-4 rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">
             ✅ Usuario guardado con éxito
           </div>
         )}
@@ -78,7 +78,7 @@ export default function UsuarioModal({
               required
               value={form.nombre}
               onChange={e => setForm({ ...form, nombre: e.target.value })}
-              className="bg-slate-950 border-slate-800"
+              className="bg-[#f9f9ff] border-[#c4c6cf]"
               placeholder="Nombre completo"
             />
           </div>
@@ -89,7 +89,7 @@ export default function UsuarioModal({
               required
               value={form.email}
               onChange={e => setForm({ ...form, email: e.target.value })}
-              className="bg-slate-950 border-slate-800"
+              className="bg-[#f9f9ff] border-[#c4c6cf]"
               placeholder="usuario@arjun.cl"
             />
           </div>
@@ -100,7 +100,7 @@ export default function UsuarioModal({
               required={!usuario?.id}
               value={form.password}
               onChange={e => setForm({ ...form, password: e.target.value })}
-              className="bg-slate-950 border-slate-800"
+              className="bg-[#f9f9ff] border-[#c4c6cf]"
               placeholder="••••••••"
             />
           </div>
@@ -109,7 +109,7 @@ export default function UsuarioModal({
             <select
               value={form.rol}
               onChange={e => setForm({ ...form, rol: e.target.value as "admin" | "operador" })}
-              className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+              className="w-full rounded-md border border-[#c4c6cf] bg-[#f9f9ff] px-3 py-2 text-sm text-[#111c2d]"
             >
               <option value="operador">Operador</option>
               <option value="admin">Admin</option>
@@ -120,7 +120,7 @@ export default function UsuarioModal({
             <Button
               type="submit"
               disabled={loading}
-              className="flex-1 bg-amber-500 text-slate-950 font-bold hover:bg-amber-600"
+              className="flex-1 bg-[#16a34a] text-white font-bold hover:bg-[#15803d]"
             >
               {loading ? "Guardando..." : "GUARDAR"}
             </Button>
@@ -128,7 +128,7 @@ export default function UsuarioModal({
               type="button"
               variant="outline"
               onClick={() => setOpen(false)}
-              className="border-slate-800 text-slate-300"
+              className="border-[#c4c6cf] text-[#43474e]"
             >
               Cancelar
             </Button>
