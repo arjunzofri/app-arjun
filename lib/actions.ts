@@ -108,58 +108,56 @@ export async function registrarEntrada(data: any) {
 
   const validated = EntradaSchema.parse(data);
 
-  return await db.transaction(async (tx) => {
-    let nvId = null;
-    if (validated.notaVentaNumero) {
-      const [nv] = await tx.insert(notasVenta).values({
-        numeroNv: validated.notaVentaNumero,
-        proveedor: validated.proveedor || "vida_digital",
-      }).onConflictDoUpdate({
-        target: [notasVenta.id],
-        set: { createdAt: new Date() }
-      }).returning();
-      nvId = nv.id;
-    }
+  let nvId = null;
+  if (validated.notaVentaNumero) {
+    const [nv] = await db.insert(notasVenta).values({
+      numeroNv: validated.notaVentaNumero,
+      proveedor: validated.proveedor || "vida_digital",
+    }).onConflictDoUpdate({
+      target: [notasVenta.numeroNv],
+      set: { createdAt: new Date() }
+    }).returning();
+    nvId = nv.id;
+  }
 
-    const [entrada] = await tx.insert(entradas).values({
+  const [entrada] = await db.insert(entradas).values({
+    productoId: validated.productoId,
+    bodegaId: validated.bodegaId,
+    notaVentaId: nvId,
+    cantidad: validated.cantidad,
+    precioUnitario: validated.precioUnitario?.toString(),
+    usuarioId: session.user?.id ?? "",
+    origen: validated.origen,
+  }).returning();
+
+  const existingStock = await db.query.stock.findFirst({
+    where: and(eq(stock.productoId, validated.productoId), eq(stock.bodegaId, validated.bodegaId))
+  });
+
+  if (existingStock) {
+    await db.update(stock).set({
+      cantidadActual: existingStock.cantidadActual + validated.cantidad,
+      updatedAt: new Date(),
+    }).where(eq(stock.id, existingStock.id));
+  } else {
+    await db.insert(stock).values({
       productoId: validated.productoId,
       bodegaId: validated.bodegaId,
-      notaVentaId: nvId,
-      cantidad: validated.cantidad,
-      precioUnitario: validated.precioUnitario?.toString(),
-      usuarioId: session.user?.id ?? "",
-      origen: validated.origen,
-    }).returning();
-
-    const existingStock = await tx.query.stock.findFirst({
-      where: and(eq(stock.productoId, validated.productoId), eq(stock.bodegaId, validated.bodegaId))
+      cantidadActual: validated.cantidad,
     });
+  }
 
-    if (existingStock) {
-      await tx.update(stock).set({
-        cantidadActual: existingStock.cantidadActual + validated.cantidad,
-        updatedAt: new Date(),
-      }).where(eq(stock.id, existingStock.id));
-    } else {
-      await tx.insert(stock).values({
-        productoId: validated.productoId,
-        bodegaId: validated.bodegaId,
-        cantidadActual: validated.cantidad,
-      });
-    }
-
-    await tx.insert(activityLog).values({
-      usuarioId: session.user?.id ?? "",
-      accion: "ENTRADA_REGISTRADA",
-      tablaAfectada: "entradas",
-      registroId: entrada.id,
-      detalle: validated,
-    });
-
-    revalidatePath("/");
-    revalidatePath("/productos");
-    return entrada;
+  await db.insert(activityLog).values({
+    usuarioId: session.user?.id ?? "",
+    accion: "ENTRADA_REGISTRADA",
+    tablaAfectada: "entradas",
+    registroId: entrada.id,
+    detalle: validated,
   });
+
+  revalidatePath("/");
+  revalidatePath("/productos");
+  return entrada;
 }
 
 export async function registrarSalida(data: any) {
@@ -168,36 +166,38 @@ export async function registrarSalida(data: any) {
 
   const validated = SalidaSchema.parse(data);
 
-  return await db.transaction(async (tx) => {
-    const existingStock = await tx.query.stock.findFirst({
-      where: and(eq(stock.productoId, validated.productoId), eq(stock.bodegaId, validated.bodegaOrigenId))
-    });
-
-    if (!existingStock || existingStock.cantidadActual < validated.cantidad) {
-      throw new Error("Stock insuficiente en la bodega seleccionada");
-    }
-
-    const [salida] = await tx.insert(salidas).values({
-      ...validated,
-      usuarioId: session.user?.id ?? "",
-    }).returning();
-
-    await tx.update(stock).set({
-      cantidadActual: existingStock.cantidadActual - validated.cantidad,
-      updatedAt: new Date(),
-    }).where(eq(stock.id, existingStock.id));
-
-    await tx.insert(activityLog).values({
-      usuarioId: session.user?.id ?? "",
-      accion: "SALIDA_REGISTRADA",
-      tablaAfectada: "salidas",
-      registroId: salida.id,
-      detalle: validated,
-    });
-
-    revalidatePath("/");
-    revalidatePath("/productos");
-    revalidatePath("/salidas");
-    return salida;
+  const existingStock = await db.query.stock.findFirst({
+    where: and(eq(stock.productoId, validated.productoId), eq(stock.bodegaId, validated.bodegaOrigenId))
   });
+
+  if (!existingStock || existingStock.cantidadActual < validated.cantidad) {
+    throw new Error("Stock insuficiente en la bodega seleccionada");
+  }
+
+  const [salida] = await db.insert(salidas).values({
+    productoId: validated.productoId,
+    bodegaOrigenId: validated.bodegaOrigenId,
+    moduloDestinoId: validated.moduloDestinoId,
+    cantidad: validated.cantidad,
+    observaciones: validated.observaciones,
+    usuarioId: session.user?.id ?? "",
+  }).returning();
+
+  await db.update(stock).set({
+    cantidadActual: existingStock.cantidadActual - validated.cantidad,
+    updatedAt: new Date(),
+  }).where(eq(stock.id, existingStock.id));
+
+  await db.insert(activityLog).values({
+    usuarioId: session.user?.id ?? "",
+    accion: "SALIDA_REGISTRADA",
+    tablaAfectada: "salidas",
+    registroId: salida.id,
+    detalle: validated,
+  });
+
+  revalidatePath("/");
+  revalidatePath("/productos");
+  revalidatePath("/salidas");
+  return salida;
 }
