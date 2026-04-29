@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { logout } from "@/app/actions/auth-actions"
 import { 
   Box, 
   LayoutDashboard, 
@@ -12,7 +13,6 @@ import {
   Users, 
   LogOut
 } from "lucide-react";
-import { signOut } from "next-auth/react";
 
 const NAV_GROUPS = [
   {
@@ -97,13 +97,12 @@ export function Sidebar({ userRole, userName }: { userRole: string, userName: st
           </div>
         </div>
         
-        <button
-          onClick={() => signOut()}
-          className="flex w-full items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold text-slate-500 hover:text-red-400 hover:bg-red-500/5 transition-all"
-        >
-          <LogOut className="h-4 w-4" />
-          CERRAR SESIÓN
-        </button>
+        <form action={logout}>
+          <button type="submit" className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-400 hover:text-slate-100 hover:bg-slate-800 rounded-md transition-colors">
+            <LogOut className="h-4 w-4" />
+            Cerrar Sesión
+          </button>
+        </form>
       </div>
     </aside>
   );

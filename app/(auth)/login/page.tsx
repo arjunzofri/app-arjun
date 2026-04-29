@@ -32,7 +32,7 @@ export default function LoginPage() {
       if (res?.error) {
         setError("Credenciales incorrectas");
       } else {
-        router.push("/dashboard");
+        router.push("/");
         router.refresh();
       }
     } catch (err) {
