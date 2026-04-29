@@ -1,6 +1,6 @@
 import { db } from "@/db";
-import { productos, stock } from "@/db/schema";
-import { sql, ilike, or } from "drizzle-orm";
+import { productos, stock, entradas } from "@/db/schema";
+import { sql, ilike, or, isNull } from "drizzle-orm";
 import { 
   Table, 
   TableBody, 
@@ -45,6 +45,14 @@ export default async function ProductListPage({
   )
   .groupBy(productos.id)
   .orderBy(productos.codigo);
+
+  // Productos con entradas sin bodega asignada
+  const sinBodegaResult = await db
+    .selectDistinct({ productoId: entradas.productoId })
+    .from(entradas)
+    .where(isNull(entradas.bodegaId))
+
+  const sinBodegaIds = new Set(sinBodegaResult.map(r => r.productoId))
 
   return (
     <div className="space-y-6">
@@ -92,7 +100,16 @@ export default async function ProductListPage({
               <TableRow key={p.id} className="border-slate-800 hover:bg-slate-800/50">
                 <TableCell className="font-mono text-amber-500">{p.codigo}</TableCell>
                 <TableCell className="font-mono text-slate-300">{p.codigoPersonal || "-"}</TableCell>
-                <TableCell className="max-w-xs truncate text-slate-100">{p.descripcion}</TableCell>
+                <TableCell className="max-w-xs text-slate-100">
+                  <div className="flex items-center gap-2">
+                    <span className="truncate">{p.descripcion}</span>
+                    {sinBodegaIds.has(p.id) && (
+                      <Badge className="bg-red-900/30 text-red-400 border-red-800 text-[10px] font-mono shrink-0">
+                        SIN BODEGA
+                      </Badge>
+                    )}
+                  </div>
+                </TableCell>
                 <TableCell className="text-slate-400">{p.packing}</TableCell>
                 <TableCell>
                    <Badge variant="outline" className="border-slate-700 font-mono text-[10px] uppercase">

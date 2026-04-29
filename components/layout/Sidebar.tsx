@@ -38,7 +38,7 @@ const NAV_GROUPS = [
   }
 ];
 
-export function Sidebar({ userRole, userName }: { userRole: string, userName: string }) {
+export function Sidebar({ userRole, userName, sinBodega = 0 }: { userRole: string, userName: string, sinBodega?: number }) {
   const pathname = usePathname();
 
   return (
@@ -70,13 +70,18 @@ export function Sidebar({ userRole, userName }: { userRole: string, userName: st
                       href={item.href}
                       className={cn(
                         "flex items-center gap-3 px-6 py-3 text-sm font-medium transition-all group relative",
-                        isActive 
-                          ? "bg-amber-500/10 text-amber-500 border-r-2 border-amber-500" 
+                        isActive
+                          ? "bg-amber-500/10 text-amber-500 border-r-2 border-amber-500"
                           : "text-slate-400 hover:bg-slate-800 hover:text-slate-100"
                       )}
                     >
                       <Icon className={cn("h-4 w-4", isActive ? "text-amber-500" : "text-slate-400 group-hover:text-slate-200")} />
                       {item.label}
+                      {item.href === "/productos" && sinBodega > 0 && (
+                        <span className="ml-auto bg-red-500 text-white text-[10px] font-bold rounded-full px-1.5 py-0.5 min-w-[18px] text-center">
+                          {sinBodega}
+                        </span>
+                      )}
                     </Link>
                   );
                 })}
