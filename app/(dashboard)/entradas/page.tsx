@@ -2,6 +2,7 @@ import { db } from "@/db";
 import { bodegas, productos } from "@/db/schema";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import KingnexOCRPanel from "@/components/entradas/KingnexOCRPanel";
+import EntradaManualForm from "@/components/entradas/EntradaManualForm"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowDownLeft, FileText, Cpu } from "lucide-react";
 
@@ -28,14 +29,14 @@ export default async function EntradasPage() {
         </TabsList>
 
         <TabsContent value="manual" className="py-6">
-           <Card className="bg-slate-900 border-slate-800 max-w-2xl">
-             <CardHeader>
-               <CardTitle>Registro Manual de Entrada</CardTitle>
-             </CardHeader>
-             <CardContent>
-                <p className="text-slate-500 text-sm italic">Panel en desarrollo: Usa Kingnex OCR o WinFac por ahora.</p>
-             </CardContent>
-           </Card>
+          <Card className="bg-slate-900 border-slate-800 max-w-2xl">
+            <CardHeader>
+              <CardTitle>Registro Manual de Entrada</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <EntradaManualForm productos={allProductos} bodegas={allBodegas} />
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="winfac" className="py-6">
