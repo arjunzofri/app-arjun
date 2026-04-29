@@ -161,7 +161,11 @@ export default async function DashboardPage() {
                 </thead>
                 <tbody className="divide-y divide-slate-800">
                   {[...recentEntradasData.map(e => ({ ...e, type: 'ENTRADA' })), ...recentSalidasData.map(s => ({ ...s, type: 'SALIDA' }))]
-                    .sort((a, b) => new Date(b.createdAt || b.timestampSalida!).getTime() - new Date(a.createdAt || a.timestampSalida!).getTime())
+                    .sort((a, b) => {
+                      const dateB = 'createdAt' in b ? new Date(b.createdAt) : new Date(b.timestampSalida)
+                      const dateA = 'createdAt' in a ? new Date(a.createdAt) : new Date(a.timestampSalida)
+                      return dateB.getTime() - dateA.getTime()
+                    })
                     .slice(0, 8)
                     .map((op: any) => (
                       <tr key={op.id} className="hover:bg-slate-800/30 transition-colors">

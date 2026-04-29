@@ -113,7 +113,7 @@ export default async function ProductoDetallePage({ params }: { params: { id: st
                 <div key={log.id} className="p-4 flex items-center justify-between text-sm">
                   <div>
                     <p className="text-slate-400">De <span className="text-slate-500 line-through">{log.valorAnterior || "NULL"}</span> a <span className="text-white font-bold">{log.valorNuevo || "NULL"}</span></p>
-                    <p className="text-xs text-slate-600 mt-1">Cambiado por {log.usuario.nombre} • {new Date(log.changedAt).toLocaleString()}</p>
+                    <p className="text-xs text-slate-600 mt-1">Cambiado por {(log.usuario as { nombre: string } | null)?.nombre ?? 'Usuario desconocido'} • {new Date(log.changedAt).toLocaleString()}</p>
                   </div>
                   <History className="h-4 w-4 text-slate-700" />
                 </div>
