@@ -24,7 +24,7 @@ export async function createOrUpdateProducto(data: any) {
         productoId: id,
         valorAnterior: existing.codigoPersonal,
         valorNuevo: validated.codigoPersonal || null,
-        usuarioId: session.user.id,
+        usuarioId: session.user?.id ?? "",
       });
     }
 
@@ -34,37 +34,72 @@ export async function createOrUpdateProducto(data: any) {
     }).where(eq(productos.id, id));
 
     await db.insert(activityLog).values({
-      usuarioId: session.user.id,
+      usuarioId: session.user?.id ?? "",
       accion: "PRODUCTO_EDITADO",
       tablaAfectada: "productos",
       registroId: id,
       detalle: validated,
     });
   } else {
-    // Inheritance of location
+    // Buscar si ya existe un producto con ese código
     const existingSameCode = await db.query.productos.findFirst({
       where: eq(productos.codigo, validated.codigo),
     });
 
-    const finalUbicacion = validated.ubicacion || (existingSameCode?.ubicacion || null);
+    if (existingSameCode) {
+      // El código ya existe → hacer UPDATE heredando ubicación
+      const finalUbicacion = validated.ubicacion || existingSameCode.ubicacion;
 
-    const [newProduct] = await db.insert(productos).values({
-      ...validated,
-      ubicacion: finalUbicacion,
-    }).returning();
+      // Auditar cambio de codigoPersonal si cambió
+      if (existingSameCode.codigoPersonal !== validated.codigoPersonal) {
+        await db.insert(codigoPersonalAuditoria).values({
+          productoId: existingSameCode.id,
+          valorAnterior: existingSameCode.codigoPersonal,
+          valorNuevo: validated.codigoPersonal || null,
+          usuarioId: session.user?.id ?? "",
+        });
+      }
 
-    await db.insert(activityLog).values({
-      usuarioId: session.user.id,
-      accion: "PRODUCTO_CREADO",
-      tablaAfectada: "productos",
-      registroId: newProduct.id,
-      detalle: validated,
-    });
+      await db.update(productos).set({
+        ...validated,
+        ubicacion: finalUbicacion,
+        updatedAt: new Date(),
+      }).where(eq(productos.id, existingSameCode.id));
 
-    return newProduct;
+      await db.insert(activityLog).values({
+        usuarioId: session.user?.id ?? "",
+        accion: "PRODUCTO_ACTUALIZADO",
+        tablaAfectada: "productos",
+        registroId: existingSameCode.id,
+        detalle: validated,
+      });
+
+      revalidatePath("/productos");
+      return existingSameCode;
+
+    } else {
+      // Código nuevo → INSERT
+      const finalUbicacion = validated.ubicacion || null;
+
+      const [newProduct] = await db.insert(productos).values({
+        ...validated,
+        ubicacion: finalUbicacion,
+      }).returning();
+
+      await db.insert(activityLog).values({
+        usuarioId: session.user?.id ?? "",
+        accion: "PRODUCTO_CREADO",
+        tablaAfectada: "productos",
+        registroId: newProduct.id,
+        detalle: validated,
+      });
+
+      revalidatePath("/productos");
+      return newProduct;
+    }
   }
 
-  revalidatePath("/dashboard/productos");
+  revalidatePath("/productos");
 }
 
 export async function registrarEntrada(data: any) {
@@ -92,7 +127,7 @@ export async function registrarEntrada(data: any) {
       notaVentaId: nvId,
       cantidad: validated.cantidad,
       precioUnitario: validated.precioUnitario?.toString(),
-      usuarioId: session.user.id,
+      usuarioId: session.user?.id ?? "",
       origen: validated.origen,
     }).returning();
 
@@ -114,15 +149,15 @@ export async function registrarEntrada(data: any) {
     }
 
     await tx.insert(activityLog).values({
-      usuarioId: session.user.id,
+      usuarioId: session.user?.id ?? "",
       accion: "ENTRADA_REGISTRADA",
       tablaAfectada: "entradas",
       registroId: entrada.id,
       detalle: validated,
     });
 
-    revalidatePath("/dashboard");
-    revalidatePath("/dashboard/productos");
+    revalidatePath("/");
+    revalidatePath("/productos");
     return entrada;
   });
 }
@@ -144,7 +179,7 @@ export async function registrarSalida(data: any) {
 
     const [salida] = await tx.insert(salidas).values({
       ...validated,
-      usuarioId: session.user.id,
+      usuarioId: session.user?.id ?? "",
     }).returning();
 
     await tx.update(stock).set({
@@ -153,16 +188,16 @@ export async function registrarSalida(data: any) {
     }).where(eq(stock.id, existingStock.id));
 
     await tx.insert(activityLog).values({
-      usuarioId: session.user.id,
+      usuarioId: session.user?.id ?? "",
       accion: "SALIDA_REGISTRADA",
       tablaAfectada: "salidas",
       registroId: salida.id,
       detalle: validated,
     });
 
-    revalidatePath("/dashboard");
-    revalidatePath("/dashboard/productos");
-    revalidatePath("/dashboard/salidas");
+    revalidatePath("/");
+    revalidatePath("/productos");
+    revalidatePath("/salidas");
     return salida;
   });
 }
