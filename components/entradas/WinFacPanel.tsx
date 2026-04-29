@@ -1,7 +1,7 @@
 ﻿"use client"
 
 import { useState } from "react"
-import { registrarEntrada } from "@/lib/actions"
+import { registrarEntrada, createOrUpdateProducto } from "@/lib/actions"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -67,16 +67,27 @@ export default function WinFacPanel({ bodegasData }: { bodegasData: Bodega[] }) 
 
     try {
       for (const p of productos) {
+        // 1. Crear o actualizar el producto en App Arjun
+        const resultado = await createOrUpdateProducto({
+          codigo: p.codigo,
+          descripcion: p.detalle,
+          packing: Number(p.cantcaja),
+          ubicacion: "",
+          observaciones: "",
+        })
+
+        if (!resultado?.id) {
+          throw new Error(`No se pudo crear el producto ${p.codigo}`)
+        }
+
+        // 2. Registrar la entrada con el productoId real
         await registrarEntrada({
-          productoId: undefined,
+          productoId: resultado.id,
           bodegaId,
           cantidad: p.saldo > 0 ? p.saldo : p.cantcaja,
-          precioUnitario: p.costo,
+          precioUnitario: Number(p.costo),
           notaVentaNumero: encabezado?.knumfoli,
           origen: "winfac",
-          codigoExterno: p.codigo,
-          descripcionExterna: p.detalle,
-          packingExterno: p.cantcaja,
         })
       }
       setSuccess(true)
@@ -199,3 +210,4 @@ export default function WinFacPanel({ bodegasData }: { bodegasData: Bodega[] }) 
     </div>
   )
 }
+

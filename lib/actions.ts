@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { db } from "@/db";
 import { productos, stock, entradas, notasVenta, activityLog, codigoPersonalAuditoria, salidas } from "@/db/schema";
@@ -40,6 +40,10 @@ export async function createOrUpdateProducto(data: any) {
       registroId: id,
       detalle: validated,
     });
+
+    revalidatePath("/productos")
+    const updated = await db.query.productos.findFirst({ where: eq(productos.id, id) })
+    return updated
   } else {
     // Buscar si ya existe un producto con ese código
     const existingSameCode = await db.query.productos.findFirst({
@@ -201,3 +205,4 @@ export async function registrarSalida(data: any) {
   revalidatePath("/salidas");
   return salida;
 }
+
