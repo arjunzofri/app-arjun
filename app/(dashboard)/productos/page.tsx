@@ -1,19 +1,17 @@
 import { db } from "@/db";
 import { productos, stock, entradas } from "@/db/schema";
 import { sql, ilike, or, isNull } from "drizzle-orm";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import ProductImage from "@/components/productos/ProductImage";
 import Link from "next/link";
-import { Plus, Search, Eye } from "lucide-react";
+import { Plus, Search } from "lucide-react";
+
+const CLOUDINARY_BASE = "https://res.cloudinary.com/dxkidwxjl/image/upload/productos";
+
+function getImageUrl(codigo: string) {
+  return `${CLOUDINARY_BASE}/${codigo}.jpg`;
+}
 
 export default async function ProductListPage({
   searchParams,
@@ -82,64 +80,52 @@ export default async function ProductListPage({
         </div>
       </div>
 
-      <div className="rounded-md border border-[#c4c6cf] bg-white">
-        <Table>
-          <TableHeader>
-            <TableRow className="border-[#c4c6cf] hover:bg-white">
-              <TableHead className="text-[#74777f] font-mono uppercase text-xs">Cód. Proveedor</TableHead>
-              <TableHead className="text-[#74777f] font-mono uppercase text-xs">Cód. Personal</TableHead>
-              <TableHead className="text-[#74777f] font-mono uppercase text-xs">Descripción</TableHead>
-              <TableHead className="text-[#74777f] font-mono uppercase text-xs">Packing</TableHead>
-              <TableHead className="text-[#74777f] font-mono uppercase text-xs">Ubicación</TableHead>
-              <TableHead className="text-[#74777f] font-mono uppercase text-xs">Stock Total</TableHead>
-              <TableHead className="text-right text-[#74777f] font-mono uppercase text-xs">Acción</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {products.map((p) => (
-              <TableRow key={p.id} className="border-[#c4c6cf] hover:bg-[#f0f3ff]">
-                <TableCell className="font-mono text-[#0051d5]">{p.codigo}</TableCell>
-                <TableCell className="font-mono text-[#43474e]">{p.codigoPersonal || "-"}</TableCell>
-                <TableCell className="max-w-xs text-[#111c2d]">
-                  <div className="flex items-center gap-2">
-                    <span className="truncate">{p.descripcion}</span>
-                    {sinBodegaIds.has(p.id) && (
-                      <Badge className="bg-red-50 text-red-600 border-red-200 text-[10px] font-mono shrink-0">
-                        SIN BODEGA
-                      </Badge>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell className="text-[#74777f]">{p.packing}</TableCell>
-                <TableCell>
-                   <Badge variant="outline" className="border-[#c4c6cf] font-mono text-[10px] uppercase">
-                     {p.ubicacion || "SIN ASIGNAR"}
-                   </Badge>
-                </TableCell>
-                <TableCell>
-                  <span className={cn(
-                    "font-bold",
-                    p.totalStock > 20 ? "text-green-500" : p.totalStock > 0 ? "text-[#0051d5]" : "text-red-500"
-                  )}>
-                    {p.totalStock}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        {products.map((p) => (
+          <Link key={p.id} href={`/productos/${p.id}`}>
+            <div className="bg-white border border-[#e2e8f0] rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer">
+              <div className="border-b border-[#e2e8f0]">
+                <ProductImage
+                  src={getImageUrl(p.codigo)}
+                  alt={p.descripcion || p.codigo}
+                />
+              </div>
+
+              <div className="p-3 space-y-2">
+                <div className="flex items-start justify-between gap-1">
+                  <span className="font-mono text-sm font-bold text-[#0051d5]">{p.codigo}</span>
+                  {sinBodegaIds.has(p.id) && (
+                    <span className="text-[9px] bg-red-50 text-red-600 border border-red-200 rounded px-1 py-0.5 font-bold shrink-0">
+                      SIN BODEGA
+                    </span>
+                  )}
+                </div>
+
+                {p.codigoPersonal && (
+                  <p className="text-xs text-[#74777f] font-mono">{p.codigoPersonal}</p>
+                )}
+
+                <p className="text-xs text-[#43474e] line-clamp-2 leading-tight">{p.descripcion}</p>
+
+                <div className="flex items-center justify-between pt-1 border-t border-[#f0f3ff]">
+                  <span className="text-[10px] text-[#74777f]">Pack: {p.packing}</span>
+                  <span className={`text-sm font-bold ${
+                    p.totalStock > 20 ? "text-green-600" : 
+                    p.totalStock > 0 ? "text-[#0051d5]" : 
+                    "text-red-500"
+                  }`}>
+                    {p.totalStock} u.
                   </span>
-                </TableCell>
-                <TableCell className="text-right">
-                  <Link href={`/productos/${p.id}`}>
-                    <Button variant="ghost" size="icon" className="text-[#74777f] hover:text-[#111c2d]">
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                </div>
+
+                <div className="text-[10px] font-mono text-[#74777f] bg-[#f0f3ff] rounded px-2 py-1 text-center">
+                  {p.ubicacion || "SIN ASIGNAR"}
+                </div>
+              </div>
+            </div>
+          </Link>
+        ))}
       </div>
     </div>
   );
-}
-
-function cn(...inputs: any[]) {
-  return inputs.filter(Boolean).join(" ");
 }
