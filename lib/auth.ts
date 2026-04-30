@@ -8,6 +8,10 @@ import { LoginSchema } from "./validations";
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
     Credentials({
+      credentials: {
+        username: { label: "Nombre", type: "text" },
+        password: { label: "Contraseña", type: "password" },
+      },
       async authorize(credentials) {
         const validatedFields = LoginSchema.safeParse(credentials);
 
