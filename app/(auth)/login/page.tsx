@@ -11,7 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Box, Lock } from "lucide-react";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -24,7 +24,7 @@ export default function LoginPage() {
 
     try {
       const res = await signIn("credentials", {
-        email,
+        username,
         password,
         redirect: false,
       });
@@ -68,14 +68,14 @@ export default function LoginPage() {
                 </Alert>
               )}
               <div className="space-y-2">
-                <Label htmlFor="email">Email Corporativo</Label>
+                <Label htmlFor="username">Nombre</Label>
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder="usuario@arjun.cl"
+                  id="username"
+                  type="text"
+                  placeholder="Nombre de usuario"
                   className="border-[#cbd5e1] bg-white text-[#1e293b] placeholder:text-[#94a3b8]"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   required
                 />
               </div>

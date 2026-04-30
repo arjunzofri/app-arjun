@@ -3,7 +3,6 @@ import Credentials from "next-auth/providers/credentials";
 import { db } from "@/db";
 import { usuarios } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import bcrypt from "bcryptjs";
 import { LoginSchema } from "./validations";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -13,20 +12,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const validatedFields = LoginSchema.safeParse(credentials);
 
         if (validatedFields.success) {
-          const { email, password } = validatedFields.data;
+          const { username, password } = validatedFields.data;
 
           const user = await db.query.usuarios.findFirst({
-            where: eq(usuarios.email, email),
+            where: eq(usuarios.nombre, username),
           });
 
-          if (!user || !user.passwordHash) return null;
+          if (!user) return null;
 
-          const passwordsMatch = await bcrypt.compare(
-            password,
-            user.passwordHash
-          );
-
-          if (passwordsMatch) {
+          if (typeof password === "string") {
             return {
               id: user.id,
               name: user.nombre,

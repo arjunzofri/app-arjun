@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 export const LoginSchema = z.object({
-  email: z.string().email({ message: "Email inválido" }),
-  password: z.string().min(6, { message: "Mínimo 6 caracteres" }),
+  username: z.string().min(1, { message: "Nombre de usuario requerido" }),
+  password: z.string(),
 });
 
 export const ProductoSchema = z.object({
@@ -34,7 +34,7 @@ export const SalidaSchema = z.object({
 
 export const UsuarioSchema = z.object({
   nombre: z.string().min(1, "Nombre requerido"),
-  email: z.string().email("Email inválido"),
+  email: z.string().trim().email("Email inválido"),
   password: z.string().min(6, "Mínimo 6 caracteres").optional().or(z.literal("")),
   rol: z.enum(["admin", "operador"]),
 });
