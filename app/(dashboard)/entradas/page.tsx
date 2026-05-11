@@ -19,12 +19,12 @@ export default async function EntradasPage() {
       </div>
 
       <Tabs defaultValue="manual" className="w-full">
-        <TabsList className="bg-white border border-[#c4c6cf]">
-          <TabsTrigger value="manual" className="data-[state=active]:bg-[#e7eeff]">Manual</TabsTrigger>
-          <TabsTrigger value="winfac" className="data-[state=active]:bg-[#e7eeff] flex gap-2">
+        <TabsList className="h-10 items-center rounded-md bg-[#f1f5f9] p-1 text-[#64748b]">
+          <TabsTrigger value="manual" className="rounded-sm px-3 py-1.5 text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:text-[#111c2d] data-[state=active]:shadow-sm">Manual</TabsTrigger>
+          <TabsTrigger value="winfac" className="rounded-sm px-3 py-1.5 text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:text-[#111c2d] data-[state=active]:shadow-sm flex gap-2">
             <FileText className="h-4 w-4" /> WinFac
           </TabsTrigger>
-          <TabsTrigger value="kingnex" className="data-[state=active]:bg-[#dbe1ff] data-[state=active]:text-[#0051d5] flex gap-2">
+          <TabsTrigger value="kingnex" className="rounded-sm px-3 py-1.5 text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:text-[#0051d5] data-[state=active]:shadow-sm flex gap-2">
             <Cpu className="h-4 w-4" /> Kingnex (OCR IA)
           </TabsTrigger>
         </TabsList>

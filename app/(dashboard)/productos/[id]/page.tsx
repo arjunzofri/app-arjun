@@ -46,10 +46,10 @@ export default async function ProductoDetallePage({ params }: { params: Promise<
       </div>
 
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="bg-white border border-[#c4c6cf] mb-6">
-          <TabsTrigger value="overview">Resumen</TabsTrigger>
-          <TabsTrigger value="edit">Editar</TabsTrigger>
-          <TabsTrigger value="history">Historial Código</TabsTrigger>
+        <TabsList className="h-10 items-center rounded-md bg-[#f1f5f9] p-1 text-[#64748b] mb-6">
+          <TabsTrigger value="overview" className="rounded-sm px-3 py-1.5 text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:text-[#111c2d] data-[state=active]:shadow-sm">Resumen</TabsTrigger>
+          <TabsTrigger value="edit" className="rounded-sm px-3 py-1.5 text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:text-[#111c2d] data-[state=active]:shadow-sm">Editar</TabsTrigger>
+          <TabsTrigger value="history" className="rounded-sm px-3 py-1.5 text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:text-[#111c2d] data-[state=active]:shadow-sm">Historial Código</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">

@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
+import { DashboardShell } from "@/components/layout/DashboardShell";
 import { db } from "@/db"
 import { entradas } from "@/db/schema"
 import { isNull } from "drizzle-orm"
@@ -24,10 +25,10 @@ export default async function DashboardLayout({
         userName={session?.user?.name || "Usuario"} 
         sinBodega={sinBodegaCount}
       />
-      <div className="pl-64">
+      <DashboardShell>
         <Header userName={session?.user?.name || "Usuario"} />
         <main className="p-8">{children}</main>
-      </div>
+      </DashboardShell>
     </div>
   );
 }

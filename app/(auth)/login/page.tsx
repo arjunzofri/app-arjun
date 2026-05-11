@@ -85,7 +85,7 @@ export default function LoginPage() {
                   <Input
                     id="password"
                     type="password"
-                    className="border-[#c4c6cf] bg-[#f9f9ff] text-[#111c2d]"
+                    className="border-[#c4c6cf] bg-[#f9f9ff] text-[#111c2d] pr-10"
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
