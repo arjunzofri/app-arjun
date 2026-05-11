@@ -6,37 +6,36 @@ import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { LoginSchema } from "./validations";
 
+export async function authorize(credentials: Record<string, unknown>) {
+  const validatedFields = LoginSchema.safeParse(credentials);
+
+  if (!validatedFields.success) return null;
+
+  const { username, password } = validatedFields.data;
+
+  const user = await db.query.usuarios.findFirst({
+    where: eq(usuarios.username, username),
+  });
+
+  if (!user || !user.passwordHash) return null;
+
+  const passwordsMatch = await bcrypt.compare(password, user.passwordHash);
+
+  if (!passwordsMatch) return null;
+
+  return {
+    id: user.id,
+    name: user.nombre,
+    email: user.email,
+    role: user.rol,
+  };
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
     Credentials({
       async authorize(credentials) {
-        const validatedFields = LoginSchema.safeParse(credentials);
-
-        if (validatedFields.success) {
-          const { email, password } = validatedFields.data;
-
-          const user = await db.query.usuarios.findFirst({
-            where: eq(usuarios.email, email),
-          });
-
-          if (!user || !user.passwordHash) return null;
-
-          const passwordsMatch = await bcrypt.compare(
-            password,
-            user.passwordHash
-          );
-
-          if (passwordsMatch) {
-            return {
-              id: user.id,
-              name: user.nombre,
-              email: user.email,
-              role: user.rol,
-            };
-          }
-        }
-
-        return null;
+        return authorize(credentials);
       },
     }),
   ],

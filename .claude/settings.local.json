@@ -10,7 +10,9 @@
       "Bash(cp \"/tmp/design_extract/app-arjun-design-system/project/assets/mark.svg\" \"C:\\\\Users\\\\Usuario\\\\Documents\\\\app-arjun\\\\public/mark.svg\")",
       "Bash(cp \"/tmp/design_extract/app-arjun-design-system/project/assets/wordmark.svg\" \"C:\\\\Users\\\\Usuario\\\\Documents\\\\app-arjun\\\\public/wordmark.svg\")",
       "Bash(npx tsc *)",
-      "Bash(git *)"
+      "Bash(git *)",
+      "Bash(npx drizzle-kit *)",
+      "Bash(npx vitest *)"
     ]
   }
 }

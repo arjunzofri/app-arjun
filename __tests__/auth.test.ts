@@ -1,6 +1,23 @@
-﻿import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-// Mock next-auth
+vi.mock('next/server', () => ({}))
+
+const mockFindFirst = vi.fn()
+vi.mock('@/db', () => ({
+  db: {
+    query: {
+      usuarios: {
+        findFirst: mockFindFirst,
+      },
+    },
+  },
+}))
+
+const mockCompare = vi.fn()
+vi.mock('bcryptjs', () => ({
+  default: { compare: mockCompare },
+}))
+
 vi.mock('next-auth', () => ({
   default: vi.fn(() => ({
     handlers: { GET: vi.fn(), POST: vi.fn() },
@@ -14,55 +31,75 @@ vi.mock('next-auth/providers/credentials', () => ({
   default: vi.fn(() => ({ id: 'credentials' })),
 }))
 
-vi.mock('@/db', () => ({
-  db: {
-    select: vi.fn(() => ({
-      from: vi.fn(() => ({
-        where: vi.fn(() => Promise.resolve([])),
-      })),
-    })),
-  },
-}))
+import { LoginSchema } from '@/lib/validations'
 
-vi.mock('bcryptjs', () => ({
-  default: { compare: vi.fn().mockResolvedValue(true) },
-}))
-
-describe('auth module', () => {
-  it('debe exportar GET y POST desde lib/auth', async () => {
-    const authModule = await import('../lib/auth')
-    expect(authModule.GET).toBeDefined()
-    expect(authModule.POST).toBeDefined()
+describe('LoginSchema', () => {
+  it('acepta username >= 3 caracteres con password >= 6', () => {
+    const result = LoginSchema.safeParse({ username: 'pablo', password: '123456' })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.username).toBe('pablo')
+    }
   })
 
-  it('debe exportar handlers con GET y POST', async () => {
-    const authModule = await import('../lib/auth')
-    // GET y POST deben ser funciones
-    expect(typeof authModule.GET).toBe('function')
-    expect(typeof authModule.POST).toBe('function')
+  it('rechaza username con menos de 3 caracteres', () => {
+    const result = LoginSchema.safeParse({ username: 'ab', password: '123456' })
+    expect(result.success).toBe(false)
+  })
+
+  it('rechaza password con menos de 6 caracteres', () => {
+    const result = LoginSchema.safeParse({ username: 'pablo', password: '12345' })
+    expect(result.success).toBe(false)
   })
 })
 
-describe('next-auth type augmentation', () => {
-  it('el archivo types/next-auth.d.ts debe existir', async () => {
-    // Este test verifica que el módulo de tipos existe
-    // Falla si el archivo no existe porque TypeScript no puede resolver los tipos
-    const fs = await import('fs')
-    const path = await import('path')
-    const filePath = path.join(process.cwd(), 'types', 'next-auth.d.ts')
-    expect(fs.existsSync(filePath)).toBe(true)
+describe('authorize', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
   })
 
-  it('types/next-auth.d.ts debe contener la declaración de role', async () => {
-    const fs = await import('fs')
-    const path = await import('path')
-    const filePath = path.join(process.cwd(), 'types', 'next-auth.d.ts')
-    if (fs.existsSync(filePath)) {
-      const content = fs.readFileSync(filePath, 'utf-8')
-      expect(content).toContain('role')
-    } else {
-      // Si no existe el archivo, el test falla
-      expect(true).toBe(false)
-    }
+  it('retorna usuario cuando username y password son correctos', async () => {
+    mockFindFirst.mockResolvedValue({
+      id: 'u1',
+      nombre: 'Pablo',
+      username: 'pablo',
+      email: 'pablo@arjun.cl',
+      passwordHash: '$2a$10$hashed',
+      rol: 'admin',
+    })
+    mockCompare.mockResolvedValue(true)
+
+    const { authorize } = await import('@/lib/auth')
+    const result = await authorize({ username: 'pablo', password: '123456' })
+
+    expect(result).not.toBeNull()
+    expect(result?.id).toBe('u1')
+    expect(result?.name).toBe('Pablo')
+  })
+
+  it('retorna null cuando el usuario no existe', async () => {
+    mockFindFirst.mockResolvedValue(null)
+
+    const { authorize } = await import('@/lib/auth')
+    const result = await authorize({ username: 'fantasma', password: 'cualquiera' })
+
+    expect(result).toBeNull()
+  })
+
+  it('retorna null cuando el password no coincide', async () => {
+    mockFindFirst.mockResolvedValue({
+      id: 'u1',
+      nombre: 'Pablo',
+      username: 'pablo',
+      email: 'pablo@arjun.cl',
+      passwordHash: '$2a$10$hashed',
+      rol: 'admin',
+    })
+    mockCompare.mockResolvedValue(false)
+
+    const { authorize } = await import('@/lib/auth')
+    const result = await authorize({ username: 'pablo', password: 'incorrecta' })
+
+    expect(result).toBeNull()
   })
 })

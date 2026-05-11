@@ -20,6 +20,7 @@ export const origenEnum = pgEnum("origen", ["winfac", "kingnex", "manual"]);
 export const usuarios = pgTable("usuarios", {
   id: uuid("id").primaryKey().defaultRandom(),
   nombre: text("nombre").notNull(),
+  username: text("username").unique(),
   email: text("email").unique().notNull(),
   passwordHash: text("password_hash").notNull(),
   rol: rolEnum("rol").default("operador").notNull(),
