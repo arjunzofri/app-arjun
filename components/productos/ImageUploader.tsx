@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Upload, X } from "lucide-react";
 
@@ -11,6 +12,7 @@ export default function ImageUploader({
   productoId: string;
   onUploaded?: () => void;
 }) {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -45,6 +47,7 @@ export default function ImageUploader({
       setPreview(null);
       if (inputRef.current) inputRef.current.value = "";
       onUploaded?.();
+      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al subir");
     } finally {

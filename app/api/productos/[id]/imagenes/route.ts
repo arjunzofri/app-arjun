@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { productoImagenes } from "@/db/schema";
+import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import cloudinary from "@/lib/cloudinary";
 
@@ -16,6 +17,19 @@ export async function POST(
   const file = formData.get("file") as File | null;
 
   if (!file) return NextResponse.json({ error: "No se recibió archivo" }, { status: 400 });
+
+  // Eliminar imágenes previas del producto
+  const existing = await db.query.productoImagenes.findMany({
+    where: eq(productoImagenes.productoId, id),
+  });
+  for (const img of existing) {
+    if (img.cloudinaryPublicId) {
+      await cloudinary.uploader.destroy(img.cloudinaryPublicId);
+    }
+  }
+  if (existing.length > 0) {
+    await db.delete(productoImagenes).where(eq(productoImagenes.productoId, id));
+  }
 
   const bytes = await file.arrayBuffer();
   const buffer = Buffer.from(bytes);
