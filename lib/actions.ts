@@ -1,7 +1,7 @@
 ﻿"use server";
 
 import { db } from "@/db";
-import { productos, stock, entradas, notasVenta, activityLog, codigoPersonalAuditoria, salidas } from "@/db/schema";
+import { productos, stock, entradas, notasVenta, activityLog, codigoPersonalAuditoria, salidas, bodegas } from "@/db/schema";
 import { eq, sql, and } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { ProductoSchema, EntradaSchema, SalidaSchema } from "@/lib/validations";
@@ -149,6 +149,23 @@ export async function registrarEntrada(data: any) {
       bodegaId: validated.bodegaId,
       cantidadActual: validated.cantidad,
     });
+  }
+
+  // Si es entrada de Vida Digital, asignar bodega por defecto al producto
+  if (validated.proveedor === "vida_digital") {
+    const producto = await db.query.productos.findFirst({
+      where: eq(productos.id, validated.productoId),
+    });
+    if (producto && !producto.ubicacion) {
+      const bodegaVD = await db.query.bodegas.findFirst({
+        where: sql`${bodegas.nombre} ILIKE '%Bodega 1 Vida Digital%'`,
+      });
+      if (bodegaVD) {
+        await db.update(productos)
+          .set({ ubicacion: bodegaVD.nombre, updatedAt: new Date() })
+          .where(eq(productos.id, validated.productoId));
+      }
+    }
   }
 
   await db.insert(activityLog).values({

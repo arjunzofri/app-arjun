@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProductoForm from "@/components/productos/ProductoForm";
+import ImageUploader from "@/components/productos/ImageUploader";
 import { Warehouse, History, Settings } from "lucide-react";
 
 export default async function ProductoDetallePage({ params }: { params: Promise<{ id: string }> }) {
@@ -23,7 +24,8 @@ export default async function ProductoDetallePage({ params }: { params: Promise<
           usuario: true
         },
         orderBy: (auditoria, { desc }) => [desc(auditoria.changedAt)]
-      }
+      },
+      imagenes: true
     }
   });
 
@@ -96,6 +98,27 @@ export default async function ProductoDetallePage({ params }: { params: Promise<
                </CardContent>
              </Card>
           </div>
+
+          <Card className="bg-white border-[#c4c6cf]">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-mono uppercase text-[#74777f]">Imágenes</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {product.imagenes.length > 0 && (
+                <div className="flex flex-wrap gap-3">
+                  {product.imagenes.map((img) => (
+                    <div key={img.id} className="w-32 h-32 rounded border border-[#e2e8f0] overflow-hidden bg-[#f9f9ff]">
+                      <img src={img.url} alt={product.descripcion} className="w-full h-full object-contain" />
+                    </div>
+                  ))}
+                </div>
+              )}
+              {product.imagenes.length === 0 && (
+                <p className="text-xs text-[#74777f]">Sin imágenes cargadas</p>
+              )}
+              <ImageUploader productoId={product.id} />
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="edit">

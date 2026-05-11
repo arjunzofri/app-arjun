@@ -59,6 +59,7 @@ export default async function SalidasPage() {
                       <TableHead className="font-mono text-xs uppercase">Origen</TableHead>
                       <TableHead className="font-mono text-xs uppercase">Destino</TableHead>
                       <TableHead className="font-mono text-xs uppercase text-center">Cant.</TableHead>
+                      <TableHead className="font-mono text-xs uppercase">Usuario</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -74,6 +75,7 @@ export default async function SalidasPage() {
                         <TableCell className="text-xs text-[#74777f]">{h.bodega.nombre.replace('Bodega ', '')}</TableCell>
                         <TableCell className="text-xs text-[#0051d5] font-bold">{h.modulo.nombre}</TableCell>
                         <TableCell className="text-center font-bold text-[#111c2d]">{h.cantidad}</TableCell>
+                        <TableCell className="text-xs text-[#74777f]">{h.usuario?.nombre ?? 'Sin usuario'}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

@@ -10,7 +10,6 @@ import { Label } from "@/components/ui/label";
 import { createOrUpdateProducto } from "@/lib/actions";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast"; // assuming use-toast is available or will be
 
 export default function ProductoForm({ initialData }: { initialData?: any }) {
   const router = useRouter();
