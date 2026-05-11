@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 type Usuario = {
   id?: string
   nombre?: string
+  username?: string
   email?: string
   rol?: "admin" | "operador"
 }
@@ -26,6 +27,7 @@ export default function UsuarioModal({
   const [success, setSuccess] = useState(false)
   const [form, setForm] = useState({
     nombre: usuario?.nombre ?? "",
+    username: usuario?.username ?? "",
     email: usuario?.email ?? "",
     password: "",
     rol: usuario?.rol ?? "operador",
@@ -36,7 +38,8 @@ export default function UsuarioModal({
     setLoading(true)
     setError(null)
     try {
-      await createOrUpdateUsuario({ ...form, id: usuario?.id })
+      const payload = { ...form, email: `${form.username}@arjun.cl` }
+      await createOrUpdateUsuario({ ...payload, id: usuario?.id })
       setSuccess(true)
       setTimeout(() => {
         setOpen(false)
@@ -83,14 +86,14 @@ export default function UsuarioModal({
             />
           </div>
           <div className="space-y-2">
-            <Label>Email</Label>
+            <Label>Usuario</Label>
             <Input
-              type="email"
+              type="text"
               required
-              value={form.email}
-              onChange={e => setForm({ ...form, email: e.target.value })}
+              value={form.username}
+              onChange={e => setForm({ ...form, username: e.target.value })}
               className="bg-[#f9f9ff] border-[#c4c6cf]"
-              placeholder="usuario@arjun.cl"
+              placeholder="nombre de usuario"
             />
           </div>
           <div className="space-y-2">

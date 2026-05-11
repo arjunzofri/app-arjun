@@ -18,6 +18,7 @@ export async function createOrUpdateUsuario(data: any) {
   if (id) {
     const payload: any = {
       nombre: validated.nombre,
+      username: validated.username,
       email: validated.email,
       rol: validated.rol,
       updatedAt: new Date(),
@@ -36,6 +37,7 @@ export async function createOrUpdateUsuario(data: any) {
 
     await db.insert(usuarios).values({
       nombre: validated.nombre,
+      username: validated.username,
       email: validated.email,
       passwordHash,
       rol: validated.rol,
