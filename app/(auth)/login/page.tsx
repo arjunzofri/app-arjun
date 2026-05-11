@@ -95,7 +95,7 @@ export default function LoginPage() {
                 </div>
               </div>
             </CardContent>
-            <CardFooter>
+            <CardFooter className="border-0 pt-0">
               <Button 
                 type="submit" 
                 className="w-full bg-[#16a34a] font-bold text-white hover:bg-[#15803d]"

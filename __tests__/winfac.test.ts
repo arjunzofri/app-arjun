@@ -45,8 +45,8 @@ describe('integración WinFac', () => {
     }
   })
 
-  it('el tab WinFac en entradas debe usar WinFacPanel', () => {
-    const filePath = join(process.cwd(), 'app', '(dashboard)', 'entradas', 'page.tsx')
+  it('el shell de entradas debe usar WinFacPanel', () => {
+    const filePath = join(process.cwd(), 'components', 'entradas', 'EntradasShell.tsx')
     const content = readFileSync(filePath, 'utf-8')
     expect(content).toContain('WinFacPanel')
   })
