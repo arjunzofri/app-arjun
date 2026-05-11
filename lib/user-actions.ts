@@ -15,36 +15,41 @@ export async function createOrUpdateUsuario(data: any) {
   const validated = UsuarioSchema.parse(data);
   const id = data.id;
 
-  if (id) {
-    const payload: any = {
-      nombre: validated.nombre,
-      username: validated.username,
-      email: validated.email,
-      rol: validated.rol,
-      updatedAt: new Date(),
-    };
+  try {
+    if (id) {
+      const payload: any = {
+        nombre: validated.nombre,
+        username: validated.username,
+        email: validated.email,
+        rol: validated.rol,
+        updatedAt: new Date(),
+      };
 
-    if (validated.password) {
-      payload.passwordHash = await bcrypt.hash(validated.password, 10);
+      if (validated.password) {
+        payload.passwordHash = await bcrypt.hash(validated.password, 10);
+      }
+
+      await db.update(usuarios).set(payload).where(eq(usuarios.id, id));
+
+    } else {
+      if (!validated.password) throw new Error("Contraseña requerida para nuevo usuario");
+
+      const passwordHash = await bcrypt.hash(validated.password, 10);
+
+      await db.insert(usuarios).values({
+        nombre: validated.nombre,
+        username: validated.username,
+        email: validated.email,
+        passwordHash,
+        rol: validated.rol,
+      });
     }
 
-    await db.update(usuarios).set(payload).where(eq(usuarios.id, id));
-
-  } else {
-    if (!validated.password) throw new Error("Contraseña requerida para nuevo usuario");
-    
-    const passwordHash = await bcrypt.hash(validated.password, 10);
-
-    await db.insert(usuarios).values({
-      nombre: validated.nombre,
-      username: validated.username,
-      email: validated.email,
-      passwordHash,
-      rol: validated.rol,
-    });
+    revalidatePath("/usuarios");
+  } catch (error) {
+    console.error('createOrUpdateUsuario error:', error)
+    throw new Error(error instanceof Error ? error.message : String(error))
   }
-
-  revalidatePath("/usuarios");
 }
 
 export async function eliminarUsuario(id: string) {
