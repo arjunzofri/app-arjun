@@ -198,3 +198,21 @@ export const salidasRelations = relations(salidas, ({ one }) => ({
     references: [usuarios.id],
   }),
 }));
+
+export const codigoPersonalAuditoriaRelations = relations(codigoPersonalAuditoria, ({ one }) => ({
+  producto: one(productos, {
+    fields: [codigoPersonalAuditoria.productoId],
+    references: [productos.id],
+  }),
+  usuario: one(usuarios, {
+    fields: [codigoPersonalAuditoria.usuarioId],
+    references: [usuarios.id],
+  }),
+}));
+
+export const productoImagenesRelations = relations(productoImagenes, ({ one }) => ({
+  producto: one(productos, {
+    fields: [productoImagenes.productoId],
+    references: [productos.id],
+  }),
+}));
