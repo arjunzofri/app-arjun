@@ -88,7 +88,7 @@ export default async function ProductListPage({
             <div className="bg-white border border-[#e2e8f0] rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer">
               <div className="border-b border-[#e2e8f0]">
                 <ProductImage
-                  src={imagenesMap.get(p.id) ?? ""}
+                  src={imagenesMap.get(p.id) ?? `https://res.cloudinary.com/dxkidwxjl/image/upload/productos/${p.codigo}.jpg`}
                   alt={p.descripcion || p.codigo}
                 />
               </div>
