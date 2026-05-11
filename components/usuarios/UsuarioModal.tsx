@@ -27,7 +27,6 @@ export default function UsuarioModal({
   const [success, setSuccess] = useState(false)
   const [form, setForm] = useState({
     nombre: usuario?.nombre ?? "",
-    username: usuario?.username ?? "",
     email: usuario?.email ?? "",
     password: "",
     rol: usuario?.rol ?? "operador",
@@ -38,7 +37,8 @@ export default function UsuarioModal({
     setLoading(true)
     setError(null)
     try {
-      const payload = { ...form, email: `${form.username}@arjun.cl` }
+      const username = form.nombre.toLowerCase().replace(/\s+/g, '')
+      const payload = { ...form, username, email: `${username}@arjun.cl` }
       await createOrUpdateUsuario({ ...payload, id: usuario?.id })
       setSuccess(true)
       setTimeout(() => {
@@ -83,17 +83,6 @@ export default function UsuarioModal({
               onChange={e => setForm({ ...form, nombre: e.target.value })}
               className="bg-[#f9f9ff] border-[#c4c6cf]"
               placeholder="Nombre completo"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Usuario</Label>
-            <Input
-              type="text"
-              required
-              value={form.username}
-              onChange={e => setForm({ ...form, username: e.target.value })}
-              className="bg-[#f9f9ff] border-[#c4c6cf]"
-              placeholder="nombre de usuario"
             />
           </div>
           <div className="space-y-2">
