@@ -1,17 +1,11 @@
 import { db } from "@/db";
-import { productos, stock, entradas } from "@/db/schema";
+import { productos, stock, entradas, productoImagenes } from "@/db/schema";
 import { sql, ilike, or, isNull } from "drizzle-orm";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import ProductImage from "@/components/productos/ProductImage";
 import Link from "next/link";
 import { Plus, Search } from "lucide-react";
-
-const CLOUDINARY_BASE = "https://res.cloudinary.com/dxkidwxjl/image/upload/productos";
-
-function getImageUrl(codigo: string) {
-  return `${CLOUDINARY_BASE}/${codigo}.jpg`;
-}
 
 export default async function ProductListPage({
   searchParams,
@@ -52,6 +46,14 @@ export default async function ProductListPage({
 
   const sinBodegaIds = new Set(sinBodegaResult.map(r => r.productoId))
 
+  const todasImagenes = await db.select().from(productoImagenes);
+  const imagenesMap = new Map<string, string>();
+  for (const img of todasImagenes) {
+    if (!imagenesMap.has(img.productoId)) {
+      imagenesMap.set(img.productoId, img.url);
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -86,7 +88,7 @@ export default async function ProductListPage({
             <div className="bg-white border border-[#e2e8f0] rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer">
               <div className="border-b border-[#e2e8f0]">
                 <ProductImage
-                  src={getImageUrl(p.codigo)}
+                  src={imagenesMap.get(p.id) ?? ""}
                   alt={p.descripcion || p.codigo}
                 />
               </div>

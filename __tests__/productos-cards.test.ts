@@ -12,13 +12,13 @@ describe('Vista de cards en productos', () => {
     expect(content).toContain('grid-cols')
   })
 
-  it('la página de productos debe mostrar imágenes de Cloudinary', () => {
+  it('la página de productos debe obtener imágenes desde producto_imagenes', () => {
     const content = readFileSync(
       join(process.cwd(), 'app', '(dashboard)', 'productos', 'page.tsx'),
       'utf-8'
     )
-    expect(content).toContain('dxkidwxjl')
-    expect(content).toContain('cloudinary')
+    expect(content).toContain('productoImagenes')
+    expect(content).toContain('imagenesMap')
   })
 
   it('la página de productos debe tener fallback cuando no hay imagen', () => {
