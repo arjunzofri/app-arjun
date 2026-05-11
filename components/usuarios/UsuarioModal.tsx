@@ -36,6 +36,16 @@ export default function UsuarioModal({
     e.preventDefault()
     setLoading(true)
     setError(null)
+    if (!usuario?.id && form.password.length < 6) {
+      setError("La contraseña debe tener al menos 6 caracteres")
+      setLoading(false)
+      return
+    }
+    if (usuario?.id && form.password && form.password.length < 6) {
+      setError("La contraseña debe tener al menos 6 caracteres")
+      setLoading(false)
+      return
+    }
     try {
       const username = form.nombre.toLowerCase().replace(/\s+/g, '')
       const payload = { ...form, username, email: `${username}@arjun.cl` }
@@ -46,7 +56,18 @@ export default function UsuarioModal({
         setSuccess(false)
       }, 1500)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al guardar usuario")
+      if (err instanceof Error) {
+        try {
+          const zodErrors = JSON.parse(err.message)
+          if (Array.isArray(zodErrors)) {
+            setError(zodErrors.map((e: any) => e.message).join(', '))
+            return
+          }
+        } catch {}
+        setError(err.message)
+      } else {
+        setError("Error al guardar usuario")
+      }
     } finally {
       setLoading(false)
     }
