@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { productoImagenes } from "@/db/schema";
+import { productoImagenes, productos } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import cloudinary from "@/lib/cloudinary";
@@ -31,6 +31,11 @@ export async function POST(
     await db.delete(productoImagenes).where(eq(productoImagenes.productoId, id));
   }
 
+  const producto = await db.query.productos.findFirst({
+    where: eq(productos.id, id),
+  });
+  if (!producto) return NextResponse.json({ error: "Producto no encontrado" }, { status: 404 });
+
   const bytes = await file.arrayBuffer();
   const buffer = Buffer.from(bytes);
   const base64 = buffer.toString("base64");
@@ -38,6 +43,7 @@ export async function POST(
 
   const result = await cloudinary.uploader.upload(dataUri, {
     folder: "productos",
+    public_id: producto.codigo,
     resource_type: "image",
   });
 
