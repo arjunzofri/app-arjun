@@ -12,7 +12,11 @@
       "Bash(npx tsc *)",
       "Bash(git *)",
       "Bash(npx drizzle-kit *)",
-      "Bash(npx vitest *)"
+      "Bash(npx vitest *)",
+      "PowerShell(git *)",
+      "Bash(Get-ChildItem -Recurse -File -Name \"C:\\\\Users\\\\pablo\\\\Documents\\\\vida-digital-api\")",
+      "Bash(Select-Object -First 100)",
+      "PowerShell(Get-ChildItem -File -Name \"C:\\\\Users\\\\pablo\\\\Documents\\\\vida-digital-api\" | Where-Object { $_ -notmatch '^0\\\\d' -and $_ -notmatch '\\\\.ps1$' -and $_ -notmatch '\\\\.xls' })"
     ]
   }
 }
