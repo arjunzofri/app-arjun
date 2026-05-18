@@ -3,6 +3,7 @@ import { productos } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { formatDescripcionCorta } from "@/lib/utils/format-descripcion";
+import BotonVolver from "@/components/productos/BotonVolver";
 import ProductoDetalle from "@/components/productos/ProductoDetalle";
 
 export default async function ProductoDetallePage({ params }: { params: Promise<{ id: string }> }) {
@@ -29,6 +30,7 @@ export default async function ProductoDetallePage({ params }: { params: Promise<
 
   return (
     <div className="space-y-8">
+      <BotonVolver />
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-[#111c2d] font-mono">{product.codigo}</h1>
