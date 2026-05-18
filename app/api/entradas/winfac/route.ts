@@ -34,6 +34,11 @@ export async function GET(req: NextRequest) {
     ORDER BY knumezet
   `
 
+  console.log("query recibido:", query)
+  console.log("likeParam:", likeParam)
+  console.log("rows count:", rows.length)
+  if (rows.length > 0) console.log("primer row:", rows[0])
+
   if (rows.length === 0) {
     return NextResponse.json({ error: "No se encontró la visación" }, { status: 404 })
   }
