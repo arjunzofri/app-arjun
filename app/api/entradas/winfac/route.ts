@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { db } from "@/db"
+import { neon } from "@neondatabase/serverless"
 import { auth } from "@/lib/auth"
 
 type Encabezado = {
@@ -23,18 +23,17 @@ export async function GET(req: NextRequest) {
   }
 
   // Buscar visación en arjun.inv_sdo
-  const result = await db.execute(
-    `SELECT knumezet, codunico, descript, stocdisp, cifunita, cantcaja
-     FROM arjun.inv_sdo
-     WHERE knumezet LIKE '%' || '${query}' || '%'
-     ORDER BY knumezet`
-  )
+  const sql = neon(process.env.DATABASE_URL!)
+  const rows = await sql`
+    SELECT knumezet, codunico, descript, stocdisp, cifunita, cantcaja
+    FROM arjun.inv_sdo
+    WHERE knumezet LIKE ${'%' + query + '%'}
+    ORDER BY knumezet
+  `
 
-  if (result.rows.length === 0) {
+  if (rows.length === 0) {
     return NextResponse.json({ error: "No se encontró la visación" }, { status: 404 })
   }
-
-  const rows = result.rows as any[]
 
   const encabezado: Encabezado = {
     knumfoli: query,
