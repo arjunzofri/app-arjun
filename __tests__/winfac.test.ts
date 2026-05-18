@@ -35,11 +35,11 @@ describe('integración WinFac', () => {
     }
   })
 
-  it('la API de winfac debe usar WINFAC_DB_URL', () => {
+  it('la API de winfac debe usar DATABASE_URL', () => {
     const filePath = join(process.cwd(), 'app', 'api', 'entradas', 'winfac', 'route.ts')
     if (existsSync(filePath)) {
       const content = readFileSync(filePath, 'utf-8')
-      expect(content).toContain('WINFAC_DB_URL')
+      expect(content).toContain('DATABASE_URL')
     } else {
       expect(true).toBe(false)
     }

@@ -3,7 +3,7 @@ import * as dotenv from 'dotenv'
 
 dotenv.config({ path: '.env.local' })
 
-const sql = neon(process.env.WINFAC_DB_URL!)
+const sql = neon(process.env.DATABASE_URL!)
 
 async function inspectDB() {
   // 1. Listar todas las tablas
