@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
-import { FileText, Cpu } from "lucide-react";
+import { FileText } from "lucide-react";
 import EntradaManualForm from "./EntradaManualForm";
 import WinFacPanel from "./WinFacPanel";
-import KingnexOCRPanel from "./KingnexOCRPanel";
+import { syncWinfac } from "@/app/actions/sync-winfac";
+import { Button } from "@/components/ui/button";
 
 export default function EntradasShell({
   bodegas,
@@ -14,15 +16,26 @@ export default function EntradasShell({
   bodegas: any[];
   productos: any[];
 }) {
-  const [modo, setModo] = useState<"manual" | "winfac" | "kingnex">("manual");
+  const [modo, setModo] = useState<"winfac" | "manual">("winfac");
+  const [syncStatus, setSyncStatus] = useState<{ loading: boolean; message: string; ok: boolean } | null>(null);
+  const { data: session } = useSession();
+
+  const handleSync = async () => {
+    setSyncStatus({ loading: true, message: "Sincronizando...", ok: false });
+    const result = await syncWinfac();
+    if (result.error) {
+      setSyncStatus({ loading: false, message: `❌ ${result.error}`, ok: false });
+    } else {
+      setSyncStatus({ loading: false, message: `✅ ${result.productos_creados} productos importados`, ok: true });
+    }
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex gap-1 bg-[#f1f5f9] p-1 rounded-lg w-fit mb-6">
         {[
-          { id: "manual" as const, label: "Manual" },
           { id: "winfac" as const, label: "WinFac", icon: FileText },
-          { id: "kingnex" as const, label: "Kingnex (OCR IA)", icon: Cpu },
+          { id: "manual" as const, label: "Manual" },
         ].map((opt) => (
           <button
             key={opt.id}
@@ -40,12 +53,29 @@ export default function EntradasShell({
         ))}
       </div>
 
+      {modo === "winfac" && (
+        <>
+          {session?.user?.role === 'admin' && (
+            <div className="flex items-center gap-3">
+              <Button
+                onClick={handleSync}
+                disabled={syncStatus?.loading}
+                className="bg-[#2563eb] text-white font-bold hover:bg-[#1d4ed8]"
+              >
+                {syncStatus?.loading ? "Sincronizando..." : "SYNC AUTOMÁTICO CON WINFAC"}
+              </Button>
+              {syncStatus && !syncStatus.loading && (
+                <span className={`text-sm font-medium ${syncStatus.ok ? 'text-green-600' : 'text-red-600'}`}>
+                  {syncStatus.message}
+                </span>
+              )}
+            </div>
+          )}
+          <WinFacPanel bodegasData={bodegas} />
+        </>
+      )}
       {modo === "manual" && (
         <EntradaManualForm productos={productos} bodegas={bodegas} />
-      )}
-      {modo === "winfac" && <WinFacPanel bodegasData={bodegas} />}
-      {modo === "kingnex" && (
-        <KingnexOCRPanel bodegasData={bodegas} productosData={productos} />
       )}
     </div>
   );
