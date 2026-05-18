@@ -31,13 +31,11 @@ export default async function ProductoDetallePage({ params }: { params: Promise<
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-3">
-            <Badge className="bg-[#dbe1ff] text-[#0051d5] border-[#0051d5]/20 font-mono">
-              {product.codigo}
-            </Badge>
-            <h1 className="text-3xl font-bold text-[#111c2d]">{product.descripcion}</h1>
-          </div>
-          <p className="text-[#74777f] font-mono mt-1">ID interno: {product.id}</p>
+          <h1 className="text-3xl font-bold text-[#111c2d] font-mono">{product.codigo}</h1>
+          <Badge className="bg-[#dbe1ff] text-[#0051d5] border-[#0051d5]/20 font-mono mt-1 max-w-lg truncate">
+            NOMBRE: {product.descripcion}
+          </Badge>
+          <p className="text-[#74777f] font-mono mt-1">Ingreso: {product.knumezet ?? 'Sin número de ingreso'}</p>
         </div>
       </div>
 
