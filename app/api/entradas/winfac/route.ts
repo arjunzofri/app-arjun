@@ -18,6 +18,8 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const query = searchParams.get("q")?.trim()
 
+  console.log("WINFAC HANDLER v2 - query:", query)
+
   if (!query) {
     return NextResponse.json({ error: "Parámetro q requerido (visación)" }, { status: 400 })
   }
