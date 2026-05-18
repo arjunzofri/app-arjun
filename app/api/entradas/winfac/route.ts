@@ -26,10 +26,11 @@ export async function GET(req: NextRequest) {
 
   // Buscar visación en arjun.inv_sdo
   const sql = neon(process.env.DATABASE_URL!)
+  const likeParam = `%${query}%`
   const rows = await sql`
     SELECT knumezet, codunico, descript, stocdisp, cifunita, cantcaja
     FROM arjun.inv_sdo
-    WHERE knumezet LIKE ${'%' + query + '%'}
+    WHERE knumezet LIKE ${likeParam}
     ORDER BY knumezet
   `
 
