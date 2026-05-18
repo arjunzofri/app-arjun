@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ProductoForm from "@/components/productos/ProductoForm";
 import ImageUploader from "@/components/productos/ImageUploader";
 import { History } from "lucide-react";
+import { getCloudinaryVidaDigitalUrl } from "@/lib/utils/extract-modelo";
 
 type Tab = "overview" | "edit" | "history";
 
@@ -89,26 +90,37 @@ export default function ProductoDetalle({ product }: { product: any }) {
             </Card>
           </div>
 
-          <Card className="bg-white border-[#c4c6cf]">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-mono uppercase text-[#74777f]">Imágenes</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {product.imagenes.length > 0 && (
-                <div className="flex flex-wrap gap-3">
-                  {product.imagenes.map((img: any) => (
-                    <div key={img.id} className="w-32 h-32 rounded border border-[#e2e8f0] overflow-hidden bg-[#f9f9ff]">
-                      <img src={img.url} alt={product.descripcion} className="w-full h-full object-contain" />
+          {(() => {
+            const vidaDigitalUrl = getCloudinaryVidaDigitalUrl(product.descripcion)
+            return (
+              <Card className="bg-white border-[#c4c6cf]">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-mono uppercase text-[#74777f]">Imágenes</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {product.imagenes.length > 0 && (
+                    <div className="flex flex-wrap gap-3">
+                      {product.imagenes.map((img: any) => (
+                        <div key={img.id} className="w-32 h-32 rounded border border-[#e2e8f0] overflow-hidden bg-[#f9f9ff]">
+                          <img src={img.url} alt={product.descripcion} className="w-full h-full object-contain" />
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              )}
-              {product.imagenes.length === 0 && (
-                <p className="text-xs text-[#74777f]">Sin imágenes cargadas</p>
-              )}
-              <ImageUploader productoId={product.id} />
-            </CardContent>
-          </Card>
+                  )}
+                  {product.imagenes.length === 0 && vidaDigitalUrl && (
+                    <div className="w-32 h-32 rounded border border-[#e2e8f0] overflow-hidden bg-[#f9f9ff]">
+                      <img src={vidaDigitalUrl} alt={product.descripcion} className="w-full h-full object-contain"
+                           onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                    </div>
+                  )}
+                  {product.imagenes.length === 0 && !vidaDigitalUrl && (
+                    <p className="text-xs text-[#74777f]">Sin imágenes cargadas</p>
+                  )}
+                  <ImageUploader productoId={product.id} />
+                </CardContent>
+              </Card>
+            )
+          })()}
         </div>
       )}
 

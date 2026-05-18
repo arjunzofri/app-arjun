@@ -4,6 +4,7 @@ import { sql, ilike, or, isNull } from "drizzle-orm";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import ProductImage from "@/components/productos/ProductImage";
+import { getCloudinaryVidaDigitalUrl } from "@/lib/utils/extract-modelo";
 import Link from "next/link";
 import { Plus, Search } from "lucide-react";
 
@@ -90,7 +91,7 @@ export default async function ProductListPage({
             <div className="bg-white border border-[#e2e8f0] rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer">
               <div className="border-b border-[#e2e8f0]">
                 <ProductImage
-                  src={imagenesMap.get(p.id) ?? `https://res.cloudinary.com/dxkidwxjl/image/upload/productos/${p.codigo}.jpg`}
+                  src={imagenesMap.get(p.id) ?? getCloudinaryVidaDigitalUrl(p.descripcion) ?? ""}
                   alt={p.descripcion || p.codigo}
                 />
               </div>
