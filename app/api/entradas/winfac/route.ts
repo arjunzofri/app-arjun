@@ -12,13 +12,11 @@ type Encabezado = {
 }
 
 export async function GET(req: NextRequest) {
-  // const session = await auth()
-  // if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 })
+  const session = await auth()
+  if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 })
 
   const { searchParams } = new URL(req.url)
   const query = searchParams.get("q")?.trim()
-
-  console.log("WINFAC HANDLER v2 - query:", query)
 
   if (!query) {
     return NextResponse.json({ error: "Parámetro q requerido (visación)" }, { status: 400 })
@@ -33,11 +31,6 @@ export async function GET(req: NextRequest) {
     WHERE knumezet LIKE ${likeParam}
     ORDER BY knumezet
   `
-
-  console.log("query recibido:", query)
-  console.log("likeParam:", likeParam)
-  console.log("rows count:", rows.length)
-  if (rows.length > 0) console.log("primer row:", rows[0])
 
   if (rows.length === 0) {
     return NextResponse.json({ error: "No se encontró la visación" }, { status: 404 })
