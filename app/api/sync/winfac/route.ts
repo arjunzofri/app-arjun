@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/db"
-import { productos, entradas, notasVenta, activityLog } from "@/db/schema"
-import { eq } from "drizzle-orm"
 
 export async function GET(req: NextRequest) {
   const syncKey = req.headers.get("x-sync-key")
@@ -9,105 +7,58 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 })
   }
 
+  // Asegurar columna de watermark
+  await db.execute(
+    `ALTER TABLE sync_winfac_log ADD COLUMN IF NOT EXISTS ultima_zeta_procesada TEXT DEFAULT ''`
+  )
+
   // 1. Leer watermark
   const logResult = await db.execute(
-    `SELECT ultima_nv_procesada FROM sync_winfac_log ORDER BY id DESC LIMIT 1`
+    `SELECT ultima_zeta_procesada FROM sync_winfac_log ORDER BY id DESC LIMIT 1`
   )
-  const ultimaNV = (logResult.rows[0] as any)?.ultima_nv_procesada ?? '000000'
+  const ultimaZeta = (logResult.rows[0] as any)?.ultima_zeta_procesada ?? ''
 
-  // 2. Buscar NVs nuevas desde arjun.inv
-  const nvsResult = await db.execute(
-    `SELECT DISTINCT factura FROM arjun.inv
-     WHERE factura > '${ultimaNV}'
-     ORDER BY factura ASC
+  // 2. Buscar registros nuevos desde arjun.inv_sdo
+  const rows = (await db.execute(
+    `SELECT knumezet, codunico, descript, stocdisp, cifunita, cantcaja
+     FROM arjun.inv_sdo
+     WHERE knumezet > '${ultimaZeta}'
+     ORDER BY knumezet
      LIMIT 10`
-  )
+  )).rows as any[]
 
-  const todasNVs = nvsResult.rows.map((r: any) => ({ knumfoli: r.factura }))
-
-  if (todasNVs.length === 0) {
+  if (rows.length === 0) {
     return NextResponse.json({
-      message: "Sin NV nuevas",
-      nvs_importadas: 0,
+      message: "Sin registros nuevos",
       productos_creados: 0,
-      ultima_nv_procesada: ultimaNV
+      ultima_zeta_procesada: ultimaZeta
     })
   }
 
-  let nvsImportadas = 0
-  let productosCreados = 0
-  let nuevaUltimaNV = ultimaNV
-
-  for (const nv of todasNVs) {
-    try {
-      // 3. Obtener productos de la NV desde arjun.inv
-      const items = (await db.execute(
-        `SELECT codigo, descrip, cancaja, cif, saldo, zeta as nroingreso
-         FROM arjun.inv
-         WHERE factura = '${nv.knumfoli}'
-         ORDER BY codigo`
-      )).rows as any[]
-
-      if (items.length === 0) {
-        nuevaUltimaNV = nv.knumfoli
-        continue
-      }
-
-      // 4. Obtener fechaing para la NV
-      const fechaResult = await db.execute(
-        `SELECT fechaing FROM arjun.inv WHERE factura = '${nv.knumfoli}' LIMIT 1`
-      )
-      const fechanvt = (fechaResult.rows[0] as any)?.fechaing ?? new Date().toISOString().split('T')[0]
-
-      // 5. Registrar NV en App Arjun
-      const nvRows = await db.execute(
-        `INSERT INTO notas_venta (numero_nv, proveedor, fecha_compra)
-         VALUES ('${nv.knumfoli}', 'vida_digital', '${fechanvt}')
-         ON CONFLICT (numero_nv) DO UPDATE SET fecha_compra = '${fechanvt}'
-         RETURNING id, numero_nv`
-      )
-      const nvRecord = nvRows.rows[0] as { id: string; numero_nv: string }
-
-      // 6. Por cada producto: crear/actualizar en App Arjun + entrada sin bodega
-      for (const item of items) {
-        const [producto] = await db.insert(productos).values({
-          codigo: item.codigo,
-          descripcion: item.descrip,
-          packing: Number(item.cancaja),
-        }).onConflictDoUpdate({
-          target: [productos.codigo],
-          set: {
-            descripcion: item.descrip,
-            packing: Number(item.cancaja),
-            updatedAt: new Date()
-          }
-        }).returning()
-
-        await db.execute(
-          `INSERT INTO entradas (producto_id, nota_venta_id, bodega_id, cantidad, precio_unitario, usuario_id, origen)
-           VALUES ('${producto.id}', '${nvRecord.id}', NULL, ${Number(item.saldo) > 0 ? Number(item.saldo) : Number(item.cancaja)}, '${item.cif ?? 0}', NULL, 'winfac')`
-        )
-
-        productosCreados++
-      }
-
-      nvsImportadas++
-      nuevaUltimaNV = nv.knumfoli
-
-    } catch (err) {
-      console.error(`Error procesando NV ${nv.knumfoli}:`, err)
-    }
-  }
-
-  // 7. Actualizar watermark
+  // 3. Bulk UPSERT en productos
   await db.execute(
-    `UPDATE sync_winfac_log SET ultima_nv_procesada = '${nuevaUltimaNV}', ultima_sync_at = now(), nvs_importadas = nvs_importadas + ${nvsImportadas}, productos_creados = productos_creados + ${productosCreados} WHERE id = (SELECT id FROM sync_winfac_log ORDER BY id DESC LIMIT 1)`
+    `INSERT INTO productos (codigo, descripcion, packing, created_at, updated_at)
+     SELECT codunico, descript, COALESCE(NULLIF(cantcaja,0),1), now(), now()
+     FROM arjun.inv_sdo
+     WHERE knumezet > '${ultimaZeta}'
+     ORDER BY knumezet
+     LIMIT 10
+     ON CONFLICT (codigo) DO UPDATE SET
+       descripcion = EXCLUDED.descripcion,
+       packing = EXCLUDED.packing,
+       updated_at = now()`
+  )
+
+  const nuevaUltimaZeta = rows[rows.length - 1].knumezet
+
+  // 4. Actualizar watermark
+  await db.execute(
+    `UPDATE sync_winfac_log SET ultima_zeta_procesada = '${nuevaUltimaZeta}', ultima_sync_at = now(), productos_creados = productos_creados + ${rows.length} WHERE id = (SELECT id FROM sync_winfac_log ORDER BY id DESC LIMIT 1)`
   )
 
   return NextResponse.json({
     message: "Sync completado",
-    nvs_importadas: nvsImportadas,
-    productos_creados: productosCreados,
-    ultima_nv_procesada: nuevaUltimaNV,
+    productos_creados: rows.length,
+    ultima_zeta_procesada: nuevaUltimaZeta,
   })
 }
