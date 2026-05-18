@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
     `SELECT DISTINCT factura FROM arjun.inv
      WHERE factura > '${ultimaNV}'
      ORDER BY factura ASC
-     LIMIT 5`
+     LIMIT 10`
   )
 
   const todasNVs = nvsResult.rows.map((r: any) => ({ knumfoli: r.factura }))
