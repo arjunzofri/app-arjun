@@ -67,6 +67,16 @@ TABLAS = {
             "canti", "modulo", "pdoc", "prea"
         ],
     },
+    "inv": {
+        "dbf_file": "inv.DBF",
+        "dbf_path_override": r"C:\sisvfp\winmod\inv.DBF",
+        "pk_columns": ["zeta"],
+        "columnas": [
+            "zeta", "codigo", "descrip", "saldo", "cif",
+            "costo", "cancaja", "factura", "nro_dsm",
+            "moduloss", "fechaing"
+        ],
+    },
 }
 
 # ============================================================
@@ -260,7 +270,10 @@ def main():
     total_sync = 0
 
     for tabla, config in TABLAS.items():
-        dbf_path = os.path.join(DBF_PATH, config["dbf_file"])
+        if "dbf_path_override" in config:
+            dbf_path = config["dbf_path_override"]
+        else:
+            dbf_path = os.path.join(DBF_PATH, config["dbf_file"])
         if not os.path.exists(dbf_path):
             log.warning("  Archivo no encontrado: %s", dbf_path)
             continue

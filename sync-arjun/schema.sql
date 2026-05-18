@@ -27,6 +27,21 @@ CREATE TABLE IF NOT EXISTS arjun.inv_sdo (
   raw JSONB
 );
 
+CREATE TABLE IF NOT EXISTS arjun.inv (
+  zeta TEXT PRIMARY KEY,
+  codigo TEXT,
+  descrip TEXT,
+  saldo NUMERIC,
+  cif NUMERIC,
+  costo NUMERIC,
+  cancaja NUMERIC,
+  factura TEXT,
+  nro_dsm TEXT,
+  moduloss TEXT,
+  fechaing DATE,
+  raw JSONB
+);
+
 CREATE TABLE IF NOT EXISTS arjun.infnvta (
   nota TEXT,
   zeta TEXT,
