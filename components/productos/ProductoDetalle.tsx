@@ -38,12 +38,6 @@ export default function ProductoDetalle({ product }: { product: any }) {
 
       {tab === "overview" && (
         <div className="space-y-6">
-          <div className="flex items-center gap-4">
-            <h2 className="text-xl font-bold text-[#111c2d] font-mono">{product.codigo}</h2>
-            {product.knumezet && (
-              <span className="text-sm font-mono text-[#64748b] bg-[#f1f5f9] px-3 py-1 rounded">{product.knumezet}</span>
-            )}
-          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card className="bg-white border-[#c4c6cf]">
               <CardHeader className="pb-2">

@@ -2,7 +2,7 @@ import { db } from "@/db";
 import { productos } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
+import { formatDescripcionCorta } from "@/lib/utils/format-descripcion";
 import ProductoDetalle from "@/components/productos/ProductoDetalle";
 
 export default async function ProductoDetallePage({ params }: { params: Promise<{ id: string }> }) {
@@ -32,10 +32,8 @@ export default async function ProductoDetallePage({ params }: { params: Promise<
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-[#111c2d] font-mono">{product.codigo}</h1>
-          <Badge className="bg-[#dbe1ff] text-[#0051d5] border-[#0051d5]/20 font-mono mt-1 max-w-lg truncate">
-            NOMBRE: {product.descripcion}
-          </Badge>
-          <p className="text-[#74777f] font-mono mt-1">Ingreso: {product.knumezet ?? 'Sin número de ingreso'}</p>
+          <p className="text-[#74777f] text-sm mt-1">{formatDescripcionCorta(product.descripcion)}</p>
+          <p className="text-[#94a3b8] font-mono text-xs mt-1">Ingreso: {product.knumezet ?? 'Sin número de ingreso'}</p>
         </div>
       </div>
 
