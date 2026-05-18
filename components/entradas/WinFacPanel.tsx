@@ -144,7 +144,7 @@ export default function WinFacPanel({ bodegasData }: { bodegasData: Bodega[] }) 
           value={query}
           onChange={e => setQuery(e.target.value)}
           onKeyDown={e => e.key === "Enter" && buscar()}
-          placeholder="NV (ej: 335) o visación (ej: 254348)"
+          placeholder="Número de visación (ej: 141567)"
           className="bg-[#f9f9ff] border-[#c4c6cf] font-mono text-sm"
         />
         <Button
@@ -152,7 +152,7 @@ export default function WinFacPanel({ bodegasData }: { bodegasData: Bodega[] }) 
           disabled={loading}
           className="bg-[#16a34a] text-white font-bold hover:bg-[#15803d] shrink-0"
         >
-          {loading ? "Buscando..." : "BUSCAR NV"}
+          {loading ? "Buscando..." : "BUSCAR VISACIÓN"}
         </Button>
       </div>
 

@@ -7,6 +7,8 @@ import { db } from "@/db"
 import { entradas } from "@/db/schema"
 import { isNull } from "drizzle-orm"
 
+export const revalidate = 30
+
 export default async function DashboardLayout({
   children,
 }: {
