@@ -18,6 +18,7 @@ export default async function ProductListPage({
   const products = await db.select({
     id: productos.id,
     codigo: productos.codigo,
+    knumezet: productos.knumezet,
     codigoPersonal: productos.codigoPersonal,
     descripcion: productos.descripcion,
     packing: productos.packing,
@@ -31,6 +32,7 @@ export default async function ProductListPage({
       ? or(
           ilike(productos.codigo, `%${query}%`),
           ilike(productos.descripcion, `%${query}%`),
+          ilike(productos.knumezet, `%${query}%`),
           ilike(productos.codigoPersonal, `%${query}%`)
         )
       : undefined
@@ -96,6 +98,9 @@ export default async function ProductListPage({
               <div className="p-3 space-y-2">
                 <div className="flex items-start justify-between gap-1">
                   <span className="font-mono text-sm font-bold text-[#0051d5]">{p.codigo}</span>
+                  {p.knumezet && (
+                    <span className="font-mono text-[10px] text-[#94a3b8]">{p.knumezet}</span>
+                  )}
                   {sinBodegaIds.has(p.id) && (
                     <span className="text-[9px] bg-red-50 text-red-600 border border-red-200 rounded px-1 py-0.5 font-bold shrink-0">
                       SIN BODEGA

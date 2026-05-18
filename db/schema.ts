@@ -41,7 +41,8 @@ export const modulosDestino = pgTable("modulos_destino", {
 
 export const productos = pgTable("productos", {
   id: uuid("id").primaryKey().defaultRandom(),
-  codigo: text("codigo").unique().notNull(),
+  codigo: text("codigo").notNull(),
+  knumezet: text("knumezet").unique(),
   descripcion: text("descripcion").notNull(),
   codigoPersonal: text("codigo_personal"),
   packing: integer("packing").default(1),

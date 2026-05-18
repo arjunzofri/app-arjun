@@ -7,22 +7,17 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 })
   }
 
-  // Operación 1 — UPSERT productos agrupando duplicados por codunico
+  // Operación 1 — UPSERT productos por knumezet
   const prodResult = await db.execute(
-    `INSERT INTO productos (codigo, descripcion, packing, created_at, updated_at)
-     SELECT
-       codunico,
-       MAX(descript),
-       COALESCE(NULLIF(MAX(cantcaja),0),1),
-       now(),
-       now()
+    `INSERT INTO productos (codigo, descripcion, packing, knumezet, created_at, updated_at)
+     SELECT codunico, descript, COALESCE(NULLIF(cantcaja,0),1), knumezet, now(), now()
      FROM arjun.inv_sdo
-     GROUP BY codunico
-     ON CONFLICT (codigo) DO UPDATE SET
+     ON CONFLICT (knumezet) DO UPDATE SET
+       codigo = EXCLUDED.codigo,
        descripcion = EXCLUDED.descripcion,
        packing = EXCLUDED.packing,
        updated_at = now()
-     RETURNING codigo`
+     RETURNING knumezet`
   )
 
   // Operación 2 — UPSERT stock sumando saldos en Bodega Arjun
@@ -37,7 +32,7 @@ export async function GET(req: NextRequest) {
       `INSERT INTO stock (producto_id, bodega_id, cantidad_actual, updated_at)
        SELECT p.id, '${bodegaArjunId}', SUM(i.stocdisp), now()
        FROM arjun.inv_sdo i
-       JOIN productos p ON p.codigo = i.codunico
+       JOIN productos p ON p.knumezet = i.knumezet
        GROUP BY p.id
        ON CONFLICT (producto_id, bodega_id) DO UPDATE SET
          cantidad_actual = EXCLUDED.cantidad_actual,
