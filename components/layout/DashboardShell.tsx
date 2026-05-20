@@ -17,7 +17,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <div className={collapsed ? "pl-16" : "pl-64"}>
+    <div className={collapsed ? "md:pl-16" : "md:pl-64"}>
       {children}
     </div>
   );

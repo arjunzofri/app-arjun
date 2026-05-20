@@ -2,13 +2,12 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { ArrowUpRight, Package, LogOut } from "lucide-react"
+import { ArrowUpRight, LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { logout } from "@/app/actions/auth-actions"
 
 const ITEMS = [
   { label: "Salidas", href: "/salidas", icon: ArrowUpRight },
-  { label: "Stock", href: "/mobile/stock", icon: Package },
 ]
 
 export function MobileNav() {
@@ -26,7 +25,7 @@ export function MobileNav() {
             href={item.href}
             className={cn(
               "flex flex-col items-center justify-center gap-0.5 h-full px-4 text-[10px] font-medium transition-colors",
-              isActive ? "text-[#adc8f5]" : "text-[#5e7397] hover:text-white"
+              isActive ? "text-white" : "text-white/60 hover:text-white"
             )}
           >
             <Icon className="h-5 w-5" />
@@ -35,7 +34,7 @@ export function MobileNav() {
         )
       })}
       <form action={logout}>
-        <button className="flex flex-col items-center justify-center gap-0.5 h-full px-4 text-[10px] font-medium text-[#5e7397] hover:text-white transition-colors">
+        <button className="flex flex-col items-center justify-center gap-0.5 h-full px-4 text-[10px] font-medium text-white/60 hover:text-white transition-colors">
           <LogOut className="h-5 w-5" />
           Salir
         </button>

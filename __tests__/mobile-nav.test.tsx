@@ -17,18 +17,15 @@ describe('MobileNav — navegación móvil', () => {
     mockUsePathname.mockReturnValue('/salidas')
   })
 
-  it('renderiza 2 links: Salidas y Stock', () => {
+  it('renderiza solo el link Salidas', () => {
     render(<MobileNav />)
     expect(screen.getByText('Salidas')).toBeTruthy()
-    expect(screen.getByText('Stock')).toBeTruthy()
   })
 
-  it('los 2 links apuntan a las rutas correctas', () => {
+  it('el link Salidas apunta a /salidas', () => {
     render(<MobileNav />)
-    const links = screen.getAllByRole('link')
-    const hrefs = links.map(l => l.getAttribute('href'))
-    expect(hrefs).toContain('/salidas')
-    expect(hrefs).toContain('/mobile/stock')
+    const link = screen.getByRole('link')
+    expect(link.getAttribute('href')).toBe('/salidas')
   })
 
   it('renderiza botón Salir', () => {
@@ -36,17 +33,16 @@ describe('MobileNav — navegación móvil', () => {
     expect(screen.getByText('Salir')).toBeTruthy()
   })
 
-  it('marca como activa la ruta actual', () => {
+  it('marca como activa la ruta actual con text-white', () => {
     mockUsePathname.mockReturnValue('/salidas')
     render(<MobileNav />)
     const activo = screen.getByText('Salidas').closest('a')
-    const inactivo = screen.getByText('Stock').closest('a')
-    expect(activo?.className).toContain('adc8f5')
-    expect(inactivo?.className).not.toContain('adc8f5')
+    expect(activo?.className).toContain('text-white')
   })
 
-  it('no muestra Inicio', () => {
+  it('no muestra Stock ni Inicio', () => {
     render(<MobileNav />)
+    expect(screen.queryByText('Stock')).toBeNull()
     expect(screen.queryByText('Inicio')).toBeNull()
   })
 })
