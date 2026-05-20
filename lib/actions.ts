@@ -193,7 +193,9 @@ export async function registrarSalida(data: any) {
   });
 
   if (!existingStock || existingStock.cantidadActual < validated.cantidad) {
-    throw new Error("Stock insuficiente en la bodega seleccionada");
+    return {
+      error: `Stock insuficiente. Disponible: ${existingStock?.cantidadActual ?? 0} unidades en esa bodega.`
+    };
   }
 
   const [salida] = await db.insert(salidas).values({

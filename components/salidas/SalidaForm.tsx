@@ -34,8 +34,6 @@ export default function SalidaForm({
   const [conteoCantidad, setConteoCantidad] = useState(0);
   const [conteoLoading, setConteoLoading] = useState(false);
   const [conteoMsg, setConteoMsg] = useState<string | null>(null);
-  const [debugLog, setDebugLog] = useState<string[]>([]);
-  const log = useCallback((msg: string) => setDebugLog(prev => [...prev.slice(-5), msg]), []);
 
   const form = useForm<SalidaInput>({
     resolver: zodResolver(SalidaSchema),
@@ -71,33 +69,22 @@ export default function SalidaForm({
 
   // Auto-aplicar bodega desde producto.ubicacion solo cuando cambia el producto
   useEffect(() => {
-    log(`useEffect bodega: prod=${selectedProducto?.id?.slice(-6)}, ubic=${selectedProducto?.ubicacion}, bodegaSel=${selectedBodegaId?.slice(-6)}`);
     if (selectedProducto?.ubicacion && bodegasData.length > 0) {
       const bodega = bodegasData.find((b: any) =>
         b.nombre === selectedProducto.ubicacion ||
         b.nombre.toLowerCase().includes(selectedProducto.ubicacion?.toLowerCase() || "")
       )
-      log(`useEffect bodega encontrada: ${bodega?.nombre || "NINGUNA"}`);
       if (bodega) setValue("bodegaOrigenId", bodega.id)
     }
   }, [selectedProducto?.id]);
 
-  // Stock disponible real del producto en la bodega seleccionada
-  const stockDisponible = useMemo(() => {
-    if (!selectedProducto?.stock || !selectedBodegaId) return 0;
-    const s = selectedProducto.stock.find((st: any) => st.bodegaId === selectedBodegaId);
-    return s?.cantidadActual ?? 0;
-  }, [selectedProducto, selectedBodegaId]);
-
-  // Inicializar conteoCantidad con el stock actual cuando cambia producto o bodega
+  // Inicializar conteoCantidad con el stock actual
   useEffect(() => {
-    if (selectedProductoId && selectedBodegaId) {
-      const stockEnBodega = selectedProducto?.stock?.find(
-        (s: any) => s.bodegaId === selectedBodegaId
-      )
-      setConteoCantidad(stockEnBodega?.cantidadActual ?? 0)
+    if (selectedProductoId && selectedBodegaId && selectedProducto?.stock) {
+      const s = selectedProducto.stock.find((s: any) => s.bodegaId === selectedBodegaId)
+      setConteoCantidad(s?.cantidadActual ?? 0)
     }
-  }, [selectedProductoId, selectedBodegaId]);
+  }, [selectedProductoId, selectedBodegaId, selectedProducto?.stock]);
 
   // Fetch WinFac saldo cuando cambia el producto seleccionado
   useEffect(() => {
@@ -132,7 +119,12 @@ export default function SalidaForm({
     setError(null);
     setSuccess(false);
     try {
-      await registrarSalida(data);
+      const result: any = await registrarSalida(data);
+      if (result?.error) {
+        setError(result.error);
+        setLoading(false);
+        return;
+      }
       setSuccess(true)
       router.refresh()
       setTimeout(() => setSuccess(false), 3000)
@@ -143,7 +135,7 @@ export default function SalidaForm({
     }
   };
 
-  // Productos adaptados para BuscadorProducto — usa getImagenVidaDigital como fallback
+  // Productos adaptados para BuscadorProducto
   const productosBusqueda = useMemo(() =>
     productosData.map((p: any) => ({
       id: p.id,
@@ -158,6 +150,13 @@ export default function SalidaForm({
   const imagenProducto = selectedProducto
     ? (selectedProducto.imagenes?.[0]?.url ?? getImagenVidaDigital(selectedProducto.descripcion))
     : null;
+
+  // Stock en una bodega específica
+  const stockEnBodega = useCallback((bodegaId: string) => {
+    if (!selectedProducto?.stock) return 0;
+    const s = selectedProducto.stock.find((st: any) => st.bodegaId === bodegaId);
+    return s?.cantidadActual ?? 0;
+  }, [selectedProducto]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -184,17 +183,14 @@ export default function SalidaForm({
           } : null}
           onSelect={(p) => {
             if (!p) {
-              log(`onSelect: limpiar, bodegaSel=${selectedBodegaId?.slice(-6)}`);
               setValue("productoId", "");
               return;
             }
-            log(`onSelect: cod=${p.codigo}, ubic=${p.ubicacion}, bodegaSug=${bodegaSugerida?.nombre || "null"}`);
             setValue("productoId", p.id);
             if (!bodegaSugerida) {
               const bodega = bodegasData.find(b =>
                 b.nombre.toLowerCase().includes(p.ubicacion?.toLowerCase() || "")
               );
-              log(`onSelect buscar bodega x ubic: ${p.ubicacion} → ${bodega?.nombre || "NINGUNA"}`);
               if (bodega) setValue("bodegaOrigenId", bodega.id);
             }
           }}
@@ -275,22 +271,34 @@ export default function SalidaForm({
             {bodegasData.map((b: any) => {
               const isActive = selectedBodegaId === b.id;
               const nombre = b.nombre.replace("Bodega ", "");
+              const stockBodega = stockEnBodega(b.id);
+              const cajas = packing > 1 ? Math.floor(stockBodega / packing) : null;
+              const sueltas = packing > 1 ? stockBodega % packing : null;
               return (
                 <button
                   key={b.id}
                   type="button"
                   onClick={() => {
-                    log(`bodega click: ${b.nombre} para prod ${selectedProductoId?.slice(-6)}`);
                     actualizarUbicacionProducto(selectedProductoId, b.id);
                     setValue("bodegaOrigenId", b.id);
                   }}
-                  className={`flex flex-col items-center justify-center gap-1 py-4 px-3 rounded-xl border-2 font-bold transition-all text-sm ${
+                  className={`flex flex-col items-center justify-center gap-0.5 py-4 px-3 rounded-xl border-2 font-bold transition-all text-sm ${
                     isActive
                       ? "border-[#1e3a5f] bg-[#1e3a5f] text-white"
                       : "border-[#c4c6cf] bg-white text-[#1e293b] hover:border-[#2563eb]"
                   }`}
                 >
                   {nombre}
+                  {selectedProductoId && (
+                    <span className={`text-xs font-normal ${isActive ? "text-white/70" : "text-[#94a3b8]"}`}>
+                      {stockBodega === 0
+                        ? "Sin stock"
+                        : packing > 1
+                          ? `${cajas}c + ${sueltas}u`
+                          : `${stockBodega} u`
+                      }
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -312,34 +320,23 @@ export default function SalidaForm({
             value={cantidad}
             onChange={(n) => setValue("cantidad", n)}
             packing={packing}
-            max={stockDisponible || 999}
+            max={stockEnBodega(selectedBodegaId) || 999}
           />
         </div>
-
-        {debugLog.length > 0 && (
-          <div className="bg-black/80 text-green-400 text-xs font-mono p-3 rounded-lg space-y-1">
-            {debugLog.map((l, i) => <div key={i}>{l}</div>)}
-          </div>
-        )}
 
         <Button
           type="submit"
           className="w-full h-14 text-lg font-bold bg-[#16a34a] text-white hover:bg-[#15803d]"
           disabled={loading}
           onClick={() => {
-            const vals = {
-              productoId: watch("productoId"),
-              bodegaOrigenId: watch("bodegaOrigenId"),
-              moduloDestinoId: watch("moduloDestinoId"),
-              cantidad: watch("cantidad"),
+            if (!watch("moduloDestinoId")) {
+              setError("Selecciona un módulo de destino");
+              return;
             }
-            log(`tap CONFIRMAR: prod=${vals.productoId?.slice(-6) || "vacio"}, bodega=${vals.bodegaOrigenId?.slice(-6) || "vacio"}, modulo=${vals.moduloDestinoId?.slice(-6) || "vacio"}, cant=${vals.cantidad}`);
-            const errs = errors as Record<string, any>;
-            const errKeys = Object.keys(errs).filter(k => errs[k]);
-            if (errKeys.length > 0) log(`ZOD errors: ${errKeys.join(", ")}`);
-            if (!vals.productoId) log("FALTA productoId");
-            if (!vals.bodegaOrigenId) log("FALTA bodegaOrigenId");
-            if (!vals.moduloDestinoId) log("FALTA moduloDestinoId");
+            if (!watch("bodegaOrigenId")) {
+              setError("Selecciona una bodega de origen");
+              return;
+            }
           }}
         >
           {loading ? "PROCESANDO..." : "CONFIRMAR DESPACHO"}
