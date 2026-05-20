@@ -1,13 +1,26 @@
-import { Package } from "lucide-react"
+import { db } from "@/db"
+import StockForm from "@/components/mobile/StockForm"
 
-export default function MobileStockPage() {
+export default async function MobileStockPage() {
+  const productos = await db.query.productos.findMany({
+    with: { imagenes: { columns: { url: true } } }
+  })
+  const bodegas = await db.query.bodegas.findMany()
+  const stocks = await db.query.stock.findMany({
+    with: { bodega: { columns: { nombre: true } } }
+  })
+
+  const stocksPlanos = stocks
+    .filter(s => s.bodega)
+    .map(s => ({
+      bodegaId: s.bodegaId,
+      bodegaNombre: s.bodega!.nombre,
+      cantidadActual: s.cantidadActual,
+    }))
+
   return (
-    <div className="flex flex-col items-center justify-center py-20 gap-4">
-      <Package className="h-12 w-12 text-[#5e7397]" />
-      <h1 className="text-xl font-bold text-[#1e293b]">Actualizar Stock</h1>
-      <p className="text-sm text-[#64748b] text-center max-w-xs">
-        Próximamente — podrás actualizar el stock contado desde tu celular.
-      </p>
+    <div className="max-w-md mx-auto">
+      <StockForm productos={productos as any} bodegas={bodegas} stocks={stocksPlanos} />
     </div>
   )
 }

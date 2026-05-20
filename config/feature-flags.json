@@ -5,5 +5,6 @@
   "activity_log": true,
   "multi_bodega": true,
   "mobile_pwa": false,
-  "mobile_salidas": false
+  "mobile_salidas": false,
+  "mobile_stock": false
 }

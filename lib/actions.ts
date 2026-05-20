@@ -232,3 +232,37 @@ export async function registrarSalida(data: any) {
   return salida;
 }
 
+export async function actualizarStock(productoId: string, bodegaId: string, cantidadActual: number) {
+  const session = await auth();
+  if (!session) throw new Error("No autorizado");
+
+  const existingStock = await db.query.stock.findFirst({
+    where: and(eq(stock.productoId, productoId), eq(stock.bodegaId, bodegaId))
+  });
+
+  if (!existingStock) {
+    await db.insert(stock).values({
+      productoId,
+      bodegaId,
+      cantidadActual,
+      updatedAt: new Date(),
+    });
+  } else {
+    await db.update(stock).set({
+      cantidadActual,
+      updatedAt: new Date(),
+    }).where(eq(stock.id, existingStock.id));
+  }
+
+  await db.insert(activityLog).values({
+    usuarioId: session.user?.id ?? "",
+    accion: "STOCK_ACTUALIZADO",
+    tablaAfectada: "stock",
+    registroId: existingStock?.id ?? productoId,
+    detalle: { productoId, bodegaId, cantidadActual },
+  });
+
+  revalidatePath("/");
+  revalidatePath("/mobile/stock");
+}
+
