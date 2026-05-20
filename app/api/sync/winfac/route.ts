@@ -7,58 +7,60 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 })
   }
 
-  // Asegurar columna de watermark
+  // Asegurar columna de watermark (año+visación)
   await db.execute(
-    `ALTER TABLE sync_winfac_log ADD COLUMN IF NOT EXISTS ultima_zeta_procesada TEXT DEFAULT ''`
+    `ALTER TABLE sync_winfac_log ADD COLUMN IF NOT EXISTS ultimo_numero_visa BIGINT DEFAULT 0`
   )
 
-  // 1. Leer watermark
+  // Leer watermark
   const logResult = await db.execute(
-    `SELECT ultima_zeta_procesada FROM sync_winfac_log ORDER BY id DESC LIMIT 1`
+    `SELECT ultimo_numero_visa FROM sync_winfac_log ORDER BY id DESC LIMIT 1`
   )
-  const ultimaZeta = (logResult.rows[0] as any)?.ultima_zeta_procesada ?? ''
+  const ultimoVisa = Number((logResult.rows[0] as any)?.ultimo_numero_visa) || 0
 
-  // 2. Buscar registros nuevos desde arjun.inv_sdo
+  // Buscar productos nuevos usando watermark año+numero
   const rows = (await db.execute(
-    `SELECT knumezet, codunico, descript, stocdisp, cifunita, cantcaja
+    `SELECT knumezet, codunico, descript, stocdisp, cifunita, cantcaja,
+            (split_part(knumezet,'-',2)::bigint * 1000000 + split_part(knumezet,'-',3)::bigint) as visa_key
      FROM arjun.inv_sdo
-     WHERE knumezet > '${ultimaZeta}'
-     ORDER BY knumezet
+     WHERE (split_part(knumezet,'-',2)::bigint * 1000000 + split_part(knumezet,'-',3)::bigint) > ${ultimoVisa}
+     ORDER BY visa_key ASC, knumezet ASC
      LIMIT 10`
   )).rows as any[]
 
   if (rows.length === 0) {
     return NextResponse.json({
-      message: "Sin registros nuevos",
+      message: "Sin productos nuevos",
       productos_creados: 0,
-      ultima_zeta_procesada: ultimaZeta
+      ultimo_numero_visa: ultimoVisa,
     })
   }
 
-  // 3. Bulk UPSERT en productos
+  // Bulk UPSERT productos nuevos
   await db.execute(
-    `INSERT INTO productos (codigo, descripcion, packing, created_at, updated_at)
-     SELECT codunico, descript, COALESCE(NULLIF(cantcaja,0),1), now(), now()
+    `INSERT INTO productos (codigo, descripcion, packing, knumezet, created_at, updated_at)
+     SELECT codunico, descript, COALESCE(NULLIF(cantcaja,0),1), knumezet, now(), now()
      FROM arjun.inv_sdo
-     WHERE knumezet > '${ultimaZeta}'
-     ORDER BY knumezet
+     WHERE (split_part(knumezet,'-',2)::bigint * 1000000 + split_part(knumezet,'-',3)::bigint) > ${ultimoVisa}
+     ORDER BY (split_part(knumezet,'-',2)::bigint * 1000000 + split_part(knumezet,'-',3)::bigint) ASC, knumezet ASC
      LIMIT 10
-     ON CONFLICT (codigo) DO UPDATE SET
+     ON CONFLICT (knumezet) DO UPDATE SET
+       codigo = EXCLUDED.codigo,
        descripcion = EXCLUDED.descripcion,
        packing = EXCLUDED.packing,
        updated_at = now()`
   )
 
-  const nuevaUltimaZeta = rows[rows.length - 1].knumezet
+  const nuevoVisa = rows[rows.length - 1].visa_key
 
-  // 4. Actualizar watermark
+  // Actualizar watermark
   await db.execute(
-    `UPDATE sync_winfac_log SET ultima_zeta_procesada = '${nuevaUltimaZeta}', ultima_sync_at = now(), productos_creados = productos_creados + ${rows.length} WHERE id = (SELECT id FROM sync_winfac_log ORDER BY id DESC LIMIT 1)`
+    `UPDATE sync_winfac_log SET ultimo_numero_visa = ${nuevoVisa}, ultima_sync_at = now(), productos_creados = productos_creados + ${rows.length} WHERE id = (SELECT id FROM sync_winfac_log ORDER BY id DESC LIMIT 1)`
   )
 
   return NextResponse.json({
     message: "Sync completado",
     productos_creados: rows.length,
-    ultima_zeta_procesada: nuevaUltimaZeta,
+    ultimo_numero_visa: nuevoVisa,
   })
 }
