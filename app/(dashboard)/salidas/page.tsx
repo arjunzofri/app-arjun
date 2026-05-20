@@ -6,7 +6,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default async function SalidasPage() {
-  const allProductos = await db.query.productos.findMany();
+  const allProductos = await db.query.productos.findMany({
+    with: {
+      imagenes: { limit: 1 },
+      stock: true,
+    }
+  });
   const allBodegas = await db.query.bodegas.findMany();
   const allModulos = await db.query.modulosDestino.findMany();
   

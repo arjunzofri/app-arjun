@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef } from "react"
+import { useRouter } from "next/navigation"
 import { Camera } from "lucide-react"
 
 type Props = {
@@ -12,6 +13,7 @@ export function BotonFoto({ productoId, onSuccess }: Props) {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const ref = useRef<HTMLInputElement>(null)
+  const router = useRouter()
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -33,6 +35,7 @@ export function BotonFoto({ productoId, onSuccess }: Props) {
 
       const data = await res.json()
       onSuccess?.(data.url)
+      router.refresh()
     } catch (err: any) {
       setError(err.message || "Error al subir foto")
     } finally {

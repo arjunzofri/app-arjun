@@ -1,10 +1,10 @@
 import { db } from "@/db";
 import { stock, bodegas, productos, salidas, entradas } from "@/db/schema";
 import { sql, desc } from "drizzle-orm";
-import { 
-  Package, 
-  ArrowDownLeft, 
-  ArrowUpRight, 
+import {
+  Package,
+  ArrowDownLeft,
+  ArrowUpRight,
   Warehouse,
   Database,
   AlertTriangle
@@ -12,8 +12,15 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 export default async function DashboardPage() {
+  const headersList = await headers();
+  const ua = headersList.get("user-agent") || "";
+  const isMobile = /android|iphone|ipad|mobile/i.test(ua);
+  if (isMobile) redirect("/salidas");
+
   let productCountData, bodegaStocksData, recentSalidasData, recentEntradasData;
 
   try {

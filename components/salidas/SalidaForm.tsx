@@ -67,6 +67,20 @@ export default function SalidaForm({
     ) || null;
   }, [selectedProducto, bodegasData]);
 
+  // Auto-aplicar bodega sugerida al form si no hay bodega seleccionada
+  useEffect(() => {
+    if (bodegaSugerida && !selectedBodegaId) {
+      setValue("bodegaOrigenId", bodegaSugerida.id);
+    }
+  }, [bodegaSugerida, selectedBodegaId, setValue]);
+
+  // Stock disponible real del producto en la bodega seleccionada
+  const stockDisponible = useMemo(() => {
+    if (!selectedProducto?.stock || !selectedBodegaId) return 0;
+    const s = selectedProducto.stock.find((st: any) => st.bodegaId === selectedBodegaId);
+    return s?.cantidadActual ?? 0;
+  }, [selectedProducto, selectedBodegaId]);
+
   // Fetch WinFac saldo cuando cambia el producto seleccionado
   useEffect(() => {
     if (selectedProducto?.codigo) {
@@ -273,7 +287,7 @@ export default function SalidaForm({
             value={cantidad}
             onChange={(n) => setValue("cantidad", n)}
             packing={packing}
-            max={999}
+            max={stockDisponible || 999}
           />
         </div>
 

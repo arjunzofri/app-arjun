@@ -1,6 +1,10 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { BotonFoto } from '@/components/mobile/BotonFoto'
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ refresh: vi.fn() }),
+}))
 
 describe('BotonFoto', () => {
   it('renderiza el botón de Foto con ícono de cámara', () => {
