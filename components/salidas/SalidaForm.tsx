@@ -99,8 +99,9 @@ export default function SalidaForm({
     setConteoMsg(null);
     try {
       await registrarConteoFisico(selectedProductoId, selectedBodegaId, conteoCantidad);
-      setConteoMsg("Stock físico actualizado");
+      setConteoMsg(`✅ Stock actualizado: ${conteoCantidad} unidades`);
       router.refresh();
+      setTimeout(() => setConteoMsg(null), 3000);
     } catch (e: any) {
       setConteoMsg(e.message || "Error al actualizar stock");
     } finally {
@@ -166,7 +167,6 @@ export default function SalidaForm({
           onSelect={(p) => {
             if (!p) {
               setValue("productoId", "");
-              setValue("bodegaOrigenId", "");
               return;
             }
             setValue("productoId", p.id);
