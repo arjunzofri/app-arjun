@@ -34,6 +34,8 @@ export default function SalidaForm({
   const [conteoCantidad, setConteoCantidad] = useState(0);
   const [conteoLoading, setConteoLoading] = useState(false);
   const [conteoMsg, setConteoMsg] = useState<string | null>(null);
+  const [debugLog, setDebugLog] = useState<string[]>([]);
+  const log = useCallback((msg: string) => setDebugLog(prev => [...prev.slice(-5), msg]), []);
 
   const form = useForm<SalidaInput>({
     resolver: zodResolver(SalidaSchema),
@@ -69,18 +71,13 @@ export default function SalidaForm({
 
   // Auto-aplicar bodega desde producto.ubicacion solo cuando cambia el producto
   useEffect(() => {
-    console.log("[DEBUG bodega useEffect] disparado", {
-      productoId: selectedProducto?.id,
-      ubicacion: selectedProducto?.ubicacion,
-      selectedBodegaId,
-      bodegasCount: bodegasData.length,
-    });
+    log(`useEffect bodega: prod=${selectedProducto?.id?.slice(-6)}, ubic=${selectedProducto?.ubicacion}, bodegaSel=${selectedBodegaId?.slice(-6)}`);
     if (selectedProducto?.ubicacion && bodegasData.length > 0) {
       const bodega = bodegasData.find((b: any) =>
         b.nombre === selectedProducto.ubicacion ||
         b.nombre.toLowerCase().includes(selectedProducto.ubicacion?.toLowerCase() || "")
       )
-      console.log("[DEBUG bodega useEffect] bodega encontrada:", bodega?.nombre || "NINGUNA");
+      log(`useEffect bodega encontrada: ${bodega?.nombre || "NINGUNA"}`);
       if (bodega) setValue("bodegaOrigenId", bodega.id)
     }
   }, [selectedProducto?.id]);
@@ -187,23 +184,17 @@ export default function SalidaForm({
           } : null}
           onSelect={(p) => {
             if (!p) {
-              console.log("[DEBUG onSelect] limpiar producto, bodegaOrigenId se mantiene:", selectedBodegaId);
+              log(`onSelect: limpiar, bodegaSel=${selectedBodegaId?.slice(-6)}`);
               setValue("productoId", "");
               return;
             }
-            console.log("[DEBUG onSelect] producto seleccionado", {
-              id: p.id,
-              codigo: p.codigo,
-              ubicacion: p.ubicacion,
-              bodegaSugerida: bodegaSugerida?.nombre || null,
-              selectedBodegaId,
-            });
+            log(`onSelect: cod=${p.codigo}, ubic=${p.ubicacion}, bodegaSug=${bodegaSugerida?.nombre || "null"}`);
             setValue("productoId", p.id);
             if (!bodegaSugerida) {
               const bodega = bodegasData.find(b =>
                 b.nombre.toLowerCase().includes(p.ubicacion?.toLowerCase() || "")
               );
-              console.log("[DEBUG onSelect] bodegaSugerida es null, buscando por p.ubicacion:", p.ubicacion, "→", bodega?.nombre || "NINGUNA");
+              log(`onSelect buscar bodega x ubic: ${p.ubicacion} → ${bodega?.nombre || "NINGUNA"}`);
               if (bodega) setValue("bodegaOrigenId", bodega.id);
             }
           }}
@@ -289,7 +280,7 @@ export default function SalidaForm({
                   key={b.id}
                   type="button"
                   onClick={() => {
-                    console.log("[DEBUG bodega onClick]", b.nombre, "para producto", selectedProductoId);
+                    log(`bodega click: ${b.nombre} para prod ${selectedProductoId?.slice(-6)}`);
                     actualizarUbicacionProducto(selectedProductoId, b.id);
                     setValue("bodegaOrigenId", b.id);
                   }}
@@ -324,6 +315,12 @@ export default function SalidaForm({
             max={stockDisponible || 999}
           />
         </div>
+
+        {debugLog.length > 0 && (
+          <div className="bg-black/80 text-green-400 text-xs font-mono p-3 rounded-lg space-y-1">
+            {debugLog.map((l, i) => <div key={i}>{l}</div>)}
+          </div>
+        )}
 
         <Button
           type="submit"
