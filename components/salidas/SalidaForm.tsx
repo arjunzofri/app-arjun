@@ -69,11 +69,18 @@ export default function SalidaForm({
 
   // Auto-aplicar bodega desde producto.ubicacion solo cuando cambia el producto
   useEffect(() => {
+    console.log("[DEBUG bodega useEffect] disparado", {
+      productoId: selectedProducto?.id,
+      ubicacion: selectedProducto?.ubicacion,
+      selectedBodegaId,
+      bodegasCount: bodegasData.length,
+    });
     if (selectedProducto?.ubicacion && bodegasData.length > 0) {
       const bodega = bodegasData.find((b: any) =>
         b.nombre === selectedProducto.ubicacion ||
         b.nombre.toLowerCase().includes(selectedProducto.ubicacion?.toLowerCase() || "")
       )
+      console.log("[DEBUG bodega useEffect] bodega encontrada:", bodega?.nombre || "NINGUNA");
       if (bodega) setValue("bodegaOrigenId", bodega.id)
     }
   }, [selectedProducto?.id]);
@@ -180,14 +187,23 @@ export default function SalidaForm({
           } : null}
           onSelect={(p) => {
             if (!p) {
+              console.log("[DEBUG onSelect] limpiar producto, bodegaOrigenId se mantiene:", selectedBodegaId);
               setValue("productoId", "");
               return;
             }
+            console.log("[DEBUG onSelect] producto seleccionado", {
+              id: p.id,
+              codigo: p.codigo,
+              ubicacion: p.ubicacion,
+              bodegaSugerida: bodegaSugerida?.nombre || null,
+              selectedBodegaId,
+            });
             setValue("productoId", p.id);
             if (!bodegaSugerida) {
               const bodega = bodegasData.find(b =>
                 b.nombre.toLowerCase().includes(p.ubicacion?.toLowerCase() || "")
               );
+              console.log("[DEBUG onSelect] bodegaSugerida es null, buscando por p.ubicacion:", p.ubicacion, "→", bodega?.nombre || "NINGUNA");
               if (bodega) setValue("bodegaOrigenId", bodega.id);
             }
           }}
@@ -273,6 +289,7 @@ export default function SalidaForm({
                   key={b.id}
                   type="button"
                   onClick={() => {
+                    console.log("[DEBUG bodega onClick]", b.nombre, "para producto", selectedProductoId);
                     actualizarUbicacionProducto(selectedProductoId, b.id);
                     setValue("bodegaOrigenId", b.id);
                   }}
