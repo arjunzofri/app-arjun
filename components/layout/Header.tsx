@@ -4,7 +4,7 @@ import { User } from "lucide-react";
 
 export function Header({ userName }: { userName: string }) {
   return (
-    <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-[#c4c6cf] bg-[#f9f9ff]/50 px-8 backdrop-blur-md">
+    <header className="sticky top-0 z-30 hidden md:flex h-16 w-full items-center justify-between border-b border-[#c4c6cf] bg-[#f9f9ff]/50 px-8 backdrop-blur-md">
       <div className="flex items-center gap-4">
         <h2 className="text-xs font-medium text-[#74777f] uppercase tracking-widest">Panel de Control General</h2>
         <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">SINC: OK</span>

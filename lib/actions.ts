@@ -6,6 +6,7 @@ import { eq, sql, and } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { ProductoSchema, EntradaSchema, SalidaSchema } from "@/lib/validations";
 import { revalidatePath } from "next/cache";
+import { neon } from "@neondatabase/serverless";
 
 export async function createOrUpdateProducto(data: any) {
   const session = await auth();
@@ -264,5 +265,56 @@ export async function actualizarStock(productoId: string, bodegaId: string, cant
 
   revalidatePath("/");
   revalidatePath("/mobile/stock");
+}
+
+export async function getStockWinfac(codigo: string): Promise<number> {
+  const s = neon(process.env.DATABASE_URL!);
+  const rows = await s`SELECT COALESCE(SUM(stocdisp), 0) as total FROM arjun.inv_sdo WHERE codunico = ${codigo}`;
+  return Number(rows[0]?.total) || 0;
+}
+
+export async function registrarConteoFisico(productoId: string, bodegaId: string, cantidad: number) {
+  const session = await auth();
+  if (!session) throw new Error("No autorizado");
+
+  // Insertar entrada de conteo físico
+  await db.insert(entradas).values({
+    productoId,
+    bodegaId,
+    cantidad,
+    usuarioId: session.user?.id ?? "",
+    origen: "conteo_fisico",
+  });
+
+  // Upsert stock
+  const existingStock = await db.query.stock.findFirst({
+    where: and(eq(stock.productoId, productoId), eq(stock.bodegaId, bodegaId))
+  });
+
+  if (existingStock) {
+    await db.update(stock).set({
+      cantidadActual: cantidad,
+      updatedAt: new Date(),
+    }).where(eq(stock.id, existingStock.id));
+  } else {
+    await db.insert(stock).values({
+      productoId,
+      bodegaId,
+      cantidadActual: cantidad,
+      updatedAt: new Date(),
+    });
+  }
+
+  await db.insert(activityLog).values({
+    usuarioId: session.user?.id ?? "",
+    accion: "CONTEO_FISICO",
+    tablaAfectada: "stock",
+    registroId: productoId,
+    detalle: { productoId, bodegaId, cantidad },
+  });
+
+  revalidatePath("/");
+  revalidatePath("/mobile/stock");
+  return { success: true };
 }
 

@@ -8,3 +8,7 @@ export function getCloudinaryVidaDigitalUrl(descripcion: string): string | null 
   if (!modelo) return null
   return `https://res.cloudinary.com/dxkidwxjl/image/upload/productos/${modelo}.jpg`
 }
+
+export function getImagenVidaDigital(descripcion: string): string | null {
+  return getCloudinaryVidaDigitalUrl(descripcion)
+}

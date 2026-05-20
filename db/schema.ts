@@ -14,7 +14,7 @@ import { relations } from "drizzle-orm";
 // Enums
 export const rolEnum = pgEnum("rol", ["admin", "operador"]);
 export const proveedorEnum = pgEnum("proveedor", ["vida_digital", "kingnex"]);
-export const origenEnum = pgEnum("origen", ["winfac", "kingnex", "manual"]);
+export const origenEnum = pgEnum("origen", ["winfac", "kingnex", "manual", "conteo_fisico"]);
 
 // Tables
 export const usuarios = pgTable("usuarios", {

@@ -23,7 +23,7 @@ export default async function SalidasPage() {
 
   return (
     <div className="space-y-8">
-      <div>
+      <div className="hidden md:block">
         <h1 className="text-3xl font-bold text-[#111c2d]">Despachos (Salidas)</h1>
         <p className="text-[#74777f]">Registra el movimiento de mercadería desde bodegas hacia módulos del Mall Zofri.</p>
       </div>
@@ -31,10 +31,11 @@ export default async function SalidasPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1">
           <Card className="bg-white border-[#c4c6cf]">
-            <CardHeader>
-              <CardTitle>Nuevo Registro</CardTitle>
+            <CardHeader className="px-4 md:px-6">
+              <CardTitle className="hidden md:block">Nuevo Registro</CardTitle>
+              <CardTitle className="md:hidden text-base">Buscar producto</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-2 md:px-6">
               <SalidaForm 
                 productosData={allProductos} 
                 bodegasData={allBodegas} 
