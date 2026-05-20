@@ -318,3 +318,20 @@ export async function registrarConteoFisico(productoId: string, bodegaId: string
   return { success: true };
 }
 
+export async function actualizarUbicacionProducto(productoId: string, bodegaId: string) {
+  const session = await auth();
+  if (!session) throw new Error("No autorizado");
+
+  const bodega = await db.query.bodegas.findFirst({
+    where: eq(bodegas.id, bodegaId)
+  });
+  if (!bodega) throw new Error("Bodega no encontrada");
+
+  await db.update(productos)
+    .set({ ubicacion: bodega.nombre, updatedAt: new Date() })
+    .where(eq(productos.id, productoId));
+
+  revalidatePath("/salidas");
+  return { ubicacion: bodega.nombre };
+}
+

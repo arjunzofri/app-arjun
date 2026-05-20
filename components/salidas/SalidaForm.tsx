@@ -12,7 +12,7 @@ import { BuscadorProducto } from "@/components/mobile/BuscadorProducto";
 import { BotonesModulo } from "@/components/mobile/BotonesModulo";
 import { InputCantidad } from "@/components/mobile/InputCantidad";
 import { BotonFoto } from "@/components/mobile/BotonFoto";
-import { registrarSalida, getStockWinfac, registrarConteoFisico } from "@/lib/actions";
+import { registrarSalida, getStockWinfac, registrarConteoFisico, actualizarUbicacionProducto } from "@/lib/actions";
 import { getImagenVidaDigital } from "@/lib/utils/extract-modelo";
 import { useRouter } from "next/navigation";
 import { useState, useMemo, useEffect, useCallback } from "react";
@@ -31,7 +31,7 @@ export default function SalidaForm({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [winfacSaldo, setWinfacSaldo] = useState<number | null>(null);
-  const [conteoCantidad, setConteoCantidad] = useState(1);
+  const [conteoCantidad, setConteoCantidad] = useState(0);
   const [conteoLoading, setConteoLoading] = useState(false);
   const [conteoMsg, setConteoMsg] = useState<string | null>(null);
 
@@ -67,12 +67,16 @@ export default function SalidaForm({
     ) || null;
   }, [selectedProducto, bodegasData]);
 
-  // Auto-aplicar bodega sugerida al form si no hay bodega seleccionada
+  // Auto-aplicar bodega desde producto.ubicacion solo cuando cambia el producto
   useEffect(() => {
-    if (bodegaSugerida && !selectedBodegaId) {
-      setValue("bodegaOrigenId", bodegaSugerida.id);
+    if (selectedProducto?.ubicacion && bodegasData.length > 0) {
+      const bodega = bodegasData.find((b: any) =>
+        b.nombre === selectedProducto.ubicacion ||
+        b.nombre.toLowerCase().includes(selectedProducto.ubicacion?.toLowerCase() || "")
+      )
+      if (bodega) setValue("bodegaOrigenId", bodega.id)
     }
-  }, [bodegaSugerida, selectedBodegaId, setValue]);
+  }, [selectedProducto?.id]);
 
   // Stock disponible real del producto en la bodega seleccionada
   const stockDisponible = useMemo(() => {
@@ -80,6 +84,16 @@ export default function SalidaForm({
     const s = selectedProducto.stock.find((st: any) => st.bodegaId === selectedBodegaId);
     return s?.cantidadActual ?? 0;
   }, [selectedProducto, selectedBodegaId]);
+
+  // Inicializar conteoCantidad con el stock actual cuando cambia producto o bodega
+  useEffect(() => {
+    if (selectedProductoId && selectedBodegaId) {
+      const stockEnBodega = selectedProducto?.stock?.find(
+        (s: any) => s.bodegaId === selectedBodegaId
+      )
+      setConteoCantidad(stockEnBodega?.cantidadActual ?? 0)
+    }
+  }, [selectedProductoId, selectedBodegaId]);
 
   // Fetch WinFac saldo cuando cambia el producto seleccionado
   useEffect(() => {
@@ -258,7 +272,10 @@ export default function SalidaForm({
                 <button
                   key={b.id}
                   type="button"
-                  onClick={() => setValue("bodegaOrigenId", b.id)}
+                  onClick={() => {
+                    actualizarUbicacionProducto(selectedProductoId, b.id);
+                    setValue("bodegaOrigenId", b.id);
+                  }}
                   className={`flex flex-col items-center justify-center gap-1 py-4 px-3 rounded-xl border-2 font-bold transition-all text-sm ${
                     isActive
                       ? "border-[#1e3a5f] bg-[#1e3a5f] text-white"
