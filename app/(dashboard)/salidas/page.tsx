@@ -44,7 +44,7 @@ export default async function SalidasPage() {
           </Card>
         </div>
 
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 hidden md:block">
           <Card className="bg-white border-[#c4c6cf]">
             <CardHeader>
               <CardTitle>Historial de Movimientos</CardTitle>

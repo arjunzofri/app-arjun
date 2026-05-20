@@ -4,5 +4,6 @@
   "image_sync_intranet": false,
   "activity_log": true,
   "multi_bodega": true,
-  "mobile_pwa": false
+  "mobile_pwa": false,
+  "mobile_salidas": false
 }

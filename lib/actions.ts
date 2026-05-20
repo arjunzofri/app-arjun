@@ -217,6 +217,15 @@ export async function registrarSalida(data: any) {
     detalle: validated,
   });
 
+  // Guardar bodega como ubicación del producto para futuras salidas
+  const bodegaSeleccionada = await db.query.bodegas.findFirst({
+    where: eq(bodegas.id, validated.bodegaOrigenId)
+  });
+  if (bodegaSeleccionada) {
+    await db.update(productos).set({ ubicacion: bodegaSeleccionada.nombre })
+      .where(eq(productos.id, validated.productoId));
+  }
+
   revalidatePath("/");
   revalidatePath("/productos");
   revalidatePath("/salidas");
