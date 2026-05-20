@@ -326,6 +326,21 @@ export default function SalidaForm({
           type="submit"
           className="w-full h-14 text-lg font-bold bg-[#16a34a] text-white hover:bg-[#15803d]"
           disabled={loading}
+          onClick={() => {
+            const vals = {
+              productoId: watch("productoId"),
+              bodegaOrigenId: watch("bodegaOrigenId"),
+              moduloDestinoId: watch("moduloDestinoId"),
+              cantidad: watch("cantidad"),
+            }
+            log(`tap CONFIRMAR: prod=${vals.productoId?.slice(-6) || "vacio"}, bodega=${vals.bodegaOrigenId?.slice(-6) || "vacio"}, modulo=${vals.moduloDestinoId?.slice(-6) || "vacio"}, cant=${vals.cantidad}`);
+            const errs = errors as Record<string, any>;
+            const errKeys = Object.keys(errs).filter(k => errs[k]);
+            if (errKeys.length > 0) log(`ZOD errors: ${errKeys.join(", ")}`);
+            if (!vals.productoId) log("FALTA productoId");
+            if (!vals.bodegaOrigenId) log("FALTA bodegaOrigenId");
+            if (!vals.moduloDestinoId) log("FALTA moduloDestinoId");
+          }}
         >
           {loading ? "PROCESANDO..." : "CONFIRMAR DESPACHO"}
         </Button>
