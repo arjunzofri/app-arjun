@@ -160,11 +160,6 @@ export default function SalidaForm({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      {error && (
-        <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-600">
-          {error}
-        </div>
-      )}
       {success && (
         <div className="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">
           Despacho registrado con éxito
@@ -271,9 +266,21 @@ export default function SalidaForm({
             {bodegasData.map((b: any) => {
               const isActive = selectedBodegaId === b.id;
               const nombre = b.nombre.replace("Bodega ", "");
-              const stockBodega = stockEnBodega(b.id);
-              const cajas = packing > 1 ? Math.floor(stockBodega / packing) : null;
-              const sueltas = packing > 1 ? stockBodega % packing : null;
+              const cantidadUnidades = stockEnBodega(b.id);
+              let stockLabel = "";
+              if (!selectedProductoId) {
+                stockLabel = "";
+              } else if (cantidadUnidades === 0) {
+                stockLabel = "Sin stock";
+              } else if (packing > 1) {
+                const cajas = Math.floor(cantidadUnidades / packing);
+                const sueltas = cantidadUnidades % packing;
+                if (cajas > 0 && sueltas > 0) stockLabel = `${cajas}c + ${sueltas}u`;
+                else if (cajas > 0) stockLabel = `${cajas} cajas`;
+                else stockLabel = `${sueltas} u`;
+              } else {
+                stockLabel = `${cantidadUnidades} u`;
+              }
               return (
                 <button
                   key={b.id}
@@ -289,14 +296,9 @@ export default function SalidaForm({
                   }`}
                 >
                   {nombre}
-                  {selectedProductoId && (
+                  {stockLabel && (
                     <span className={`text-xs font-normal ${isActive ? "text-white/70" : "text-[#94a3b8]"}`}>
-                      {stockBodega === 0
-                        ? "Sin stock"
-                        : packing > 1
-                          ? `${cajas}c + ${sueltas}u`
-                          : `${stockBodega} u`
-                      }
+                      {stockLabel}
                     </span>
                   )}
                 </button>
@@ -323,6 +325,12 @@ export default function SalidaForm({
             max={stockEnBodega(selectedBodegaId) || 999}
           />
         </div>
+
+        {error && (
+          <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600 font-medium">
+            ⚠️ {error}
+          </div>
+        )}
 
         <Button
           type="submit"
