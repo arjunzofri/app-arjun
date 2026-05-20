@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { BuscadorProducto } from "@/components/mobile/BuscadorProducto";
 import { BotonesModulo } from "@/components/mobile/BotonesModulo";
 import { InputCantidad } from "@/components/mobile/InputCantidad";
+import { BotonFoto } from "@/components/mobile/BotonFoto";
 import { registrarSalida } from "@/lib/actions";
 import { useRouter } from "next/navigation";
 import { useState, useMemo } from "react";
@@ -124,6 +125,11 @@ export default function SalidaForm({
               }
             }}
           />
+          {selectedProductoId && (
+            <div className="flex justify-end mt-2">
+              <BotonFoto productoId={selectedProductoId} />
+            </div>
+          )}
         </div>
 
         <div>

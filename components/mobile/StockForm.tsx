@@ -4,6 +4,7 @@ import { useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { BuscadorProducto } from "@/components/mobile/BuscadorProducto"
 import { InputCantidad } from "@/components/mobile/InputCantidad"
+import { BotonFoto } from "@/components/mobile/BotonFoto"
 import { actualizarStock } from "@/lib/actions"
 
 type Producto = { id: string; codigo: string; descripcion: string; packing: number; imagenes?: any[] }
@@ -80,6 +81,12 @@ export default function StockForm({ productos, bodegas, stocks }: Props) {
           setCantidad(1)
         }}
       />
+
+      {producto && (
+        <div className="flex justify-end mt-2">
+          <BotonFoto productoId={producto.id} />
+        </div>
+      )}
 
       {producto && (
         <div className="bg-[#f1f5f9] rounded-lg p-3 text-sm text-[#475569]">
