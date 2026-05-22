@@ -1,17 +1,8 @@
 import { db } from "@/db";
-import { stock, bodegas, productos, salidas, entradas } from "@/db/schema";
-import { sql, desc } from "drizzle-orm";
-import {
-  Package,
-  ArrowDownLeft,
-  ArrowUpRight,
-  Warehouse,
-  Database,
-  AlertTriangle
-} from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { sql } from "drizzle-orm";
+import { Warehouse, ArrowUpRight, AlertTriangle, Database } from "lucide-react";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
+import { getCloudinaryVidaDigitalUrl } from "@/lib/utils/extract-modelo";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -21,62 +12,64 @@ export default async function DashboardPage() {
   const isMobile = /android|iphone|ipad|mobile/i.test(ua);
   if (isMobile) redirect("/salidas");
 
-  let productCountData, bodegaStocksData, recentSalidasData, recentEntradasData;
+  let bodegaStocks: any[] = [];
+  let modulosDespachos: any[] = [];
+  let alertaBajo: any[] = [];
+  const ahora = new Date().toLocaleString("es-CL", {
+    day: "2-digit", month: "2-digit", year: "numeric",
+    hour: "2-digit", minute: "2-digit",
+  });
 
   try {
-    // Stats - Wrap data fetching in try-catch
-    [productCountData] = await db.select({ count: sql<number>`count(*)` }).from(productos);
-    
-    bodegaStocksData = await db.select({
-      bodegaNombre: bodegas.nombre,
-      totalStock: sql<number>`sum(${stock.cantidadActual})`
-    })
-    .from(bodegas)
-    .leftJoin(stock, sql`${bodegas.id} = ${stock.bodegaId}`)
-    .groupBy(bodegas.nombre);
-
-    recentSalidasData = await db.query.salidas.findMany({
-      limit: 5,
-      orderBy: [desc(salidas.timestampSalida)],
-      with: {
-        producto: true,
-        usuario: true,
-        modulo: true
-      }
-    });
-
-    recentEntradasData = await db.query.entradas.findMany({
-      limit: 5,
-      orderBy: [desc(entradas.createdAt)],
-      with: {
-        producto: true,
-        usuario: true,
-        bodega: true
-      }
-    });
+    const [bs, md, ab] = await Promise.all([
+      db.execute(sql`
+        SELECT b.nombre, COUNT(DISTINCT s.producto_id)::int as productos,
+               SUM(s.cantidad_actual)::int as unidades
+        FROM stock s
+        JOIN bodegas b ON b.id = s.bodega_id
+        WHERE s.cantidad_actual > 0
+        GROUP BY b.id, b.nombre
+      `),
+      db.execute(sql`
+        SELECT m.nombre, COUNT(sa.id)::int as despachos,
+               COALESCE(SUM(sa.cantidad), 0)::int as unidades
+        FROM modulos_destino m
+        LEFT JOIN salidas sa ON sa.modulo_destino_id = m.id
+        GROUP BY m.id, m.nombre
+        ORDER BY m.nombre
+      `),
+      db.execute(sql`
+        SELECT p.id, p.codigo, p.descripcion, p.packing,
+               COALESCE(SUM(s.cantidad_actual), 0)::int as total_stock
+        FROM productos p
+        LEFT JOIN stock s ON s.producto_id = p.id
+        GROUP BY p.id, p.codigo, p.descripcion, p.packing
+        HAVING COALESCE(SUM(s.cantidad_actual), 0) > 0
+           AND COALESCE(SUM(s.cantidad_actual), 0) < COALESCE(p.packing, 1)
+        ORDER BY total_stock ASC
+        LIMIT 10
+      `),
+    ]);
+    bodegaStocks = bs.rows;
+    modulosDespachos = md.rows;
+    alertaBajo = ab.rows;
   } catch (error) {
-    console.error("Dashboard database error (likely missing tables):", error);
-    
-    // Return early with the setup prompt if database query fails
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-6">
         <div className="p-4 bg-[#dbe1ff] rounded-full border border-[#0051d5]/20">
           <Database className="h-12 w-12 text-[#0051d5]" />
         </div>
-        
         <div className="max-w-md space-y-2">
           <h2 className="text-2xl font-bold text-[#111c2d]">Base de datos no inicializada</h2>
           <p className="text-[#74777f] text-sm">
             Las tablas necesarias para el funcionamiento de Arjun no se encuentran en el servidor de Neon.
           </p>
         </div>
-
         <Link href="/setup">
           <button className="px-8 py-4 bg-[#16a34a] text-white font-bold uppercase tracking-widest rounded-sm hover:bg-[#15803d] transition-colors shadow-lg active:scale-95 cursor-pointer">
             INICIALIZAR SISTEMA
           </button>
         </Link>
-
         <div className="flex items-center gap-2 text-[10px] text-[#74777f] font-mono uppercase tracking-widest">
           <AlertTriangle className="h-3 w-3" />
           Requiere SETUP_KEY configurado
@@ -85,156 +78,79 @@ export default async function DashboardPage() {
     );
   }
 
-  // Normal dashboard rendering - outside the try block
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-[#111c2d]">Panel de Control</h1>
-        <p className="text-[#74777f]">Resumen operativo de inventario y movimientos.</p>
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-3">
-        <Card className="bg-white border-[#c4c6cf] p-1 rounded-sm relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-2 opacity-5 group-hover:opacity-10 transition-opacity">
-            <Package className="w-16 h-16" />
-          </div>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-[10px] text-[#74777f] uppercase tracking-widest font-bold">Total Productos</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-mono font-bold text-[#111c2d]">{productCountData.count}</div>
-            <div className="mt-4 flex items-center text-[10px] text-emerald-400 font-mono">
-              <span className="bg-emerald-500/10 px-1 rounded mr-1">ACTUALIZADO</span>
-              Recién sincronizado
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white border-[#c4c6cf] p-1 rounded-sm">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-[10px] text-[#74777f] uppercase tracking-widest font-bold">Stock Bodegas (Origen)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2 mt-1">
-              {bodegaStocksData.map((b) => (
-                <div key={b.bodegaNombre} className="flex justify-between items-center text-xs font-mono">
-                  <span className="text-[#74777f]">{b.bodegaNombre.replace('Bodega ', '')}</span>
-                  <span className={cn(
-                    "font-bold",
-                    b.totalStock && b.totalStock > 0 ? "text-[#2563eb]" : "text-[#94a3b8]"
-                  )}>
-                    {b.totalStock || 0}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white border-[#c4c6cf] p-1 rounded-sm">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-[10px] text-[#74777f] uppercase tracking-widest font-bold">Módulos Zofri (Destino)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-2 mt-1">
-              {['M180', 'M182', 'M183', 'M184', 'M193'].map((m) => (
-                <div key={m} className="bg-[#e7eeff]/40 p-2 rounded border border-[#c4c6cf]/50 text-[10px] font-mono flex justify-between">
-                  <span className="text-[#74777f]">{m}:</span>
-                  <span className="text-[#111c2d] font-bold">--</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid gap-6 grid-cols-12">
-        {/* Entradas/Salidas Recent Activity */}
-        <Card className="col-span-12 lg:col-span-8 bg-white border-[#c4c6cf] rounded-sm">
-          <CardHeader className="border-b border-[#c4c6cf] flex flex-row items-center justify-between py-4">
-            <CardTitle className="text-xs font-bold uppercase tracking-widest text-[#43474e]">Últimas Operaciones</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs font-mono">
-                <thead className="bg-[#f9f9ff]/50 text-[#74777f]">
-                  <tr>
-                    <th className="px-5 py-3 font-normal">FECHA</th>
-                    <th className="px-5 py-3 font-normal">TIPO</th>
-                    <th className="px-5 py-3 font-normal">SKU / PRODUCTO</th>
-                    <th className="px-5 py-3 font-normal">DESTINO/ORIGEN</th>
-                    <th className="px-5 py-3 font-normal text-right">CANT.</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#e2e8f0]">
-                  {[...recentEntradasData.map(e => ({ ...e, type: 'ENTRADA' })), ...recentSalidasData.map(s => ({ ...s, type: 'SALIDA' }))]
-                    .sort((a, b) => {
-                      const dateB = 'createdAt' in b ? new Date(b.createdAt) : new Date(b.timestampSalida)
-                      const dateA = 'createdAt' in a ? new Date(a.createdAt) : new Date(a.timestampSalida)
-                      return dateB.getTime() - dateA.getTime()
-                    })
-                    .slice(0, 8)
-                    .map((op: any) => (
-                      <tr key={op.id} className="hover:bg-[#f0f3ff]/30 transition-colors">
-                        <td className="px-5 py-3 text-[#74777f] whitespace-nowrap">
-                          {new Date(op.createdAt || op.timestampSalida).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}
-                        </td>
-                        <td className={cn(
-                          "px-5 py-3 font-bold",
-                          op.type === 'ENTRADA' ? "text-emerald-500" : "text-[#0051d5]"
-                        )}>
-                          {op.type}
-                        </td>
-                        <td className="px-5 py-3 whitespace-nowrap">
-                          <span className="text-[#43474e]">{op.producto.codigo}</span>
-                          <span className="text-[#74777f] ml-2 hidden md:inline">({op.producto.descripcion.substring(0, 20)}...)</span>
-                        </td>
-                        <td className="px-5 py-3 text-[#74777f] capitalize">
-                          {op.bodega?.nombre.replace('Bodega ', '') || op.modulo?.nombre}
-                        </td>
-                        <td className="px-5 py-3 text-right font-bold text-[#111c2d]">
-                          {op.type === 'ENTRADA' ? '+' : '-'}{op.cantidad}
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Action Column */}
-        <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">
-          <Card className="bg-white border-[#c4c6cf] rounded-sm">
-            <CardHeader>
-              <CardTitle className="text-xs font-bold uppercase tracking-widest text-[#43474e]">Alertas de Stock</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center gap-3 p-3 bg-red-500/5 border border-red-500/20 rounded">
-                <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
-                <div className="flex-1">
-                  <p className="text-[10px] font-mono font-bold text-red-400">CRÍTICO: STOCK CERO</p>
-                  <p className="text-[9px] text-[#74777f] uppercase">Sin movimientos hoy</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <div className="flex-1 bg-[#16a34a] p-6 rounded-sm text-white flex flex-col justify-between shadow-lg">
-            <div>
-              <h3 className="text-sm font-bold uppercase tracking-widest">Atajo de Despacho</h3>
-              <p className="text-[10px] mt-1 font-medium opacity-80 uppercase leading-tight">Registro inmediato de salida a módulos Zofri</p>
-            </div>
-            <div className="mt-8">
-              <Link href="/salidas">
-                <button className="w-full py-4 bg-white/10 text-white font-bold text-xs uppercase tracking-widest hover:bg-white/20 transition-colors rounded-sm shadow-xl cursor-pointer border border-white/20">
-                  INICIAR NUEVA SALIDA
-                </button>
-              </Link>
-            </div>
-          </div>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-[#111c2d]">Panel de Control</h1>
+          <p className="text-[#74777f] text-sm">{ahora}</p>
         </div>
       </div>
+
+      {/* Sección 1 — Stock por bodega */}
+      <section>
+        <h2 className="text-xs font-bold uppercase tracking-widest text-[#74777f] mb-3">
+          <Warehouse className="inline h-3 w-3 mr-1" />
+          Stock por bodega
+        </h2>
+        <div className="grid grid-cols-3 gap-4">
+          {bodegaStocks.map((b: any) => (
+            <div key={b.nombre} className="bg-white border border-[#e2e8f0] rounded-lg p-5">
+              <p className="text-xs text-[#74777f] font-medium truncate">{b.nombre.replace("Bodega ", "")}</p>
+              <p className="text-3xl font-bold text-[#111c2d] mt-2">{b.unidades}</p>
+              <p className="text-xs text-[#94a3b8] mt-1">{b.productos} productos distintos</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Sección 2 — Despachos hacia módulos */}
+      <section>
+        <h2 className="text-xs font-bold uppercase tracking-widest text-[#74777f] mb-3">
+          <ArrowUpRight className="inline h-3 w-3 mr-1" />
+          Despachos a módulos
+        </h2>
+        <div className="grid grid-cols-5 gap-3">
+          {modulosDespachos.map((m: any) => (
+            <div key={m.nombre} className="bg-white border border-[#e2e8f0] rounded-lg p-4 text-center">
+              <p className="text-xs font-mono font-bold text-[#1e3a5f]">{m.nombre.replace("Módulo ", "M")}</p>
+              <p className="text-2xl font-bold text-[#111c2d] mt-1">{m.unidades}</p>
+              <p className="text-[10px] text-[#94a3b8]">{m.despachos} despachos</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Sección 3 — Alerta stock bajo */}
+      {alertaBajo.length > 0 && (
+      <section>
+        <h2 className="text-xs font-bold uppercase tracking-widest text-[#74777f] mb-3">
+          <AlertTriangle className="inline h-3 w-3 mr-1 text-amber-500" />
+          Stock bajo (menos de 1 caja)
+        </h2>
+        <div className="flex gap-3 overflow-x-auto pb-2">
+          {alertaBajo.map((p: any) => (
+            <Link key={p.id} href={`/productos/${p.id}`}>
+              <div className="bg-white border border-[#e2e8f0] rounded-lg p-3 flex items-center gap-3 min-w-[280px] hover:shadow-sm transition-shadow">
+                <img
+                  src={getCloudinaryVidaDigitalUrl(p.descripcion) ?? ""}
+                  alt={p.codigo}
+                  className="w-10 h-10 rounded object-contain bg-[#f1f5f9] shrink-0"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-mono font-bold text-[#1e3a5f] truncate">{p.codigo}</p>
+                  <p className="text-[10px] text-[#74777f] truncate">{p.descripcion}</p>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className="text-lg font-bold text-amber-600">{p.total_stock}</p>
+                  <p className="text-[9px] text-[#94a3b8]">de {p.packing}u/caja</p>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+      )}
     </div>
   );
 }
