@@ -2,7 +2,7 @@
 
 import { db } from "@/db";
 import { productos, stock, entradas, notasVenta, activityLog, codigoPersonalAuditoria, salidas, bodegas } from "@/db/schema";
-import { eq, sql, and } from "drizzle-orm";
+import { eq, sql, and, ilike, or } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { ProductoSchema, EntradaSchema, SalidaSchema } from "@/lib/validations";
 import { revalidatePath } from "next/cache";
@@ -335,5 +335,35 @@ export async function actualizarUbicacionProducto(productoId: string, bodegaId: 
 
   revalidatePath("/salidas");
   return { ubicacion: bodega.nombre };
+}
+
+export async function buscarProductos(query: string) {
+  if (!query || query.trim().length < 2) return []
+
+  const results = await db.select({
+    id: productos.id,
+    codigo: productos.codigo,
+    knumezet: productos.knumezet,
+    codigoPersonal: productos.codigoPersonal,
+    descripcion: productos.descripcion,
+    packing: productos.packing,
+    ubicacion: productos.ubicacion,
+    totalStock: sql<number>`COALESCE(SUM(${stock.cantidadActual}), 0)`
+  })
+  .from(productos)
+  .leftJoin(stock, sql`${productos.id} = ${stock.productoId}`)
+  .where(
+    or(
+      ilike(productos.codigo, `%${query}%`),
+      ilike(productos.descripcion, `%${query}%`),
+      ilike(productos.codigoPersonal, `%${query}%`),
+      ilike(productos.knumezet, `%${query}%`)
+    )
+  )
+  .groupBy(productos.id)
+  .orderBy(productos.codigo)
+  .limit(20)
+
+  return results
 }
 
