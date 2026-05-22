@@ -36,13 +36,13 @@ export default function UsuarioModal({
     e.preventDefault()
     setLoading(true)
     setError(null)
-    if (!usuario?.id && form.password.length < 6) {
-      setError("La contraseña debe tener al menos 6 caracteres")
+    if (!usuario?.id && form.password.length < 1) {
+      setError("Ingresa una contraseña")
       setLoading(false)
       return
     }
-    if (usuario?.id && form.password && form.password.length < 6) {
-      setError("La contraseña debe tener al menos 6 caracteres")
+    if (usuario?.id && form.password && form.password.length < 1) {
+      setError("Ingresa una contraseña")
       setLoading(false)
       return
     }
