@@ -5,9 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { SalidaSchema } from "@/lib/validations";
 import type { SalidaInput } from "@/lib/validations";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BuscadorProducto } from "@/components/mobile/BuscadorProducto";
 import { BotonesModulo } from "@/components/mobile/BotonesModulo";
 import { InputCantidad } from "@/components/mobile/InputCantidad";
@@ -45,7 +43,7 @@ export default function SalidaForm({
       observaciones: "",
     }
   });
-  const { register, handleSubmit, setValue, watch, formState: { errors } } = form;
+  const { handleSubmit, setValue, watch, formState: { errors } } = form;
 
   const selectedProductoId = watch("productoId");
   const selectedModuloId = watch("moduloDestinoId");
@@ -350,78 +348,187 @@ export default function SalidaForm({
       </div>
 
       {/* ===== DESKTOP ===== */}
-      <div className="hidden md:block space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <Label>Producto</Label>
-            <Select onValueChange={(val) => setValue("productoId", val as string)}>
-              <SelectTrigger className="bg-white border-[#c4c6cf]">
-                <SelectValue placeholder="Seleccionar producto" />
-              </SelectTrigger>
-              <SelectContent className="bg-[#f9f9ff] border-[#c4c6cf]">
-                {productosData.map(p => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.codigo} - {p.descripcion}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+      <div className="hidden md:grid md:grid-cols-2 md:gap-8">
+        {/* Columna izquierda — Producto + Bodega + Cantidad */}
+        <div className="space-y-4">
+          <BuscadorProducto
+            productos={productosBusqueda}
+            selected={selectedProducto ? {
+              id: selectedProducto.id,
+              codigo: selectedProducto.codigo,
+              descripcion: selectedProducto.descripcion,
+              imagen: imagenProducto,
+            } : null}
+            onSelect={(p) => {
+              if (!p) {
+                setValue("productoId", "");
+                return;
+              }
+              setValue("productoId", p.id);
+              if (!bodegaSugerida) {
+                const bodega = bodegasData.find(b =>
+                  b.nombre.toLowerCase().includes(p.ubicacion?.toLowerCase() || "")
+                );
+                if (bodega) setValue("bodegaOrigenId", bodega.id);
+              }
+            }}
+          />
+
+          {selectedProducto && (
+            <div className="flex gap-4 items-start">
+              {imagenProducto ? (
+                <img src={imagenProducto} alt={selectedProducto.codigo}
+                  className="w-[120px] h-[120px] rounded object-contain bg-white border border-[#e2e8f0] shrink-0" />
+              ) : (
+                <div className="w-[120px] h-[120px] rounded bg-[#e2e8f0] shrink-0" />
+              )}
+              <div className="min-w-0">
+                <p className="font-bold text-lg text-[#1e293b]">{selectedProducto.codigo}</p>
+                <p className="text-sm text-[#64748b] line-clamp-2">{selectedProducto.descripcion}</p>
+              </div>
+            </div>
+          )}
+
+          <div>
+            <Label className="text-sm font-semibold mb-2 block">Bodega Origen</Label>
+            {bodegaSugerida && selectedBodegaId === bodegaSugerida.id && (
+              <p className="text-xs text-[#16a34a] mb-2">Pre-seleccionada desde ubicación del producto</p>
+            )}
+            <div className="grid grid-cols-3 gap-3">
+              {bodegasData.map((b: any) => {
+                const isActive = selectedBodegaId === b.id;
+                const nombre = b.nombre.replace("Bodega ", "");
+                const cantidadUnidades = stockEnBodega(b.id);
+                let stockLabel = "";
+                if (!selectedProductoId) {
+                  stockLabel = "";
+                } else if (cantidadUnidades === 0) {
+                  stockLabel = "Sin stock";
+                } else if (packing > 1) {
+                  const cajas = Math.floor(cantidadUnidades / packing);
+                  const sueltas = cantidadUnidades % packing;
+                  if (cajas > 0 && sueltas > 0) stockLabel = `${cajas}c + ${sueltas}u`;
+                  else if (cajas > 0) stockLabel = `${cajas} cajas`;
+                  else stockLabel = `${sueltas} u`;
+                } else {
+                  stockLabel = `${cantidadUnidades} u`;
+                }
+                return (
+                  <button
+                    key={b.id}
+                    type="button"
+                    onClick={() => {
+                      actualizarUbicacionProducto(selectedProductoId, b.id);
+                      setValue("bodegaOrigenId", b.id);
+                    }}
+                    className={`flex flex-col items-center justify-center gap-0.5 py-4 px-3 rounded-xl border-2 font-bold transition-all text-sm ${
+                      isActive
+                        ? "border-[#1e3a5f] bg-[#1e3a5f] text-white"
+                        : "border-[#c4c6cf] bg-white text-[#1e293b] hover:border-[#2563eb]"
+                    }`}
+                  >
+                    {nombre}
+                    {stockLabel && (
+                      <span className={`text-xs font-normal ${isActive ? "text-white/70" : "text-[#94a3b8]"}`}>
+                        {stockLabel}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <Label>Bodega Origen</Label>
-            <Select onValueChange={(val) => setValue("bodegaOrigenId", val as string)}>
-              <SelectTrigger className="bg-white border-[#c4c6cf]">
-                <SelectValue placeholder="Seleccionar origen" />
-              </SelectTrigger>
-              <SelectContent className="bg-[#f9f9ff] border-[#c4c6cf]">
-                {bodegasData.map(b => (
-                  <SelectItem key={b.id} value={b.id}>{b.nombre}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label>Módulo Destino</Label>
-            <Select onValueChange={(val) => setValue("moduloDestinoId", val as string)}>
-              <SelectTrigger className="bg-white border-[#c4c6cf]">
-                <SelectValue placeholder="Seleccionar destino" />
-              </SelectTrigger>
-              <SelectContent className="bg-[#f9f9ff] border-[#c4c6cf]">
-                {modulosData.map(m => (
-                  <SelectItem key={m.id} value={m.id}>{m.nombre}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label>Cantidad</Label>
-            <Input
-              type="number"
-              {...register("cantidad", { valueAsNumber: true })}
-              className="bg-white border-[#c4c6cf]"
-            />
-          </div>
-
-          <div className="col-span-1 md:col-span-2 space-y-2">
-            <Label>Observaciones</Label>
-            <Input
-              {...register("observaciones")}
-              className="bg-white border-[#c4c6cf]"
-              placeholder="Ej: Entrega urgente módulo 180"
+          <div>
+            <Label className="text-sm font-semibold mb-2 block">Cantidad a despachar</Label>
+            <InputCantidad
+              value={cantidad}
+              onChange={(n) => setValue("cantidad", n)}
+              packing={packing}
+              max={stockEnBodega(selectedBodegaId) || 999}
             />
           </div>
         </div>
 
-        <Button
-          type="submit"
-          className="w-full bg-[#16a34a] text-white font-bold hover:bg-[#15803d]"
-          disabled={loading}
-        >
-          {loading ? "PROCESANDO DESPACHO..." : "REGISTRAR SALIDA"}
-        </Button>
+        {/* Columna derecha — Módulo + Conteo + Confirmar */}
+        <div className="space-y-4">
+          <div>
+            <Label>Módulo Destino</Label>
+            <BotonesModulo
+              modulos={modulosData as any}
+              selected={selectedModuloId || null}
+              onSelect={(id) => setValue("moduloDestinoId", id)}
+            />
+          </div>
+
+          {selectedProducto && (
+            <div className="bg-[#f1f5f9] rounded-lg p-4 space-y-3">
+              <div>
+                <p className="text-xs font-semibold text-[#1e293b] mb-2">Saldo físico contado:</p>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  min={0}
+                  value={conteoCantidad}
+                  onChange={(e) => {
+                    const n = parseInt(e.target.value, 10);
+                    if (!isNaN(n) && n >= 0) setConteoCantidad(n);
+                    else if (e.target.value === "") setConteoCantidad(0);
+                  }}
+                  className="w-full h-14 text-center text-2xl font-bold border-2 border-[#c4c6cf] rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:border-transparent"
+                />
+                <p className="text-center text-xs text-[#64748b] mt-1">unidades</p>
+                {packing > 1 && conteoCantidad > 0 && (
+                  <p className="text-center text-xs text-[#64748b]">
+                    = {Math.floor(conteoCantidad / packing)} caja{Math.floor(conteoCantidad / packing) !== 1 ? "s" : ""} + {conteoCantidad % packing} unidad{conteoCantidad % packing !== 1 ? "es" : ""}
+                  </p>
+                )}
+                {conteoMsg && (
+                  <p className={`text-xs mt-1 text-center ${conteoMsg.includes("error") || conteoMsg.includes("Selecciona") ? "text-red-500" : "text-green-600"}`}>
+                    {conteoMsg}
+                  </p>
+                )}
+                <button
+                  type="button"
+                  onClick={handleConteo}
+                  disabled={conteoLoading}
+                  className="w-full mt-2 h-10 text-sm font-bold bg-[#1e3a5f] text-white hover:bg-[#162e50] rounded-lg transition-colors disabled:opacity-50"
+                >
+                  {conteoLoading ? "ACTUALIZANDO..." : "ACTUALIZAR STOCK FÍSICO"}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {error && (
+            <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600 font-medium">
+              ⚠️ {error}
+            </div>
+          )}
+          {success && (
+            <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-700 font-medium">
+              ✅ Despacho registrado con éxito
+            </div>
+          )}
+          <Button
+            type="submit"
+            className="w-full h-14 text-lg font-bold bg-[#16a34a] text-white hover:bg-[#15803d]"
+            disabled={loading}
+            onClick={() => {
+              if (!watch("moduloDestinoId")) {
+                setError("Selecciona un módulo de destino");
+                return;
+              }
+              if (!watch("bodegaOrigenId")) {
+                setError("Selecciona una bodega de origen");
+                return;
+              }
+            }}
+          >
+            {loading ? "PROCESANDO..." : "CONFIRMAR DESPACHO"}
+          </Button>
+        </div>
       </div>
     </form>
   );
