@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const LoginSchema = z.object({
   username: z.string().min(3, { message: "Mínimo 3 caracteres" }),
-  password: z.string().min(6, { message: "Mínimo 6 caracteres" }),
+  password: z.string().min(1, { message: "Ingresa una contraseña" }),
 });
 
 export const ProductoSchema = z.object({
@@ -36,7 +36,7 @@ export const UsuarioSchema = z.object({
   nombre: z.string().min(1, "Nombre requerido"),
   username: z.string().min(3, "Mínimo 3 caracteres"),
   email: z.string().email("Email inválido"),
-  password: z.string().min(6, "Mínimo 6 caracteres").optional().or(z.literal("")),
+  password: z.string().min(1, "Ingresa una contraseña").optional().or(z.literal("")),
   rol: z.enum(["admin", "operador"]),
 });
 
