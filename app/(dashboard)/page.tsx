@@ -97,7 +97,10 @@ export default async function DashboardPage() {
           {bodegaStocks.map((b: any) => (
             <div key={b.nombre} className="bg-white border border-[#e2e8f0] rounded-lg p-5">
               <p className="text-xs text-[#74777f] font-medium truncate">{b.nombre.replace("Bodega ", "")}</p>
-              <p className="text-3xl font-bold text-[#111c2d] mt-2">{b.unidades}</p>
+              <p className="text-3xl font-bold text-[#111c2d] mt-2">
+                {b.unidades.toLocaleString('es-CL')}
+                <span className="text-lg font-normal text-[#74777f] ml-1">u</span>
+              </p>
               <p className="text-xs text-[#94a3b8] mt-1">{b.productos} productos distintos</p>
             </div>
           ))}
