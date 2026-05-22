@@ -13,7 +13,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import UsuarioModal from "@/components/usuarios/UsuarioModal"
-import { Shield, UserPlus, Mail } from "lucide-react";
+import { Shield, UserPlus } from "lucide-react";
 
 export default async function UsuariosPage() {
   const session = await auth();
@@ -46,7 +46,6 @@ export default async function UsuariosPage() {
           <TableHeader>
             <TableRow className="border-[#c4c6cf]">
               <TableHead className="font-mono text-xs uppercase">Nombre</TableHead>
-              <TableHead className="font-mono text-xs uppercase">Email</TableHead>
               <TableHead className="font-mono text-xs uppercase">Rol</TableHead>
               <TableHead className="font-mono text-xs uppercase">Creado</TableHead>
               <TableHead className="text-right font-mono text-xs uppercase">Acciones</TableHead>
@@ -56,11 +55,6 @@ export default async function UsuariosPage() {
             {allUsers.map((u) => (
               <TableRow key={u.id} className="border-[#c4c6cf]">
                 <TableCell className="font-bold text-[#111c2d]">{u.nombre}</TableCell>
-                <TableCell className="text-[#74777f]">
-                  <div className="flex items-center gap-2">
-                    <Mail className="h-3 w-3" /> {u.email}
-                  </div>
-                </TableCell>
                 <TableCell>
                   <Badge className={u.rol === "admin" ? "bg-[#dbe1ff] text-[#0051d5] border-[#0051d5]/20" : "bg-[#e7eeff] text-[#74777f]"}>
                     {u.rol === "admin" && <Shield className="mr-1 h-3 w-3" />}
