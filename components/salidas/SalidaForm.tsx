@@ -160,12 +160,6 @@ export default function SalidaForm({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      {success && (
-        <div className="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">
-          Despacho registrado con éxito
-        </div>
-      )}
-
       {/* ===== MÓVIL ===== */}
       <div className="md:hidden space-y-4">
         <BuscadorProducto
@@ -331,7 +325,11 @@ export default function SalidaForm({
             ⚠️ {error}
           </div>
         )}
-
+        {success && (
+          <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-700 font-medium">
+            ✅ Despacho registrado con éxito
+          </div>
+        )}
         <Button
           type="submit"
           className="w-full h-14 text-lg font-bold bg-[#16a34a] text-white hover:bg-[#15803d]"
