@@ -88,11 +88,26 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
       setError("Selecciona una bodega de destino");
       return;
     }
-    if (!selectedProducto) {
-      setError("Selecciona un producto del buscador o escribe uno nuevo");
-      return;
+
+    // Resolver producto: selección WinFac, manual explícito, o implícito desde query
+    let prod = selectedProducto;
+    if (!prod) {
+      if (query.trim().length >= 2) {
+        prod = {
+          codigo: query.trim(),
+          descripcion: query.trim(),
+          packing: 1,
+          knumezet: null,
+          imagenUrl: null,
+        };
+      } else {
+        setError("Escribe un código o selecciona un producto de la lista");
+        return;
+      }
     }
-    if (!esDeWinFac && !descripcionManual.trim()) {
+    const esWinFac = prod.knumezet != null;
+
+    if (!esWinFac && !descripcionManual.trim()) {
       setError("Ingresa una descripción para el producto nuevo");
       return;
     }
@@ -102,11 +117,11 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
 
     try {
       const producto = await createOrUpdateProducto({
-        codigo: selectedProducto.codigo,
-        descripcion: esDeWinFac ? selectedProducto.descripcion : descripcionManual.trim(),
-        packing: selectedProducto.packing,
-        knumezet: selectedProducto.knumezet,
-        observaciones: esDeWinFac ? undefined : (observacionesManual.trim() || undefined),
+        codigo: prod.codigo,
+        descripcion: esWinFac ? prod.descripcion : descripcionManual.trim(),
+        packing: prod.packing,
+        knumezet: prod.knumezet,
+        observaciones: esWinFac ? undefined : (observacionesManual.trim() || undefined),
       });
 
       if (!producto?.id) throw new Error("No se pudo crear/actualizar el producto");
@@ -116,7 +131,7 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
         bodegaId,
         cantidad,
         precioUnitario: precioUnitario ? Number(precioUnitario) : undefined,
-        origen: esDeWinFac ? "winfac" : "manual",
+        origen: esWinFac ? "winfac" : "manual",
         observaciones: observaciones.trim() || undefined,
       });
 
@@ -235,7 +250,7 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
           </button>
         )}
 
-        {selectedProducto && !esDeWinFac && (
+        {!esDeWinFac && (selectedProducto || query.trim().length >= 2) && (
           <div className="space-y-3 bg-[#f8fafc] rounded-lg p-4 border border-[#e2e8f0]">
             <p className="text-xs font-semibold text-[#1e3a5f] uppercase tracking-wider">Datos del producto nuevo</p>
             <div>
@@ -471,7 +486,7 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
         </div>
 
         <div className="space-y-4">
-          {selectedProducto && !esDeWinFac && (
+          {!esDeWinFac && (selectedProducto || query.trim().length >= 2) && (
             <div className="space-y-3 bg-[#f8fafc] rounded-lg p-4 border border-[#e2e8f0]">
               <p className="text-xs font-semibold text-[#1e3a5f] uppercase tracking-wider">Datos del producto nuevo</p>
               <div>
