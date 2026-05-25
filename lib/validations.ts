@@ -8,6 +8,7 @@ export const LoginSchema = z.object({
 export const ProductoSchema = z.object({
   codigo: z.string().min(1, "Código requerido"),
   descripcion: z.string().min(1, "Descripción requerida"),
+  knumezet: z.string().nullable().optional(),
   codigoPersonal: z.string().optional(),
   packing: z.number().int().positive(),
   ubicacion: z.string().optional(),

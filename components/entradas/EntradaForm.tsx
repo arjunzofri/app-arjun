@@ -26,6 +26,8 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
   const [bodegaId, setBodegaId] = useState("");
   const [cantidad, setCantidad] = useState(1);
   const [precioUnitario, setPrecioUnitario] = useState("");
+  const [descripcionManual, setDescripcionManual] = useState("");
+  const [observacionesManual, setObservacionesManual] = useState("");
   const searchRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -66,6 +68,10 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
       setError("Selecciona un producto del buscador o escribe uno nuevo");
       return;
     }
+    if (!esDeWinFac && !descripcionManual.trim()) {
+      setError("Ingresa una descripción para el producto nuevo");
+      return;
+    }
     setLoading(true);
     setError(null);
     setSuccess(false);
@@ -73,10 +79,10 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
     try {
       const producto = await createOrUpdateProducto({
         codigo: selectedProducto.codigo,
-        descripcion: selectedProducto.descripcion,
+        descripcion: esDeWinFac ? selectedProducto.descripcion : descripcionManual.trim(),
         packing: selectedProducto.packing,
         knumezet: selectedProducto.knumezet,
-        origenWinfac: esDeWinFac,
+        observaciones: esDeWinFac ? undefined : (observacionesManual.trim() || undefined),
       });
 
       if (!producto?.id) throw new Error("No se pudo crear/actualizar el producto");
@@ -88,6 +94,9 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
         precioUnitario: precioUnitario ? Number(precioUnitario) : undefined,
         origen: esDeWinFac ? "winfac" : "manual",
       });
+
+      setDescripcionManual("");
+      setObservacionesManual("");
 
       setSuccess(true);
       setSelectedProducto(null);
@@ -191,6 +200,32 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
           >
             Usar &quot;{query.trim()}&quot; como producto manual
           </button>
+        )}
+
+        {selectedProducto && !esDeWinFac && (
+          <div className="space-y-3 bg-[#f8fafc] rounded-lg p-4 border border-[#e2e8f0]">
+            <p className="text-xs font-semibold text-[#1e3a5f] uppercase tracking-wider">Datos del producto nuevo</p>
+            <div>
+              <p className="text-xs font-medium text-[#111c2d] mb-1">Descripción <span className="text-red-500">*</span></p>
+              <textarea
+                value={descripcionManual}
+                onChange={(e) => setDescripcionManual(e.target.value)}
+                placeholder="Describí el producto..."
+                rows={2}
+                className="w-full px-3 py-2 text-sm border border-[#c4c6cf] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20 resize-none"
+              />
+            </div>
+            <div>
+              <p className="text-xs font-medium text-[#111c2d] mb-1">Observaciones</p>
+              <input
+                type="text"
+                value={observacionesManual}
+                onChange={(e) => setObservacionesManual(e.target.value)}
+                placeholder="Opcional..."
+                className="w-full px-3 py-2 text-sm border border-[#c4c6cf] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
+              />
+            </div>
+          </div>
         )}
 
         <div>
@@ -342,6 +377,32 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
         </div>
 
         <div className="space-y-4">
+          {selectedProducto && !esDeWinFac && (
+            <div className="space-y-3 bg-[#f8fafc] rounded-lg p-4 border border-[#e2e8f0]">
+              <p className="text-xs font-semibold text-[#1e3a5f] uppercase tracking-wider">Datos del producto nuevo</p>
+              <div>
+                <p className="text-xs font-medium text-[#111c2d] mb-1">Descripción <span className="text-red-500">*</span></p>
+                <textarea
+                  value={descripcionManual}
+                  onChange={(e) => setDescripcionManual(e.target.value)}
+                  placeholder="Describí el producto..."
+                  rows={2}
+                  className="w-full px-3 py-2 text-sm border border-[#c4c6cf] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20 resize-none"
+                />
+              </div>
+              <div>
+                <p className="text-xs font-medium text-[#111c2d] mb-1">Observaciones</p>
+                <input
+                  type="text"
+                  value={observacionesManual}
+                  onChange={(e) => setObservacionesManual(e.target.value)}
+                  placeholder="Opcional..."
+                  className="w-full px-3 py-2 text-sm border border-[#c4c6cf] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
+                />
+              </div>
+            </div>
+          )}
+
           <div>
             <p className="text-sm font-semibold mb-2 text-[#111c2d]">Precio Unitario (opcional)</p>
             <input
