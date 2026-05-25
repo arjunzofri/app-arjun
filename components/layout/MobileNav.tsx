@@ -2,13 +2,15 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { ArrowDownLeft, ArrowUpRight, LogOut } from "lucide-react"
+import { ArrowDownLeft, ArrowUpRight, LogOut, Store, Warehouse } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { logout } from "@/app/actions/auth-actions"
 
 const ITEMS = [
   { label: "Entradas", href: "/entradas", icon: ArrowDownLeft },
   { label: "Salidas", href: "/salidas", icon: ArrowUpRight },
+  { label: "Bodegas", href: "/bodegas", icon: Warehouse },
+  { label: "Módulos", href: "/modulos", icon: Store },
 ]
 
 export function MobileNav() {
@@ -25,18 +27,18 @@ export function MobileNav() {
             key={item.href}
             href={item.href}
             className={cn(
-              "flex flex-col items-center justify-center gap-0.5 h-full px-4 text-[10px] font-medium transition-colors",
+              "flex flex-col items-center justify-center gap-0.5 h-full px-2 text-[10px] font-medium transition-colors",
               isActive ? "text-white" : "text-white/60 hover:text-white"
             )}
           >
-            <Icon className="h-5 w-5" />
+            <Icon className="h-4 w-4" />
             {item.label}
           </Link>
         )
       })}
       <form action={logout}>
-        <button className="flex flex-col items-center justify-center gap-0.5 h-full px-4 text-[10px] font-medium text-white/60 hover:text-white transition-colors">
-          <LogOut className="h-5 w-5" />
+        <button className="flex flex-col items-center justify-center gap-0.5 h-full px-2 text-[10px] font-medium text-white/60 hover:text-white transition-colors">
+          <LogOut className="h-4 w-4" />
           Salir
         </button>
       </form>
