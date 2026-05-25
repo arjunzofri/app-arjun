@@ -45,9 +45,9 @@ describe('integración WinFac', () => {
     }
   })
 
-  it('el shell de entradas debe usar WinFacPanel', () => {
+  it('el shell de entradas NO debe usar WinFacPanel (oculto por feature flag)', () => {
     const filePath = join(process.cwd(), 'components', 'entradas', 'EntradasShell.tsx')
     const content = readFileSync(filePath, 'utf-8')
-    expect(content).toContain('WinFacPanel')
+    expect(content).not.toContain('WinFacPanel')
   })
 })

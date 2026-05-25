@@ -12,6 +12,7 @@ import { InputCantidad } from "@/components/mobile/InputCantidad";
 import { BotonFoto } from "@/components/mobile/BotonFoto";
 import { registrarSalida, getStockWinfac, registrarConteoFisico, actualizarUbicacionProducto } from "@/lib/actions";
 import { getImagenVidaDigital } from "@/lib/utils/extract-modelo";
+import { HistorialModal } from "@/components/shared/HistorialModal";
 import { useRouter } from "next/navigation";
 import { useState, useMemo, useEffect, useCallback } from "react";
 
@@ -32,6 +33,7 @@ export default function SalidaForm({
   const [conteoCantidad, setConteoCantidad] = useState(0);
   const [conteoLoading, setConteoLoading] = useState(false);
   const [conteoMsg, setConteoMsg] = useState<string | null>(null);
+  const [historialOpen, setHistorialOpen] = useState(false);
 
   const form = useForm<SalidaInput>({
     resolver: zodResolver(SalidaSchema),
@@ -157,6 +159,7 @@ export default function SalidaForm({
   }, [selectedProducto]);
 
   return (
+    <>
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {/* ===== MÓVIL ===== */}
       <div className="md:hidden space-y-4">
@@ -195,12 +198,13 @@ export default function SalidaForm({
             <div className="flex gap-3">
               {imagenProducto ? (
                 <img src={imagenProducto} alt={selectedProducto.codigo}
-                  className="w-20 h-20 rounded object-contain bg-white border border-[#e2e8f0]" />
+                  onClick={() => setHistorialOpen(true)}
+                  className="w-20 h-20 rounded object-contain bg-white border border-[#e2e8f0] cursor-pointer hover:border-[#1e3a5f]" />
               ) : (
                 <div className="w-20 h-20 rounded bg-[#e2e8f0] shrink-0" />
               )}
               <div className="flex-1 min-w-0">
-                <p className="font-bold text-sm text-[#1e293b]">{selectedProducto.codigo}</p>
+                <p className="font-bold text-sm text-[#1e293b] cursor-pointer hover:text-[#1e3a5f]" onClick={() => setHistorialOpen(true)}>{selectedProducto.codigo}</p>
                 <p className="text-xs text-[#64748b] line-clamp-2">{selectedProducto.descripcion}</p>
                 <p className="text-xs text-[#64748b] mt-1">Packing: {packing} u/caja</p>
                 {winfacSaldo !== null && (
@@ -378,12 +382,13 @@ export default function SalidaForm({
             <div className="flex gap-4 items-start">
               {imagenProducto ? (
                 <img src={imagenProducto} alt={selectedProducto.codigo}
-                  className="w-[120px] h-[120px] rounded object-contain bg-white border border-[#e2e8f0] shrink-0" />
+                  onClick={() => setHistorialOpen(true)}
+                  className="w-[120px] h-[120px] rounded object-contain bg-white border border-[#e2e8f0] shrink-0 cursor-pointer hover:border-[#1e3a5f]" />
               ) : (
                 <div className="w-[120px] h-[120px] rounded bg-[#e2e8f0] shrink-0" />
               )}
               <div className="min-w-0">
-                <p className="font-bold text-lg text-[#1e293b]">{selectedProducto.codigo}</p>
+                <p className="font-bold text-lg text-[#1e293b] cursor-pointer hover:text-[#1e3a5f]" onClick={() => setHistorialOpen(true)}>{selectedProducto.codigo}</p>
                 <p className="text-sm text-[#64748b] line-clamp-2">{selectedProducto.descripcion}</p>
               </div>
             </div>
@@ -531,5 +536,14 @@ export default function SalidaForm({
         </div>
       </div>
     </form>
+      {selectedProducto && (
+        <HistorialModal
+          productoId={selectedProducto.id}
+          codigo={selectedProducto.codigo}
+          open={historialOpen}
+          onClose={() => setHistorialOpen(false)}
+        />
+      )}
+    </>
   );
 }

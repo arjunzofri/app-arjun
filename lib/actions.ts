@@ -1,7 +1,7 @@
 ﻿"use server";
 
 import { db } from "@/db";
-import { productos, stock, entradas, notasVenta, activityLog, codigoPersonalAuditoria, salidas, bodegas } from "@/db/schema";
+import { productos, stock, stockModulos, entradas, notasVenta, activityLog, codigoPersonalAuditoria, salidas, bodegas } from "@/db/schema";
 import { eq, sql, and, ilike, or } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { ProductoSchema, EntradaSchema, SalidaSchema } from "@/lib/validations";
@@ -211,6 +211,26 @@ export async function registrarSalida(data: any) {
     cantidadActual: existingStock.cantidadActual - validated.cantidad,
     updatedAt: new Date(),
   }).where(eq(stock.id, existingStock.id));
+
+  // Upsert stock_modulos (acumulado por módulo)
+  const existingModuloStock = await db.query.stockModulos.findFirst({
+    where: and(
+      eq(stockModulos.productoId, validated.productoId),
+      eq(stockModulos.moduloId, validated.moduloDestinoId)
+    )
+  });
+  if (existingModuloStock) {
+    await db.update(stockModulos).set({
+      cantidadAcumulada: existingModuloStock.cantidadAcumulada + validated.cantidad,
+      updatedAt: new Date(),
+    }).where(eq(stockModulos.id, existingModuloStock.id));
+  } else {
+    await db.insert(stockModulos).values({
+      productoId: validated.productoId,
+      moduloId: validated.moduloDestinoId,
+      cantidadAcumulada: validated.cantidad,
+    });
+  }
 
   await db.insert(activityLog).values({
     usuarioId: session.user?.id ?? "",

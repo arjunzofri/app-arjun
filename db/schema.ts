@@ -113,6 +113,18 @@ export const stock = pgTable("stock", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export const stockModulos = pgTable("stock_modulos", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  productoId: uuid("producto_id")
+    .references(() => productos.id)
+    .notNull(),
+  moduloId: uuid("modulo_id")
+    .references(() => modulosDestino.id)
+    .notNull(),
+  cantidadAcumulada: integer("cantidad_acumulada").default(0).notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const salidas = pgTable("salidas", {
   id: uuid("id").primaryKey().defaultRandom(),
   productoId: uuid("producto_id")
