@@ -9,6 +9,7 @@ import {
   Box,
   LayoutDashboard,
   Warehouse,
+  Store,
   ArrowDownLeft,
   ArrowUpRight,
   Users,
@@ -30,6 +31,7 @@ const NAV_GROUPS = [
     items: [
       { label: "Entradas", href: "/entradas", icon: ArrowDownLeft },
       { label: "Salidas", href: "/salidas", icon: ArrowUpRight },
+      { label: "Módulos", href: "/modulos", icon: Store },
     ]
   },
   {
