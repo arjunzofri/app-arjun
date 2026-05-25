@@ -10,11 +10,13 @@ import { Pencil, Search, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 
 type WinFacResult = {
+  id?: string;
   codigo: string;
   descripcion: string;
   packing: number;
   knumezet: string | null;
   imagenUrl: string | null;
+  fuente?: "app" | "winfac";
 };
 
 export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
@@ -46,21 +48,31 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  // Pre-crear producto en DB al seleccionar de WinFac para habilitar BotonFoto
+  // Obtener DB id para habilitar BotonFoto y edición
   useEffect(() => {
-    if (!selectedProducto || !esDeWinFac) {
+    if (!selectedProducto) {
       setProductoDbId(null);
       return;
     }
-    createOrUpdateProducto({
-      codigo: selectedProducto.codigo,
-      descripcion: selectedProducto.descripcion,
-      packing: selectedProducto.packing,
-      knumezet: selectedProducto.knumezet,
-    }).then((p: any) => {
-      if (p?.id) setProductoDbId(p.id);
-    }).catch(() => setProductoDbId(null));
-  }, [selectedProducto?.codigo]);
+    if (selectedProducto.id) {
+      // Producto de la app: ya tiene id
+      setProductoDbId(selectedProducto.id);
+      return;
+    }
+    if (esDeWinFac) {
+      // Producto WinFac: pre-crear en DB
+      createOrUpdateProducto({
+        codigo: selectedProducto.codigo,
+        descripcion: selectedProducto.descripcion,
+        packing: selectedProducto.packing,
+        knumezet: selectedProducto.knumezet,
+      }).then((p: any) => {
+        if (p?.id) setProductoDbId(p.id);
+      }).catch(() => setProductoDbId(null));
+    } else {
+      setProductoDbId(null);
+    }
+  }, [selectedProducto?.codigo, selectedProducto?.id]);
 
   // Fetch from WinFac API on 2+ chars
   useEffect(() => {
@@ -82,6 +94,7 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
 
   const packing = selectedProducto?.packing ?? 1;
   const esDeWinFac = selectedProducto?.knumezet != null;
+  const fuente = selectedProducto?.fuente;
 
   const handleConfirmar = async () => {
     if (!bodegaId) {
@@ -116,22 +129,29 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
     setSuccess(false);
 
     try {
-      const producto = await createOrUpdateProducto({
-        codigo: prod.codigo,
-        descripcion: esWinFac ? prod.descripcion : descripcionManual.trim(),
-        packing: prod.packing,
-        knumezet: prod.knumezet,
-        observaciones: esWinFac ? undefined : (observacionesManual.trim() || undefined),
-      });
+      let productoId: string;
 
-      if (!producto?.id) throw new Error("No se pudo crear/actualizar el producto");
+      if (prod.id) {
+        // Producto ya existe en la app
+        productoId = prod.id;
+      } else {
+        const producto = await createOrUpdateProducto({
+          codigo: prod.codigo,
+          descripcion: esWinFac ? prod.descripcion : descripcionManual.trim(),
+          packing: prod.packing,
+          knumezet: prod.knumezet,
+          observaciones: esWinFac ? undefined : (observacionesManual.trim() || undefined),
+        });
+        if (!producto?.id) throw new Error("No se pudo crear/actualizar el producto");
+        productoId = producto.id;
+      }
 
       await registrarEntrada({
-        productoId: producto.id,
+        productoId,
         bodegaId,
         cantidad,
         precioUnitario: precioUnitario ? Number(precioUnitario) : undefined,
-        origen: esWinFac ? "winfac" : "manual",
+        origen: prod.fuente === 'app' ? 'manual' : (esWinFac ? "winfac" : "manual"),
         observaciones: observaciones.trim() || undefined,
       });
 
@@ -164,6 +184,11 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <p className="font-bold text-sm text-[#1e293b] truncate">{selectedProducto.codigo}</p>
+                  {fuente && (
+                    <span className={`text-[9px] font-bold px-1 rounded ${fuente === 'app' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
+                      {fuente === 'app' ? 'App' : 'WinFac'}
+                    </span>
+                  )}
                   {productoDbId && (
                     <button type="button" onClick={() => setEditOpen(true)} className="p-0.5 text-[#94a3b8] hover:text-[#1e3a5f] shrink-0">
                       <Pencil className="h-3.5 w-3.5" />
@@ -208,7 +233,14 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
                     <div className="w-10 h-10 rounded bg-[#e2e8f0] shrink-0" />
                   )}
                   <div className="min-w-0">
-                    <p className="font-semibold text-sm text-[#1e293b]">{p.codigo}</p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="font-semibold text-sm text-[#1e293b]">{p.codigo}</p>
+                      {p.fuente && (
+                        <span className={`text-[9px] font-bold px-1 rounded ${p.fuente === 'app' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
+                          {p.fuente === 'app' ? 'App' : 'WinFac'}
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-[#64748b] truncate">{p.descripcion}</p>
                   </div>
                 </button>
@@ -375,6 +407,11 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <p className="font-bold text-sm text-[#1e293b] truncate">{selectedProducto.codigo}</p>
+                    {fuente && (
+                      <span className={`text-[9px] font-bold px-1 rounded ${fuente === 'app' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
+                        {fuente === 'app' ? 'App' : 'WinFac'}
+                      </span>
+                    )}
                     {productoDbId && (
                       <button type="button" onClick={() => setEditOpen(true)} className="p-0.5 text-[#94a3b8] hover:text-[#1e3a5f] shrink-0">
                         <Pencil className="h-3.5 w-3.5" />
