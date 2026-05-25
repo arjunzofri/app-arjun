@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Pencil, X, Trash2 } from "lucide-react";
 import { editarProducto, eliminarProducto } from "@/lib/actions";
@@ -25,6 +25,14 @@ export function ProductoEditModal({
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  // Bloquear scroll del body mientras el modal está abierto
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+      return () => { document.body.style.overflow = ""; };
+    }
+  }, [open]);
 
   if (!open) return null;
 
@@ -68,10 +76,10 @@ export function ProductoEditModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-start md:items-center justify-center overflow-hidden">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative bg-white rounded-t-2xl md:rounded-2xl w-full md:max-w-md max-h-[85vh] flex flex-col shadow-xl">
-        <div className="flex items-center justify-between p-4 border-b border-[#e2e8f0]">
+      <div className="relative bg-white rounded-b-2xl md:rounded-2xl w-full md:max-w-md max-h-[90vh] flex flex-col shadow-xl">
+        <div className="flex items-center justify-between p-4 border-b border-[#e2e8f0] shrink-0">
           <div className="flex items-center gap-2">
             <Pencil className="h-4 w-4 text-[#1e3a5f]" />
             <h2 className="text-lg font-bold text-[#111c2d]">Editar {producto.codigo}</h2>
@@ -81,7 +89,8 @@ export function ProductoEditModal({
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="flex-1 overflow-y-auto overscroll-contain p-4 space-y-4"
+          style={{ WebkitOverflowScrolling: "touch" }}>
           <div>
             <label className="text-xs font-medium text-[#111c2d] mb-1 block">Código personal (alias)</label>
             <input
@@ -131,7 +140,7 @@ export function ProductoEditModal({
           )}
         </div>
 
-        <div className="p-4 border-t border-[#e2e8f0] space-y-2">
+        <div className="p-4 border-t border-[#e2e8f0] space-y-2 shrink-0">
           <button
             onClick={handleSave}
             disabled={saving}
