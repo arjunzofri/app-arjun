@@ -126,6 +126,16 @@ export async function GET(req: NextRequest) {
       );
     `;
     await sql`
+      CREATE TABLE IF NOT EXISTS "stock_modulos" (
+        "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        "producto_id" uuid NOT NULL REFERENCES "productos"("id"),
+        "modulo_id" uuid NOT NULL REFERENCES "modulos_destino"("id"),
+        "cantidad_acumulada" integer DEFAULT 0 NOT NULL,
+        "updated_at" timestamp DEFAULT now() NOT NULL,
+        UNIQUE("producto_id", "modulo_id")
+      );
+    `;
+    await sql`
       CREATE TABLE IF NOT EXISTS "salidas" (
         "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         "producto_id" uuid NOT NULL REFERENCES "productos"("id"),
