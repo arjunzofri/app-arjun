@@ -29,6 +29,14 @@ export function HistorialModal({
   const [cursor, setCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
 
+  // Bloquear scroll del body mientras el modal está abierto
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+      return () => { document.body.style.overflow = ""; };
+    }
+  }, [open]);
+
   useEffect(() => {
     if (!open || !productoId) return;
     setLoading(true);
@@ -60,10 +68,10 @@ export function HistorialModal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center overflow-hidden">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative bg-white rounded-t-2xl md:rounded-2xl w-full md:max-w-lg max-h-[80vh] flex flex-col shadow-xl">
-        <div className="flex items-center justify-between p-4 border-b border-[#e2e8f0]">
+      <div className="relative bg-white rounded-t-2xl md:rounded-2xl w-full md:max-w-lg max-h-[85vh] flex flex-col shadow-xl">
+        <div className="flex items-center justify-between p-4 border-b border-[#e2e8f0] shrink-0">
           <div>
             <h2 className="text-lg font-bold text-[#111c2d]">Historial</h2>
             <p className="text-xs text-[#74777f] font-mono">{codigo}</p>
@@ -73,7 +81,8 @@ export function HistorialModal({
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-2">
+        <div className="flex-1 overflow-y-auto overscroll-contain p-4 space-y-2"
+          style={{ WebkitOverflowScrolling: "touch" }}>
           {items.length === 0 && !loading && (
             <p className="text-center text-[#74777f] py-8 text-sm">
               Sin movimientos registrados
@@ -120,7 +129,7 @@ export function HistorialModal({
         </div>
 
         {hasMore && !loading && (
-          <div className="p-4 border-t border-[#e2e8f0] text-center">
+          <div className="p-4 border-t border-[#e2e8f0] text-center shrink-0">
             <button
               onClick={cargarMas}
               className="px-6 py-2 bg-[#1e3a5f] text-white rounded-lg text-sm font-medium"
