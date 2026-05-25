@@ -379,17 +379,22 @@ export default function SalidaForm({
           />
 
           {selectedProducto && (
-            <div className="flex gap-4 items-start">
-              {imagenProducto ? (
-                <img src={imagenProducto} alt={selectedProducto.codigo}
-                  onClick={() => setHistorialOpen(true)}
-                  className="w-[120px] h-[120px] rounded object-contain bg-white border border-[#e2e8f0] shrink-0 cursor-pointer hover:border-[#1e3a5f]" />
-              ) : (
-                <div className="w-[120px] h-[120px] rounded bg-[#e2e8f0] shrink-0" />
-              )}
-              <div className="min-w-0">
-                <p className="font-bold text-lg text-[#1e293b] cursor-pointer hover:text-[#1e3a5f]" onClick={() => setHistorialOpen(true)}>{selectedProducto.codigo}</p>
-                <p className="text-sm text-[#64748b] line-clamp-2">{selectedProducto.descripcion}</p>
+            <div className="space-y-3">
+              <div className="flex gap-4 items-start">
+                {imagenProducto ? (
+                  <img src={imagenProducto} alt={selectedProducto.codigo}
+                    onClick={() => setHistorialOpen(true)}
+                    className="w-[120px] h-[120px] rounded object-contain bg-white border border-[#e2e8f0] shrink-0 cursor-pointer hover:border-[#1e3a5f]" />
+                ) : (
+                  <div className="w-[120px] h-[120px] rounded bg-[#e2e8f0] shrink-0" />
+                )}
+                <div className="min-w-0">
+                  <p className="font-bold text-lg text-[#1e293b] cursor-pointer hover:text-[#1e3a5f]" onClick={() => setHistorialOpen(true)}>{selectedProducto.codigo}</p>
+                  <p className="text-sm text-[#64748b] line-clamp-2">{selectedProducto.descripcion}</p>
+                </div>
+              </div>
+              <div className="flex justify-end">
+                <BotonFoto productoId={selectedProductoId} />
               </div>
             </div>
           )}

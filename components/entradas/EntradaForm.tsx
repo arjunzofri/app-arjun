@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { registrarEntrada, createOrUpdateProducto } from "@/lib/actions";
 import { InputCantidad } from "@/components/mobile/InputCantidad";
+import { BotonFoto } from "@/components/mobile/BotonFoto";
 import { Search, X } from "lucide-react";
 
 type WinFacResult = {
@@ -28,6 +29,7 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
   const [precioUnitario, setPrecioUnitario] = useState("");
   const [descripcionManual, setDescripcionManual] = useState("");
   const [observacionesManual, setObservacionesManual] = useState("");
+  const [productoDbId, setProductoDbId] = useState<string | null>(null);
   const searchRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -37,6 +39,22 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
+
+  // Pre-crear producto en DB al seleccionar de WinFac para habilitar BotonFoto
+  useEffect(() => {
+    if (!selectedProducto || !esDeWinFac) {
+      setProductoDbId(null);
+      return;
+    }
+    createOrUpdateProducto({
+      codigo: selectedProducto.codigo,
+      descripcion: selectedProducto.descripcion,
+      packing: selectedProducto.packing,
+      knumezet: selectedProducto.knumezet,
+    }).then((p: any) => {
+      if (p?.id) setProductoDbId(p.id);
+    }).catch(() => setProductoDbId(null));
+  }, [selectedProducto?.codigo]);
 
   // Fetch from WinFac API on 2+ chars
   useEffect(() => {
@@ -228,6 +246,12 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
           </div>
         )}
 
+        {productoDbId && (
+          <div className="flex justify-end">
+            <BotonFoto productoId={productoDbId} />
+          </div>
+        )}
+
         <div>
           <p className="text-sm font-semibold mb-2 text-[#111c2d]">Bodega Destino</p>
           <div className="grid grid-cols-3 gap-3">
@@ -345,6 +369,12 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
               </div>
             )}
           </div>
+
+          {productoDbId && (
+            <div className="flex justify-end">
+              <BotonFoto productoId={productoDbId} />
+            </div>
+          )}
 
           <div>
             <p className="text-sm font-semibold mb-2 text-[#111c2d]">Bodega Destino</p>

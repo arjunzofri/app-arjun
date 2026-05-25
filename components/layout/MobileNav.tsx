@@ -2,11 +2,12 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { ArrowUpRight, LogOut } from "lucide-react"
+import { ArrowDownLeft, ArrowUpRight, LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { logout } from "@/app/actions/auth-actions"
 
 const ITEMS = [
+  { label: "Entradas", href: "/entradas", icon: ArrowDownLeft },
   { label: "Salidas", href: "/salidas", icon: ArrowUpRight },
 ]
 
