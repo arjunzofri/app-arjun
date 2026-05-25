@@ -68,9 +68,9 @@ export function HistorialModal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-start md:items-center justify-center overflow-hidden">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative bg-white rounded-t-2xl md:rounded-2xl w-full md:max-w-lg max-h-[85vh] flex flex-col shadow-xl">
+      <div className="relative bg-white rounded-b-2xl md:rounded-2xl w-full md:max-w-lg max-h-[90vh] flex flex-col shadow-xl">
         <div className="flex items-center justify-between p-4 border-b border-[#e2e8f0] shrink-0">
           <div>
             <h2 className="text-lg font-bold text-[#111c2d]">Historial</h2>
