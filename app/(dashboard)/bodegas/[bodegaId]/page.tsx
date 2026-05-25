@@ -87,6 +87,23 @@ export default async function BodegaDetailPage({
     ? productos[productos.length - 1].updated_at
     : null;
 
+  // Resolver imágenes: DB primero, Cloudinary fallback
+  const productoIds = productos.map((p) => p.id);
+  let imagenMap = new Map<string, string>();
+  if (productoIds.length > 0) {
+    const imgRows = await db.execute(sql`
+      SELECT pi.producto_id, pi.url
+      FROM producto_imagenes pi
+      WHERE pi.producto_id = ANY(${productoIds}::uuid[])
+      ORDER BY pi.created_at ASC
+    `);
+    for (const ir of imgRows.rows as any[]) {
+      if (!imagenMap.has(ir.producto_id)) {
+        imagenMap.set(ir.producto_id, ir.url);
+      }
+    }
+  }
+
   const cursorParam = lastUpdated
     ? `&cursor=${encodeURIComponent(String(lastUpdated))}`
     : "";
@@ -138,14 +155,20 @@ export default async function BodegaDetailPage({
       {productos.length > 0 ? (
         <>
           <div className="space-y-2">
-            {productos.map((p) => (
+            {productos.map((p) => {
+              const imagenUrl = imagenMap.get(p.id) ?? getCloudinaryVidaDigitalUrl(p.descripcion) ?? null;
+              return (
               <Link key={p.id} href={`/productos/${p.id}`}>
                 <div className="bg-white border border-[#e2e8f0] rounded-lg p-4 flex items-center gap-4 hover:shadow-sm hover:border-[#e2e8f0] transition-all">
-                  <img
-                    src={getCloudinaryVidaDigitalUrl(p.descripcion) ?? undefined}
-                    alt={p.codigo}
-                    className="w-12 h-12 rounded object-contain bg-[#f1f5f9] shrink-0"
-                  />
+                  {imagenUrl ? (
+                    <img
+                      src={imagenUrl}
+                      alt={p.codigo}
+                      className="w-12 h-12 rounded object-cover bg-[#f1f5f9] shrink-0"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded bg-[#e2e8f0] shrink-0" />
+                  )}
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-mono font-bold text-[#1e3a5f] truncate">
                       {p.codigo}
@@ -160,7 +183,8 @@ export default async function BodegaDetailPage({
                   </div>
                 </div>
               </Link>
-            ))}
+              );
+            })}
           </div>
 
           {hasMore && lastUpdated && (
