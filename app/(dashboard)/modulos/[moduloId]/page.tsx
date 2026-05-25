@@ -3,7 +3,7 @@ import { sql } from "drizzle-orm";
 import { getCloudinaryVidaDigitalUrl } from "@/lib/utils/extract-modelo";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Search } from "lucide-react";
+import { ArrowLeft, Search, AlertTriangle } from "lucide-react";
 
 export default async function ModuloDetailPage({
   params,
@@ -15,14 +15,21 @@ export default async function ModuloDetailPage({
   const { moduloId } = await params;
   const { q, cursor } = await searchParams;
 
-  const moduloResult = await db.execute(sql`
-    SELECT id, nombre FROM modulos_destino WHERE id = ${moduloId}::uuid
-  `);
-  if (moduloResult.rows.length === 0) notFound();
-  const modulo = moduloResult.rows[0] as { id: string; nombre: string };
+  let modulo: { id: string; nombre: string } | null = null;
+  let productos: any[] = [];
+  let hasMore = false;
+  let lastUpdated: string | null = null;
+  let dbError: string | null = null;
 
-  const limit = 21;
-  const searchTerm = q ? `%${q}%` : null;
+  try {
+    const moduloResult = await db.execute(sql`
+      SELECT id, nombre FROM modulos_destino WHERE id = ${moduloId}::uuid
+    `);
+    if (moduloResult.rows.length === 0) notFound();
+    modulo = moduloResult.rows[0] as { id: string; nombre: string };
+
+    const limit = 21;
+    const searchTerm = q ? `%${q}%` : null;
 
   let query;
   if (searchTerm && cursor) {
@@ -75,17 +82,40 @@ export default async function ModuloDetailPage({
     `;
   }
 
-  const result = await db.execute(query);
-  const rows = result.rows as {
-    id: string; codigo: string; descripcion: string;
-    packing: number; cantidad_acumulada: number; updated_at: string;
-  }[];
+    const result = await db.execute(query!);
+    const rows = result.rows as {
+      id: string; codigo: string; descripcion: string;
+      packing: number; cantidad_acumulada: number; updated_at: string;
+    }[];
 
-  const hasMore = rows.length > 20;
-  const productos = rows.slice(0, 20);
-  const lastUpdated = productos.length > 0
-    ? productos[productos.length - 1].updated_at
-    : null;
+    hasMore = rows.length > 20;
+    productos = rows.slice(0, 20);
+    lastUpdated = productos.length > 0
+      ? productos[productos.length - 1].updated_at
+      : null;
+  } catch (e: any) {
+    dbError = e.message || "Error al consultar stock_modulos";
+  }
+
+  if (dbError || !modulo) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-3">
+          <Link href="/modulos" className="p-1 text-[#74777f] hover:text-[#111c2d]">
+            <ArrowLeft className="h-5 w-5" />
+          </Link>
+          <h1 className="text-2xl font-bold text-[#111c2d]">Módulo</h1>
+        </div>
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 text-center space-y-3">
+          <AlertTriangle className="h-8 w-8 text-amber-500 mx-auto" />
+          <p className="text-sm text-amber-800 font-medium">Tabla stock_modulos no encontrada</p>
+          <p className="text-xs text-amber-700">
+            Ejecutá el setup: <code className="bg-amber-100 px-1 rounded">GET /api/setup</code> con <code className="bg-amber-100 px-1 rounded">x-setup-key</code>
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const qParam = q ? `&q=${encodeURIComponent(q)}` : "";
 
@@ -99,7 +129,7 @@ export default async function ModuloDetailPage({
           <ArrowLeft className="h-5 w-5" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-[#111c2d]">{modulo.nombre}</h1>
+          <h1 className="text-2xl font-bold text-[#111c2d]">{modulo!.nombre}</h1>
           <p className="text-sm text-[#74777f]">
             {productos.length} producto{productos.length !== 1 ? "s" : ""} con stock acumulado
           </p>

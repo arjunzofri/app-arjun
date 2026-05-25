@@ -1,21 +1,40 @@
 import { db } from "@/db";
 import { sql } from "drizzle-orm";
 import Link from "next/link";
-import { Store } from "lucide-react";
+import { Store, AlertTriangle } from "lucide-react";
 
 export default async function ModulosPage() {
-  const result = await db.execute(sql`
-    SELECT m.id, m.nombre,
-           COUNT(sm.id)::int as productos,
-           COALESCE(SUM(sm.cantidad_acumulada), 0)::int as unidades
-    FROM modulos_destino m
-    LEFT JOIN stock_modulos sm ON sm.modulo_id = m.id AND sm.cantidad_acumulada > 0
-    GROUP BY m.id, m.nombre
-  `);
+  let modulos: { id: string; nombre: string; productos: number; unidades: number }[] = [];
+  let error: string | null = null;
 
-  const modulos = result.rows as {
-    id: string; nombre: string; productos: number; unidades: number;
-  }[];
+  try {
+    const result = await db.execute(sql`
+      SELECT m.id, m.nombre,
+             COUNT(sm.id)::int as productos,
+             COALESCE(SUM(sm.cantidad_acumulada), 0)::int as unidades
+      FROM modulos_destino m
+      LEFT JOIN stock_modulos sm ON sm.modulo_id = m.id AND sm.cantidad_acumulada > 0
+      GROUP BY m.id, m.nombre
+    `);
+    modulos = result.rows as any[];
+  } catch (e: any) {
+    error = e.message || "Error al consultar módulos";
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-3xl font-bold tracking-tight text-[#111c2d]">Módulos</h1>
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 text-center space-y-3">
+          <AlertTriangle className="h-8 w-8 text-amber-500 mx-auto" />
+          <p className="text-sm text-amber-800 font-medium">Tabla stock_modulos no encontrada</p>
+          <p className="text-xs text-amber-700">
+            Ejecutá el setup para crear la tabla: <code className="bg-amber-100 px-1 rounded">GET /api/setup</code> con header <code className="bg-amber-100 px-1 rounded">x-setup-key</code>
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

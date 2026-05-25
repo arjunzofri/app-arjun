@@ -145,11 +145,15 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
                   className="w-full flex items-center gap-3 p-3 hover:bg-[#f1f5f9] transition-colors text-left border-b border-[#f1f5f9] last:border-0"
                   onClick={() => { setSelectedProducto(p); setQuery(""); setOpen(false); }}
                 >
-                  <img
-                    src={getImagenVidaDigital(p.descripcion) ?? undefined}
-                    alt={p.codigo}
-                    className="w-10 h-10 rounded object-cover bg-[#f1f5f9] shrink-0"
-                  />
+                  {getImagenVidaDigital(p.descripcion) ? (
+                    <img
+                      src={getImagenVidaDigital(p.descripcion)!}
+                      alt={p.codigo}
+                      className="w-10 h-10 rounded object-cover bg-[#f1f5f9] shrink-0"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded bg-[#e2e8f0] shrink-0" />
+                  )}
                   <div className="min-w-0">
                     <p className="font-semibold text-sm text-[#1e293b]">{p.codigo}</p>
                     <p className="text-xs text-[#64748b] truncate">{p.descripcion}</p>
