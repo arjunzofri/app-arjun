@@ -34,6 +34,7 @@ export default function SalidaForm({
   const [conteoLoading, setConteoLoading] = useState(false);
   const [conteoMsg, setConteoMsg] = useState<string | null>(null);
   const [historialOpen, setHistorialOpen] = useState(false);
+  const [showObs, setShowObs] = useState(false);
 
   const form = useForm<SalidaInput>({
     resolver: zodResolver(SalidaSchema),
@@ -322,6 +323,27 @@ export default function SalidaForm({
           />
         </div>
 
+        <div>
+          {!showObs ? (
+            <button type="button" onClick={() => setShowObs(true)} className="text-sm text-[#1e3a5f] font-medium hover:underline">
+              + Agregar observación
+            </button>
+          ) : (
+            <div className="space-y-1">
+              <textarea
+                value={watch("observaciones") || ""}
+                onChange={(e) => setValue("observaciones", e.target.value)}
+                placeholder="Observaciones del despacho..."
+                rows={2}
+                className="w-full px-3 py-2 text-sm border border-[#c4c6cf] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20 resize-none"
+              />
+              <button type="button" onClick={() => { setValue("observaciones", ""); setShowObs(false); }} className="text-xs text-[#94a3b8] hover:text-[#74777f]">
+                Quitar
+              </button>
+            </div>
+          )}
+        </div>
+
         {error && (
           <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600 font-medium">
             ⚠️ {error}
@@ -457,6 +479,27 @@ export default function SalidaForm({
               packing={packing}
               max={stockEnBodega(selectedBodegaId) || 999}
             />
+          </div>
+
+          <div>
+            {!showObs ? (
+              <button type="button" onClick={() => setShowObs(true)} className="text-sm text-[#1e3a5f] font-medium hover:underline">
+                + Agregar observación
+              </button>
+            ) : (
+              <div className="space-y-1">
+                <textarea
+                  value={watch("observaciones") || ""}
+                  onChange={(e) => setValue("observaciones", e.target.value)}
+                  placeholder="Observaciones del despacho..."
+                  rows={2}
+                  className="w-full px-3 py-2 text-sm border border-[#c4c6cf] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20 resize-none"
+                />
+                <button type="button" onClick={() => { setValue("observaciones", ""); setShowObs(false); }} className="text-xs text-[#94a3b8] hover:text-[#74777f]">
+                  Quitar
+                </button>
+              </div>
+            )}
           </div>
         </div>
 

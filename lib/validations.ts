@@ -23,6 +23,7 @@ export const EntradaSchema = z.object({
   notaVentaNumero: z.string().optional(),
   proveedor: z.enum(["vida_digital", "kingnex"]).optional(),
   origen: z.enum(["winfac", "kingnex", "manual"]).default("manual"),
+  observaciones: z.string().optional(),
 });
 
 export const SalidaSchema = z.object({

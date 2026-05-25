@@ -29,6 +29,8 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
   const [precioUnitario, setPrecioUnitario] = useState("");
   const [descripcionManual, setDescripcionManual] = useState("");
   const [observacionesManual, setObservacionesManual] = useState("");
+  const [observaciones, setObservaciones] = useState("");
+  const [showObs, setShowObs] = useState(false);
   const [productoDbId, setProductoDbId] = useState<string | null>(null);
   const searchRef = useRef<HTMLDivElement>(null);
 
@@ -111,10 +113,12 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
         cantidad,
         precioUnitario: precioUnitario ? Number(precioUnitario) : undefined,
         origen: esDeWinFac ? "winfac" : "manual",
+        observaciones: observaciones.trim() || undefined,
       });
 
       setDescripcionManual("");
       setObservacionesManual("");
+      setObservaciones("");
 
       setSuccess(true);
       setSelectedProducto(null);
@@ -295,6 +299,27 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
           />
         </div>
 
+        <div>
+          {!showObs ? (
+            <button type="button" onClick={() => setShowObs(true)} className="text-sm text-[#1e3a5f] font-medium hover:underline">
+              + Agregar observación
+            </button>
+          ) : (
+            <div className="space-y-1">
+              <textarea
+                value={observaciones}
+                onChange={(e) => setObservaciones(e.target.value)}
+                placeholder="Observaciones de la entrada..."
+                rows={2}
+                className="w-full px-3 py-2 text-sm border border-[#c4c6cf] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20 resize-none"
+              />
+              <button type="button" onClick={() => { setObservaciones(""); setShowObs(false); }} className="text-xs text-[#94a3b8] hover:text-[#74777f]">
+                Quitar
+              </button>
+            </div>
+          )}
+        </div>
+
         {error && (
           <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600 font-medium">
             {error}
@@ -403,6 +428,27 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
           <div>
             <p className="text-sm font-semibold mb-2 text-[#111c2d]">Cantidad</p>
             <InputCantidad value={cantidad} onChange={setCantidad} packing={packing} max={9999} />
+          </div>
+
+          <div>
+            {!showObs ? (
+              <button type="button" onClick={() => setShowObs(true)} className="text-sm text-[#1e3a5f] font-medium hover:underline">
+                + Agregar observación
+              </button>
+            ) : (
+              <div className="space-y-1">
+                <textarea
+                  value={observaciones}
+                  onChange={(e) => setObservaciones(e.target.value)}
+                  placeholder="Observaciones de la entrada..."
+                  rows={2}
+                  className="w-full px-3 py-2 text-sm border border-[#c4c6cf] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20 resize-none"
+                />
+                <button type="button" onClick={() => { setObservaciones(""); setShowObs(false); }} className="text-xs text-[#94a3b8] hover:text-[#74777f]">
+                  Quitar
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
