@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
     `;
     await sql`
       DO $$ BEGIN
-        CREATE TYPE "origen" AS ENUM('winfac', 'kingnex', 'manual');
+        CREATE TYPE "origen" AS ENUM('winfac', 'kingnex', 'manual', 'conteo_fisico');
       EXCEPTION
         WHEN duplicate_object THEN null;
       END $$;
@@ -41,6 +41,7 @@ export async function GET(req: NextRequest) {
       CREATE TABLE IF NOT EXISTS "usuarios" (
         "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         "nombre" text NOT NULL,
+        "username" text UNIQUE,
         "email" text UNIQUE NOT NULL,
         "password_hash" text NOT NULL,
         "rol" "rol" DEFAULT 'operador' NOT NULL,
@@ -64,7 +65,8 @@ export async function GET(req: NextRequest) {
     await sql`
       CREATE TABLE IF NOT EXISTS "productos" (
         "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-        "codigo" text UNIQUE NOT NULL,
+        "codigo" text NOT NULL,
+        "knumezet" text UNIQUE,
         "descripcion" text NOT NULL,
         "codigo_personal" text,
         "packing" integer DEFAULT 1,
@@ -159,12 +161,18 @@ export async function GET(req: NextRequest) {
       );
     `;
 
-    // 3. Seed Data
+    // 3. Fixes para DBs existentes (columnas/constraints faltantes de versiones anteriores)
+    await sql`ALTER TABLE public.usuarios ADD COLUMN IF NOT EXISTS username text`;
+    await sql`ALTER TABLE public.productos ADD COLUMN IF NOT EXISTS knumezet text`;
+    await sql`ALTER TABLE public.productos DROP CONSTRAINT IF EXISTS productos_codigo_key`;
+    await sql`ALTER TYPE public.origen ADD VALUE IF NOT EXISTS 'conteo_fisico'`;
+
+    // 4. Seed Data
     const hashedPass = await bcrypt.hash("arjun2025", 10);
 
     await sql`
-      INSERT INTO "usuarios" (nombre, email, password_hash, rol)
-      VALUES ('Admin', 'admin@arjun.cl', ${hashedPass}, 'admin')
+      INSERT INTO "usuarios" (nombre, username, email, password_hash, rol)
+      VALUES ('Admin', 'admin', 'admin@arjun.cl', ${hashedPass}, 'admin')
       ON CONFLICT (email) DO NOTHING;
     `;
 
