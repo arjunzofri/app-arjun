@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     const rows = await s`
       SELECT DISTINCT ON (codunico)
         codunico as codigo, descript as descripcion,
-        COALESCE(cantcaja, 1)::int as packing, knumezet
+        GREATEST(COALESCE(cantcaja, 1), 1)::int as packing, knumezet
       FROM arjun.inv_sdo
       WHERE codunico ILIKE ${`%${q.trim()}%`}
          OR descript ILIKE ${`%${q.trim()}%`}
