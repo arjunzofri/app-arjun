@@ -8,7 +8,7 @@ import { logout } from "@/app/actions/auth-actions"
 import {
   Box,
   LayoutDashboard,
-  Package,
+  Warehouse,
   ArrowDownLeft,
   ArrowUpRight,
   Users,
@@ -22,7 +22,7 @@ const NAV_GROUPS = [
     title: "Inventario",
     items: [
       { label: "Dashboard", href: "/", icon: LayoutDashboard },
-      { label: "Productos", href: "/productos", icon: Package },
+      { label: "Bodegas", href: "/bodegas", icon: Warehouse },
     ]
   },
   {
@@ -100,7 +100,7 @@ export function Sidebar({ userRole, userName, sinBodega = 0 }: { userRole: strin
                     >
                       <Icon className={cn("h-4 w-4 shrink-0", isActive ? "text-[#adc8f5]" : "text-[#8aa4cf] group-hover:text-white")} />
                       {!collapsed && item.label}
-                      {!collapsed && item.href === "/productos" && sinBodega > 0 && (
+                      {!collapsed && item.href === "/bodegas" && sinBodega > 0 && (
                         <span className="ml-auto bg-red-500 text-white text-[10px] font-bold rounded-full px-1.5 py-0.5 min-w-[18px] text-center">
                           {sinBodega}
                         </span>
