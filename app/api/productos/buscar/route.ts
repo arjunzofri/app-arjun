@@ -10,12 +10,13 @@ export async function GET(request: NextRequest) {
   try {
     const s = neon(process.env.DATABASE_URL!);
     const rows = await s`
-      SELECT DISTINCT ON (codigo)
-        codigo, descripcion, packing, knumezet
+      SELECT DISTINCT ON (codunico)
+        codunico as codigo, descript as descripcion,
+        COALESCE(cantcaja, 1)::int as packing, knumezet
       FROM arjun.inv_sdo
-      WHERE codigo ILIKE ${`%${q.trim()}%`}
-         OR descripcion ILIKE ${`%${q.trim()}%`}
-      ORDER BY codigo
+      WHERE codunico ILIKE ${`%${q.trim()}%`}
+         OR descript ILIKE ${`%${q.trim()}%`}
+      ORDER BY codunico
       LIMIT 20
     `;
     return NextResponse.json(rows);
