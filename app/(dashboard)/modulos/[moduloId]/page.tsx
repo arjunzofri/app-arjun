@@ -1,5 +1,6 @@
 import { db } from "@/db";
 import { sql } from "drizzle-orm";
+import { neon } from "@neondatabase/serverless";
 import { getCloudinaryVidaDigitalUrl } from "@/lib/utils/extract-modelo";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -98,13 +99,14 @@ export default async function ModuloDetailPage({
     // Resolver imágenes: DB primero, Cloudinary fallback
     const productoIds = productos.map((p: any) => p.id);
     if (productoIds.length > 0) {
-      const imgRows = await db.execute(sql`
+      const s = neon(process.env.DATABASE_URL!);
+      const imgRows = await s`
         SELECT pi.producto_id, pi.url
-        FROM producto_imagenes pi
+        FROM public.producto_imagenes pi
         WHERE pi.producto_id = ANY(${productoIds}::uuid[])
         ORDER BY pi.created_at ASC
-      `);
-      for (const ir of imgRows.rows as any[]) {
+      `;
+      for (const ir of imgRows) {
         if (!imagenMap.has(ir.producto_id)) {
           imagenMap.set(ir.producto_id, ir.url);
         }
