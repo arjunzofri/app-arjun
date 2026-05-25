@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { registrarEntrada, createOrUpdateProducto } from "@/lib/actions";
 import { InputCantidad } from "@/components/mobile/InputCantidad";
-import { getCloudinaryVidaDigitalUrl } from "@/lib/utils/extract-modelo";
 import { Search, X } from "lucide-react";
 
 type WinFacResult = {
@@ -12,6 +11,7 @@ type WinFacResult = {
   descripcion: string;
   packing: number;
   knumezet: string | null;
+  imagenUrl: string | null;
 };
 
 export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
@@ -56,15 +56,6 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
 
   const packing = selectedProducto?.packing ?? 1;
   const esDeWinFac = selectedProducto?.knumezet != null;
-
-  const resultsWithImage = useMemo(
-    () =>
-      results.map((p) => ({
-        ...p,
-        imagen: getCloudinaryVidaDigitalUrl(p.descripcion),
-      })),
-    [results]
-  );
 
   const handleConfirmar = async () => {
     if (!bodegaId) {
@@ -145,17 +136,17 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
             </div>
           )}
 
-          {open && resultsWithImage.length > 0 && (
+          {open && results.length > 0 && (
             <div className="absolute z-10 mt-1 w-full bg-white border border-[#e2e8f0] rounded-lg shadow-lg max-h-64 overflow-y-auto">
-              {resultsWithImage.map((p, i) => (
+              {results.map((p, i) => (
                 <button
                   key={i}
                   type="button"
                   className="w-full flex items-center gap-3 p-3 hover:bg-[#f1f5f9] transition-colors text-left border-b border-[#f1f5f9] last:border-0"
                   onClick={() => { setSelectedProducto(p); setQuery(""); setOpen(false); }}
                 >
-                  {p.imagen ? (
-                    <img src={p.imagen} alt={p.codigo} className="w-10 h-10 rounded object-cover shrink-0" />
+                  {p.imagenUrl ? (
+                    <img src={p.imagenUrl} alt={p.codigo} className="w-10 h-10 rounded object-cover shrink-0" />
                   ) : (
                     <div className="w-10 h-10 rounded bg-[#e2e8f0] shrink-0" />
                   )}
@@ -168,7 +159,7 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
             </div>
           )}
 
-          {open && query.trim().length >= 2 && resultsWithImage.length === 0 && (
+          {open && query.trim().length >= 2 && results.length === 0 && (
             <div className="absolute z-10 mt-1 w-full bg-white border border-[#e2e8f0] rounded-lg shadow-lg p-4 text-center text-sm text-[#94a3b8]">
               Sin resultados — se registrará como producto nuevo
             </div>
@@ -191,6 +182,7 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
                 descripcion: query.trim(),
                 packing: 1,
                 knumezet: null,
+                imagenUrl: null,
               });
               setQuery("");
               setOpen(false);
@@ -295,17 +287,17 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
               </div>
             )}
 
-            {open && resultsWithImage.length > 0 && (
+            {open && results.length > 0 && (
               <div className="absolute z-10 mt-1 w-full bg-white border border-[#e2e8f0] rounded-lg shadow-lg max-h-64 overflow-y-auto">
-                {resultsWithImage.map((p, i) => (
+                {results.map((p, i) => (
                   <button
                     key={i}
                     type="button"
                     className="w-full flex items-center gap-3 p-3 hover:bg-[#f1f5f9] transition-colors text-left border-b border-[#f1f5f9] last:border-0"
                     onClick={() => { setSelectedProducto(p); setQuery(""); setOpen(false); }}
                   >
-                    {p.imagen ? (
-                      <img src={p.imagen} alt={p.codigo} className="w-10 h-10 rounded object-cover shrink-0" />
+                    {p.imagenUrl ? (
+                      <img src={p.imagenUrl} alt={p.codigo} className="w-10 h-10 rounded object-cover shrink-0" />
                     ) : (
                       <div className="w-10 h-10 rounded bg-[#e2e8f0] shrink-0" />
                     )}
