@@ -387,3 +387,69 @@ export async function buscarProductos(query: string) {
   return results
 }
 
+export async function editarProducto(id: string, data: {
+  codigoPersonal?: string;
+  descripcion?: string;
+  packing?: number;
+  observaciones?: string;
+}) {
+  const session = await auth();
+  if (!session) throw new Error("No autorizado");
+
+  const existing = await db.query.productos.findFirst({
+    where: eq(productos.id, id),
+  });
+  if (!existing) throw new Error("Producto no encontrado");
+
+  await db.update(productos).set({
+    codigoPersonal: data.codigoPersonal ?? existing.codigoPersonal,
+    descripcion: data.descripcion ?? existing.descripcion,
+    packing: data.packing ?? existing.packing,
+    observaciones: data.observaciones ?? existing.observaciones,
+    updatedAt: new Date(),
+  }).where(eq(productos.id, id));
+
+  await db.insert(activityLog).values({
+    usuarioId: session.user?.id ?? "",
+    accion: "PRODUCTO_EDITADO",
+    tablaAfectada: "productos",
+    registroId: id,
+    detalle: data,
+  });
+
+  revalidatePath("/");
+  revalidatePath("/entradas");
+  revalidatePath("/salidas");
+  return { success: true };
+}
+
+export async function eliminarProducto(id: string) {
+  const session = await auth();
+  if (!session) throw new Error("No autorizado");
+  if (session.user?.role !== "admin") throw new Error("Solo administradores pueden eliminar productos");
+
+  const stocks = await db.query.stock.findMany({
+    where: eq(stock.productoId, id),
+  });
+  const totalStock = stocks.reduce((sum, s) => sum + s.cantidadActual, 0);
+
+  if (totalStock > 0) {
+    return { error: `No se puede eliminar — el producto tiene ${totalStock} unidades en stock` };
+  }
+
+  await db.delete(productos).where(eq(productos.id, id));
+
+  await db.insert(activityLog).values({
+    usuarioId: session.user?.id ?? "",
+    accion: "PRODUCTO_ELIMINADO",
+    tablaAfectada: "productos",
+    registroId: id,
+    detalle: { id },
+  });
+
+  revalidatePath("/");
+  revalidatePath("/entradas");
+  revalidatePath("/salidas");
+  return { success: true };
+}
+

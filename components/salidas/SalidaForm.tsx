@@ -13,6 +13,9 @@ import { BotonFoto } from "@/components/mobile/BotonFoto";
 import { registrarSalida, getStockWinfac, registrarConteoFisico, actualizarUbicacionProducto } from "@/lib/actions";
 import { getImagenVidaDigital } from "@/lib/utils/extract-modelo";
 import { HistorialModal } from "@/components/shared/HistorialModal";
+import { ProductoEditModal } from "@/components/shared/ProductoEditModal";
+import { Pencil } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState, useMemo, useEffect, useCallback } from "react";
 
@@ -35,6 +38,8 @@ export default function SalidaForm({
   const [conteoMsg, setConteoMsg] = useState<string | null>(null);
   const [historialOpen, setHistorialOpen] = useState(false);
   const [showObs, setShowObs] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const { data: session } = useSession();
 
   const form = useForm<SalidaInput>({
     resolver: zodResolver(SalidaSchema),
@@ -205,7 +210,12 @@ export default function SalidaForm({
                 <div className="w-20 h-20 rounded bg-[#e2e8f0] shrink-0" />
               )}
               <div className="flex-1 min-w-0">
-                <p className="font-bold text-sm text-[#1e293b] cursor-pointer hover:text-[#1e3a5f]" onClick={() => setHistorialOpen(true)}>{selectedProducto.codigo}</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-bold text-sm text-[#1e293b] cursor-pointer hover:text-[#1e3a5f]" onClick={() => setHistorialOpen(true)}>{selectedProducto.codigo}</p>
+                  <button type="button" onClick={() => setEditOpen(true)} className="p-0.5 text-[#94a3b8] hover:text-[#1e3a5f]">
+                    <Pencil className="h-3.5 w-3.5" />
+                  </button>
+                </div>
                 <p className="text-xs text-[#64748b] line-clamp-2">{selectedProducto.descripcion}</p>
                 <p className="text-xs text-[#64748b] mt-1">Packing: {packing} u/caja</p>
                 {winfacSaldo !== null && (
@@ -411,7 +421,12 @@ export default function SalidaForm({
                   <div className="w-[120px] h-[120px] rounded bg-[#e2e8f0] shrink-0" />
                 )}
                 <div className="min-w-0">
-                  <p className="font-bold text-lg text-[#1e293b] cursor-pointer hover:text-[#1e3a5f]" onClick={() => setHistorialOpen(true)}>{selectedProducto.codigo}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-bold text-lg text-[#1e293b] cursor-pointer hover:text-[#1e3a5f]" onClick={() => setHistorialOpen(true)}>{selectedProducto.codigo}</p>
+                    <button type="button" onClick={() => setEditOpen(true)} className="p-0.5 text-[#94a3b8] hover:text-[#1e3a5f]">
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                  </div>
                   <p className="text-sm text-[#64748b] line-clamp-2">{selectedProducto.descripcion}</p>
                 </div>
               </div>
@@ -590,6 +605,21 @@ export default function SalidaForm({
           codigo={selectedProducto.codigo}
           open={historialOpen}
           onClose={() => setHistorialOpen(false)}
+        />
+      )}
+      {selectedProducto && (
+        <ProductoEditModal
+          producto={{
+            id: selectedProducto.id,
+            codigo: selectedProducto.codigo,
+            codigoPersonal: selectedProducto.codigoPersonal,
+            descripcion: selectedProducto.descripcion,
+            packing: selectedProducto.packing,
+            observaciones: selectedProducto.observaciones,
+          }}
+          userRole={session?.user?.role || "operador"}
+          open={editOpen}
+          onClose={() => setEditOpen(false)}
         />
       )}
     </>

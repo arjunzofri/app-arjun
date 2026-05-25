@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 import { registrarEntrada, createOrUpdateProducto } from "@/lib/actions";
 import { InputCantidad } from "@/components/mobile/InputCantidad";
 import { BotonFoto } from "@/components/mobile/BotonFoto";
-import { Search, X } from "lucide-react";
+import { ProductoEditModal } from "@/components/shared/ProductoEditModal";
+import { Pencil, Search, X } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 type WinFacResult = {
   codigo: string;
@@ -32,6 +34,8 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
   const [observaciones, setObservaciones] = useState("");
   const [showObs, setShowObs] = useState(false);
   const [productoDbId, setProductoDbId] = useState<string | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
+  const { data: session } = useSession();
   const searchRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -143,7 +147,14 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
           {selectedProducto ? (
             <div className="flex items-center gap-3 p-3 bg-[#f1f5f9] rounded-lg border border-[#e2e8f0]">
               <div className="flex-1 min-w-0">
-                <p className="font-bold text-sm text-[#1e293b] truncate">{selectedProducto.codigo}</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-bold text-sm text-[#1e293b] truncate">{selectedProducto.codigo}</p>
+                  {productoDbId && (
+                    <button type="button" onClick={() => setEditOpen(true)} className="p-0.5 text-[#94a3b8] hover:text-[#1e3a5f] shrink-0">
+                      <Pencil className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </div>
                 <p className="text-xs text-[#64748b] truncate">{selectedProducto.descripcion}</p>
                 <p className="text-[10px] text-[#94a3b8]">Packing: {packing} u/caja</p>
               </div>
@@ -347,7 +358,14 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
             {selectedProducto ? (
               <div className="flex items-center gap-3 p-3 bg-[#f1f5f9] rounded-lg border border-[#e2e8f0]">
                 <div className="flex-1 min-w-0">
-                  <p className="font-bold text-sm text-[#1e293b] truncate">{selectedProducto.codigo}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-bold text-sm text-[#1e293b] truncate">{selectedProducto.codigo}</p>
+                    {productoDbId && (
+                      <button type="button" onClick={() => setEditOpen(true)} className="p-0.5 text-[#94a3b8] hover:text-[#1e3a5f] shrink-0">
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </div>
                   <p className="text-xs text-[#64748b] truncate">{selectedProducto.descripcion}</p>
                   <p className="text-[10px] text-[#94a3b8]">Packing: {packing} u/caja{esDeWinFac ? " · WinFac" : " · Manual"}</p>
                 </div>
@@ -519,6 +537,20 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
           </button>
         </div>
       </div>
+
+      {productoDbId && selectedProducto && (
+        <ProductoEditModal
+          producto={{
+            id: productoDbId,
+            codigo: selectedProducto.codigo,
+            descripcion: selectedProducto.descripcion,
+            packing: selectedProducto.packing,
+          }}
+          userRole={session?.user?.role || "operador"}
+          open={editOpen}
+          onClose={() => setEditOpen(false)}
+        />
+      )}
     </div>
   );
 }
