@@ -6,6 +6,7 @@ import { registrarEntrada, createOrUpdateProducto } from "@/lib/actions";
 import { InputCantidad } from "@/components/mobile/InputCantidad";
 import { BotonFoto } from "@/components/mobile/BotonFoto";
 import { ProductoEditModal } from "@/components/shared/ProductoEditModal";
+import { NumericInput } from "@/components/shared/NumericInput";
 import { Pencil, Search, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 
@@ -345,13 +346,9 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
 
         <div>
           <p className="text-sm font-semibold mb-2 text-[#111c2d]">Precio Unitario (opcional)</p>
-          <input
-            type="number"
-            inputMode="decimal"
-            min={0}
-            step="0.01"
+          <NumericInput
             value={precioUnitario}
-            onChange={(e) => setPrecioUnitario(e.target.value)}
+            onChange={setPrecioUnitario}
             placeholder="0.00"
             className="w-full h-10 px-3 text-sm border border-[#c4c6cf] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
           />

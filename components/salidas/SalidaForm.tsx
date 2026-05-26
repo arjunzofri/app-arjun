@@ -14,6 +14,7 @@ import { registrarSalida, getStockWinfac, registrarConteoFisico, actualizarUbica
 import { getImagenVidaDigital } from "@/lib/utils/extract-modelo";
 import { HistorialModal } from "@/components/shared/HistorialModal";
 import { ProductoEditModal } from "@/components/shared/ProductoEditModal";
+import { NumericInput } from "@/components/shared/NumericInput";
 import { Pencil } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -228,16 +229,12 @@ export default function SalidaForm({
 
             <div>
               <p className="text-xs font-semibold text-[#1e293b] mb-2">Saldo físico contado:</p>
-              <input
-                type="number"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                min={0}
+              <NumericInput
                 value={conteoCantidad}
-                onChange={(e) => {
-                  const n = parseInt(e.target.value, 10);
+                onChange={(v) => {
+                  const n = parseInt(v, 10);
                   if (!isNaN(n) && n >= 0) setConteoCantidad(n);
-                  else if (e.target.value === "") setConteoCantidad(0);
+                  else if (v === "") setConteoCantidad(0);
                 }}
                 className="w-full h-14 text-center text-2xl font-bold border-2 border-[#c4c6cf] rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:border-transparent"
               />

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { NumericInput } from "@/components/shared/NumericInput";
 import { Pencil, X, Trash2 } from "lucide-react";
 import { editarProducto, eliminarProducto } from "@/lib/actions";
 
@@ -113,11 +114,9 @@ export function ProductoEditModal({
 
           <div>
             <label className="text-xs font-medium text-[#111c2d] mb-1 block">Packing (u/caja)</label>
-            <input
-              type="number"
-              min={1}
+            <NumericInput
               value={packing}
-              onChange={(e) => { const n = parseInt(e.target.value); if (n > 0) setPacking(n); }}
+              onChange={(v) => { const n = parseInt(v); if (n > 0) setPacking(n); }}
               className="w-full px-3 py-2 text-sm border border-[#c4c6cf] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
             />
           </div>

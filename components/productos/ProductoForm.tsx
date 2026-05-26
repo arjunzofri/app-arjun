@@ -7,6 +7,7 @@ import type { ProductoInput } from "@/lib/validations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { NumericInput } from "@/components/shared/NumericInput";
 import { createOrUpdateProducto } from "@/lib/actions";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -27,7 +28,7 @@ export default function ProductoForm({ initialData }: { initialData?: any }) {
       observaciones: "",
     }
   });
-  const { register, handleSubmit, formState: { errors } } = form;
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = form;
 
   const onSubmit = async (data: ProductoInput) => {
     setLoading(true);
@@ -85,10 +86,10 @@ export default function ProductoForm({ initialData }: { initialData?: any }) {
         </div>
         <div className="space-y-2">
           <Label>Packing (U/Caja)</Label>
-          <Input 
-            type="number" 
-            {...register("packing", { valueAsNumber: true })} 
-            className="bg-white border-[#c4c6cf]" 
+          <NumericInput
+            value={watch("packing") ?? 1}
+            onChange={(v) => { const n = parseInt(v); if (n > 0) setValue("packing", n); }}
+            className="bg-white border-[#c4c6cf] h-10 px-3 py-2 text-sm rounded-md border w-full"
           />
         </div>
         <div className="space-y-2">
