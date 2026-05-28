@@ -24,13 +24,16 @@ export function InputCantidad({ value, onChange, packing, max }: Props) {
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value.replace(/[^0-9]/g, "")
-    setDisplay(raw)
     if (raw === "") {
-      onChange(1)
+      setDisplay("")
+      onChange(0)
       return
     }
     const n = parseInt(raw, 10)
-    if (!isNaN(n) && n >= 1 && n <= max) onChange(n)
+    if (isNaN(n)) return
+    const capped = Math.min(n, max)
+    setDisplay(String(capped))
+    onChange(capped)
   }, [onChange, max])
 
   const handleFocus = useCallback(() => {
@@ -54,7 +57,7 @@ export function InputCantidad({ value, onChange, packing, max }: Props) {
           = {cajas} caja{cajas !== 1 ? "s" : ""} + {unidades} unidad{unidades !== 1 ? "es" : ""}
         </p>
       )}
-      <p className="text-center text-xs text-[#94a3b8] mt-0.5">
+      <p className={`text-center text-xs mt-0.5 ${value >= max ? 'text-red-500 font-semibold' : 'text-[#94a3b8]'}`}>
         Stock disponible: {max}
       </p>
     </div>
