@@ -7,10 +7,20 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 })
   }
 
-  // Asegurar columna de watermark (año+visación)
+  // Asegurar schema
+  await db.execute(
+    `ALTER TABLE public.productos ADD COLUMN IF NOT EXISTS origen_winfac BOOLEAN DEFAULT false`
+  )
   await db.execute(
     `ALTER TABLE sync_winfac_log ADD COLUMN IF NOT EXISTS ultimo_numero_visa BIGINT DEFAULT 0`
   )
+  await db.execute(`
+    DO $$
+    BEGIN
+      ALTER TYPE origen ADD VALUE 'winfac_futuro';
+    EXCEPTION WHEN duplicate_object THEN NULL;
+    END $$;
+  `)
 
   // Leer watermark
   const logResult = await db.execute(
@@ -18,7 +28,7 @@ export async function GET(req: NextRequest) {
   )
   const ultimoVisa = Number((logResult.rows[0] as any)?.ultimo_numero_visa) || 0
 
-  // Buscar productos nuevos usando watermark año+numero
+  // Buscar productos nuevos
   const rows = (await db.execute(
     `SELECT knumezet, codunico, descript, stocdisp, cifunita, cantcaja,
             (split_part(knumezet,'-',2)::bigint * 1000000 + split_part(knumezet,'-',3)::bigint) as visa_key
@@ -32,35 +42,154 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       message: "Sin productos nuevos",
       productos_creados: 0,
+      productos_actualizados: 0,
       ultimo_numero_visa: ultimoVisa,
     })
   }
 
-  // Bulk UPSERT productos nuevos
-  await db.execute(
-    `INSERT INTO productos (codigo, descripcion, packing, knumezet, created_at, updated_at)
-     SELECT codunico, descript, COALESCE(NULLIF(cantcaja,0),1), knumezet, now(), now()
-     FROM arjun.inv_sdo
-     WHERE (split_part(knumezet,'-',2)::bigint * 1000000 + split_part(knumezet,'-',3)::bigint) > ${ultimoVisa}
-     ORDER BY (split_part(knumezet,'-',2)::bigint * 1000000 + split_part(knumezet,'-',3)::bigint) ASC, knumezet ASC
-     LIMIT 10
-     ON CONFLICT (knumezet) DO UPDATE SET
-       codigo = EXCLUDED.codigo,
-       descripcion = EXCLUDED.descripcion,
-       packing = EXCLUDED.packing,
-       updated_at = now()`
+  // Obtener Bodega Arjun y admin user
+  const bodegaResult = await db.execute(
+    `SELECT id FROM bodegas WHERE nombre = 'Bodega Arjun' LIMIT 1`
   )
+  const bodegaArjunId = (bodegaResult.rows[0] as any)?.id
+
+  const adminResult = await db.execute(
+    `SELECT id FROM usuarios WHERE rol = 'admin' LIMIT 1`
+  )
+  const adminId = (adminResult.rows[0] as any)?.id
+
+  let creados = 0
+  let actualizados = 0
+
+  for (const row of rows) {
+    try {
+      const knumezet: string = row.knumezet
+      const codunico: string = row.codunico
+      const descript: string = row.descript
+      const stocdispNum = Number(row.stocdisp) || 0
+      const packing = Number(row.cantcaja) || 1
+      const descEscaped = (descript || "").replace(/'/g, "''")
+      const knumEscaped = knumezet.replace(/'/g, "''")
+
+      // Verificar si el producto ya existe
+      const existente = await db.execute(
+        `SELECT id, ubicacion FROM productos WHERE knumezet = '${knumEscaped}' LIMIT 1`
+      )
+      const prod = existente.rows[0] as any
+
+      if (!prod) {
+        // === PRODUCTO NUEVO ===
+        const insertResult = await db.execute(
+          `INSERT INTO productos (codigo, descripcion, packing, knumezet, origen_winfac, created_at, updated_at)
+           VALUES ('${codunico.replace(/'/g, "''")}', '${descEscaped}', ${packing}, '${knumEscaped}', true, now(), now())
+           RETURNING id`
+        )
+        const productoId = (insertResult.rows[0] as any)?.id
+        if (!productoId || !bodegaArjunId || !adminId) continue
+
+        // Stock en Bodega Arjun
+        const stockRow = await db.execute(
+          `SELECT id FROM stock WHERE producto_id = '${productoId}' AND bodega_id = '${bodegaArjunId}' LIMIT 1`
+        )
+        if ((stockRow.rows[0] as any)?.id) {
+          await db.execute(
+            `UPDATE stock SET cantidad_actual = ${stocdispNum}, updated_at = now()
+             WHERE producto_id = '${productoId}' AND bodega_id = '${bodegaArjunId}'`
+          )
+        } else {
+          await db.execute(
+            `INSERT INTO stock (producto_id, bodega_id, cantidad_actual)
+             VALUES ('${productoId}', '${bodegaArjunId}', ${stocdispNum})`
+          )
+        }
+
+        // Entrada
+        await db.execute(
+          `INSERT INTO entradas (producto_id, bodega_id, cantidad, usuario_id, origen)
+           VALUES ('${productoId}', '${bodegaArjunId}', ${stocdispNum}, '${adminId}', 'winfac_futuro')`
+        )
+
+        // Activity log
+        const detalle = JSON.stringify({ knumezet, stocdisp: stocdispNum, accion: "producto_nuevo" })
+        await db.execute(
+          `INSERT INTO activity_log (usuario_id, accion, tabla_afectada, registro_id, detalle)
+           VALUES ('${adminId}', 'sync_winfac', 'productos', '${productoId}', '${detalle.replace(/'/g, "''")}')`
+        )
+
+        creados++
+      } else {
+        // === PRODUCTO EXISTENTE ===
+        const productoId: string = prod.id
+        const ubicacion: string | null = prod.ubicacion
+        const bodegaId = ubicacion || bodegaArjunId
+        if (!bodegaId || !adminId) continue
+
+        // Sumar entradas previas de winfac_futuro para este producto
+        const sumaResult = await db.execute(
+          `SELECT COALESCE(SUM(cantidad), 0) as total
+           FROM entradas
+           WHERE producto_id = '${productoId}' AND origen = 'winfac_futuro'`
+        )
+        const totalPrevio = Number((sumaResult.rows[0] as any)?.total) || 0
+        const delta = stocdispNum - totalPrevio
+
+        if (delta <= 0) continue // ignorar delta negativo o cero
+
+        // Stock
+        const stockRow = await db.execute(
+          `SELECT id FROM stock WHERE producto_id = '${productoId}' AND bodega_id = '${bodegaId}' LIMIT 1`
+        )
+        if ((stockRow.rows[0] as any)?.id) {
+          await db.execute(
+            `UPDATE stock SET cantidad_actual = cantidad_actual + ${delta}, updated_at = now()
+             WHERE producto_id = '${productoId}' AND bodega_id = '${bodegaId}'`
+          )
+        } else {
+          await db.execute(
+            `INSERT INTO stock (producto_id, bodega_id, cantidad_actual)
+             VALUES ('${productoId}', '${bodegaId}', ${delta})`
+          )
+        }
+
+        // Entrada con el delta
+        await db.execute(
+          `INSERT INTO entradas (producto_id, bodega_id, cantidad, usuario_id, origen)
+           VALUES ('${productoId}', '${bodegaId}', ${delta}, '${adminId}', 'winfac_futuro')`
+        )
+
+        // Activity log
+        const detalle = JSON.stringify({
+          knumezet,
+          delta,
+          stocdisp: stocdispNum,
+          totalPrevio,
+          accion: "stock_actualizado",
+        })
+        await db.execute(
+          `INSERT INTO activity_log (usuario_id, accion, tabla_afectada, registro_id, detalle)
+           VALUES ('${adminId}', 'sync_winfac', 'stock', '${productoId}', '${detalle.replace(/'/g, "''")}')`
+        )
+
+        actualizados++
+      }
+    } catch (err) {
+      console.error("Sync WinFac: error procesando fila", row?.knumezet, err)
+      continue
+    }
+  }
 
   const nuevoVisa = rows[rows.length - 1].visa_key
 
   // Actualizar watermark
+  const totalProcesados = creados + actualizados
   await db.execute(
-    `UPDATE sync_winfac_log SET ultimo_numero_visa = ${nuevoVisa}, ultima_sync_at = now(), productos_creados = productos_creados + ${rows.length} WHERE id = (SELECT id FROM sync_winfac_log ORDER BY id DESC LIMIT 1)`
+    `UPDATE sync_winfac_log SET ultimo_numero_visa = ${nuevoVisa}, ultima_sync_at = now(), productos_creados = productos_creados + ${totalProcesados} WHERE id = (SELECT id FROM sync_winfac_log ORDER BY id DESC LIMIT 1)`
   )
 
   return NextResponse.json({
     message: "Sync completado",
-    productos_creados: rows.length,
+    productos_creados: creados,
+    productos_actualizados: actualizados,
     ultimo_numero_visa: nuevoVisa,
   })
 }
