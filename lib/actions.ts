@@ -2,7 +2,7 @@
 
 import { db } from "@/db";
 import { productos, stock, stockModulos, entradas, notasVenta, activityLog, codigoPersonalAuditoria, salidas, bodegas } from "@/db/schema";
-import { eq, sql, and, ilike, or } from "drizzle-orm";
+import { eq, sql, and, ilike, or, desc } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { ProductoSchema, EntradaSchema, SalidaSchema } from "@/lib/validations";
 import { revalidatePath } from "next/cache";
@@ -469,27 +469,56 @@ export async function editarStockModulo(
   });
   if (!existing) throw new Error("Registro no encontrado");
 
-  const valorAnterior = existing.cantidadAcumulada;
+  const cantidadAnterior = existing.cantidadAcumulada;
+  const cantidadNueva = data.cantidadAcumulada;
+  const diferencia = cantidadAnterior - cantidadNueva;
 
-  await db.update(stockModulos)
-    .set({
-      cantidadAcumulada: data.cantidadAcumulada,
-      updatedAt: new Date(),
-    })
-    .where(eq(stockModulos.id, existing.id));
-
-  await db.insert(activityLog).values({
-    usuarioId: session.user?.id ?? "",
-    accion: "STOCK_MODULO_EDITADO",
-    tablaAfectada: "stock_modulos",
-    registroId: existing.id,
-    detalle: {
-      productoId,
-      moduloId,
-      valorAnterior,
-      valorNuevo: data.cantidadAcumulada,
-    },
+  // Buscar bodega origen desde la última salida
+  const ultimaSalida = await db.query.salidas.findFirst({
+    where: and(
+      eq(salidas.productoId, productoId),
+      eq(salidas.moduloDestinoId, moduloId)
+    ),
+    orderBy: [desc(salidas.timestampSalida)],
   });
+  if (!ultimaSalida) {
+    return { error: "No se encontró bodega origen para ajustar el stock" };
+  }
+  const bodegaOrigenId = ultimaSalida.bodegaOrigenId;
+
+  // Si se aumentó la cantidad, verificar stock suficiente
+  if (diferencia < 0) {
+    const bodegaStock = await db.query.stock.findFirst({
+      where: and(
+        eq(stock.productoId, productoId),
+        eq(stock.bodegaId, bodegaOrigenId)
+      ),
+    });
+    const disponible = bodegaStock?.cantidadActual ?? 0;
+    if (disponible < Math.abs(diferencia)) {
+      return {
+        error: `Stock insuficiente en bodega origen. Disponible: ${disponible} unidades.`,
+      };
+    }
+  }
+
+  const s = neon(process.env.DATABASE_URL!);
+
+  const queries: any[] = [
+    s`UPDATE stock_modulos SET cantidad_acumulada = ${cantidadNueva}, updated_at = NOW() WHERE id = ${existing.id}`,
+  ];
+
+  if (diferencia !== 0) {
+    queries.push(
+      s`UPDATE stock SET cantidad_actual = cantidad_actual + ${diferencia}, updated_at = NOW() WHERE producto_id = ${productoId}::uuid AND bodega_id = ${bodegaOrigenId}::uuid`
+    );
+  }
+
+  queries.push(
+    s`INSERT INTO activity_log (usuario_id, accion, tabla_afectada, registro_id, detalle) VALUES (${session.user?.id ?? ""}::uuid, 'STOCK_MODULO_EDITADO', 'stock_modulos', ${existing.id}::uuid, ${JSON.stringify({ productoId, moduloId, bodegaOrigenId, cantidadAnterior, cantidadNueva, diferencia, ajusteStock: true })}::jsonb)`
+  );
+
+  await s.transaction(queries);
 
   revalidatePath("/modulos");
   return { success: true };
