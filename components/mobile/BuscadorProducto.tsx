@@ -22,6 +22,7 @@ export function BuscadorProducto({ productos, onSelect, selected }: Props) {
   const [query, setQuery] = useState("")
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const startY = useRef(0)
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -76,7 +77,14 @@ export function BuscadorProducto({ productos, onSelect, selected }: Props) {
               key={p.id}
               type="button"
               className="w-full flex items-center gap-3 p-3 hover:bg-[#f1f5f9] transition-colors text-left border-b border-[#f1f5f9] last:border-0"
-              onPointerDown={(e) => { e.preventDefault(); onSelect(p); setQuery(""); setOpen(false) }}
+              onPointerDown={(e) => { startY.current = e.clientY; }}
+              onPointerUp={(e) => {
+                const deltaY = Math.abs(e.clientY - startY.current);
+                if (deltaY < 8) {
+                  e.preventDefault();
+                  onSelect(p); setQuery(""); setOpen(false);
+                }
+              }}
             >
               {p.imagen ? (
                 <img src={p.imagen} alt={p.codigo} className="w-10 h-10 rounded object-cover shrink-0" />
