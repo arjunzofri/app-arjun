@@ -226,7 +226,7 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
                   key={i}
                   type="button"
                   className="w-full flex items-center gap-3 p-3 hover:bg-[#f1f5f9] transition-colors text-left border-b border-[#f1f5f9] last:border-0"
-                  onClick={() => { setSelectedProducto(p); setQuery(""); setOpen(false); }}
+                  onPointerDown={(e) => { e.preventDefault(); setSelectedProducto(p); setQuery(""); setOpen(false); }}
                 >
                   {p.imagenUrl ? (
                     <img src={p.imagenUrl} alt={p.codigo} className="w-10 h-10 rounded object-cover shrink-0" />
@@ -445,7 +445,7 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
                     key={i}
                     type="button"
                     className="w-full flex items-center gap-3 p-3 hover:bg-[#f1f5f9] transition-colors text-left border-b border-[#f1f5f9] last:border-0"
-                    onClick={() => { setSelectedProducto(p); setQuery(""); setOpen(false); }}
+                    onPointerDown={(e) => { e.preventDefault(); setSelectedProducto(p); setQuery(""); setOpen(false); }}
                   >
                     {p.imagenUrl ? (
                       <img src={p.imagenUrl} alt={p.codigo} className="w-10 h-10 rounded object-cover shrink-0" />
