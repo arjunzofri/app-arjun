@@ -462,6 +462,59 @@ export async function eliminarProducto(id: string) {
   return { success: true };
 }
 
+export async function eliminarEntrada(entradaId: string) {
+  const session = await auth();
+  if (!session) throw new Error("No autorizado");
+  if (session.user?.role !== "admin")
+    throw new Error("Solo administradores pueden eliminar entradas");
+
+  const entrada = await db.query.entradas.findFirst({
+    where: eq(entradas.id, entradaId),
+  });
+  if (!entrada) {
+    return { error: "Entrada no encontrada" };
+  }
+
+  // Ajustar stock restando la cantidad de la entrada eliminada
+  const stockRecord = await db.query.stock.findFirst({
+    where: and(
+      eq(stock.productoId, entrada.productoId),
+      eq(stock.bodegaId, entrada.bodegaId)
+    ),
+  });
+
+  let stockAnterior: number | null = null;
+  let stockNuevo: number | null = null;
+
+  if (stockRecord) {
+    stockAnterior = stockRecord.cantidadActual;
+    stockNuevo = Math.max(0, stockAnterior - entrada.cantidad);
+    await db.update(stock)
+      .set({ cantidadActual: stockNuevo, updatedAt: new Date() })
+      .where(eq(stock.id, stockRecord.id));
+  }
+
+  await db.delete(entradas).where(eq(entradas.id, entradaId));
+
+  await db.insert(activityLog).values({
+    usuarioId: session.user?.id ?? "",
+    accion: "ELIMINAR_ENTRADA",
+    tablaAfectada: "entradas",
+    registroId: entradaId,
+    detalle: {
+      productoId: entrada.productoId,
+      bodegaId: entrada.bodegaId,
+      cantidadEliminada: entrada.cantidad,
+      stockAnterior,
+      stockNuevo,
+    },
+  });
+
+  revalidatePath("/");
+  revalidatePath("/entradas");
+  return { success: true };
+}
+
 export async function editarStockModulo(
   productoId: string,
   moduloId: string,
