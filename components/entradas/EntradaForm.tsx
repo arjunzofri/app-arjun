@@ -256,6 +256,12 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
           )}
         </div>
 
+        {productoDbId && selectedProducto && (
+          <div className="flex justify-end">
+            <BotonFoto productoId={productoDbId} />
+          </div>
+        )}
+
         {/* Registro libre: si escribe y no selecciona de la lista */}
         {!selectedProducto && query.trim().length >= 2 && results.length === 0 && (
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800">
@@ -306,12 +312,6 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
                 className="w-full px-3 py-2 text-sm border border-[#c4c6cf] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
               />
             </div>
-          </div>
-        )}
-
-        {productoDbId && (
-          <div className="flex justify-end">
-            <BotonFoto productoId={productoDbId} />
           </div>
         )}
 

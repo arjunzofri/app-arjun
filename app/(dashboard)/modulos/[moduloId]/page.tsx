@@ -5,6 +5,8 @@ import { getCloudinaryVidaDigitalUrl } from "@/lib/utils/extract-modelo";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Search, AlertTriangle } from "lucide-react";
+import { auth } from "@/lib/auth";
+import { ModuloProductoRow } from "@/components/modulos/ModuloProductoRow";
 
 export default async function ModuloDetailPage({
   params,
@@ -15,6 +17,8 @@ export default async function ModuloDetailPage({
 }) {
   const { moduloId } = await params;
   const { q, cursor } = await searchParams;
+  const session = await auth();
+  const userRole = session?.user?.role || "operador";
 
   let modulo: { id: string; nombre: string } | null = null;
   let productos: any[] = [];
@@ -187,31 +191,19 @@ export default async function ModuloDetailPage({
             {productos.map((p) => {
               const imagenUrl = imagenMap.get(p.id) ?? getCloudinaryVidaDigitalUrl(p.descripcion) ?? null;
               return (
-              <Link key={p.id} href={`/productos/${p.id}`}>
-                <div className="bg-white border border-[#e2e8f0] rounded-lg p-4 flex items-center gap-4 hover:shadow-sm hover:border-[#e2e8f0] transition-all">
-                  {imagenUrl ? (
-                    <img
-                      src={imagenUrl}
-                      alt={p.codigo}
-                      className="w-12 h-12 rounded object-cover bg-[#f1f5f9] shrink-0"
-                    />
-                  ) : (
-                    <div className="w-12 h-12 rounded bg-[#e2e8f0] shrink-0" />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-mono font-bold text-[#1e3a5f] truncate">
-                      {p.codigo}
-                    </p>
-                    <p className="text-xs text-[#74777f] truncate">{p.descripcion}</p>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <p className="text-xl font-bold text-[#111c2d]">
-                      {p.cantidad_acumulada.toLocaleString("es-CL")}
-                    </p>
-                    <p className="text-[10px] text-[#94a3b8]">u · caja x{p.packing}</p>
-                  </div>
-                </div>
-              </Link>
+                <ModuloProductoRow
+                  key={p.id}
+                  producto={{
+                    id: p.id,
+                    codigo: p.codigo,
+                    descripcion: p.descripcion,
+                    packing: p.packing,
+                    cantidadAcumulada: p.cantidad_acumulada,
+                  }}
+                  moduloId={moduloId}
+                  imagenUrl={imagenUrl}
+                  userRole={userRole}
+                />
               );
             })}
           </div>

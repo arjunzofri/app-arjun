@@ -453,3 +453,73 @@ export async function eliminarProducto(id: string) {
   return { success: true };
 }
 
+export async function editarStockModulo(
+  productoId: string,
+  moduloId: string,
+  data: { cantidadAcumulada: number }
+) {
+  const session = await auth();
+  if (!session) throw new Error("No autorizado");
+
+  const existing = await db.query.stockModulos.findFirst({
+    where: and(
+      eq(stockModulos.productoId, productoId),
+      eq(stockModulos.moduloId, moduloId)
+    ),
+  });
+  if (!existing) throw new Error("Registro no encontrado");
+
+  const valorAnterior = existing.cantidadAcumulada;
+
+  await db.update(stockModulos)
+    .set({
+      cantidadAcumulada: data.cantidadAcumulada,
+      updatedAt: new Date(),
+    })
+    .where(eq(stockModulos.id, existing.id));
+
+  await db.insert(activityLog).values({
+    usuarioId: session.user?.id ?? "",
+    accion: "STOCK_MODULO_EDITADO",
+    tablaAfectada: "stock_modulos",
+    registroId: existing.id,
+    detalle: {
+      productoId,
+      moduloId,
+      valorAnterior,
+      valorNuevo: data.cantidadAcumulada,
+    },
+  });
+
+  revalidatePath("/modulos");
+  return { success: true };
+}
+
+export async function eliminarStockModulo(productoId: string, moduloId: string) {
+  const session = await auth();
+  if (!session) throw new Error("No autorizado");
+  if (session.user?.role !== "admin")
+    throw new Error("Solo administradores pueden eliminar registros de módulo");
+
+  const existing = await db.query.stockModulos.findFirst({
+    where: and(
+      eq(stockModulos.productoId, productoId),
+      eq(stockModulos.moduloId, moduloId)
+    ),
+  });
+  if (!existing) throw new Error("Registro no encontrado");
+
+  await db.delete(stockModulos).where(eq(stockModulos.id, existing.id));
+
+  await db.insert(activityLog).values({
+    usuarioId: session.user?.id ?? "",
+    accion: "STOCK_MODULO_ELIMINADO",
+    tablaAfectada: "stock_modulos",
+    registroId: existing.id,
+    detalle: { productoId, moduloId, cantidadAcumulada: existing.cantidadAcumulada },
+  });
+
+  revalidatePath("/modulos");
+  return { success: true };
+}
+
