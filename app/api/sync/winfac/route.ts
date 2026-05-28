@@ -44,6 +44,12 @@ export async function GET(req: NextRequest) {
       productos_creados: 0,
       productos_actualizados: 0,
       ultimo_numero_visa: ultimoVisa,
+      debug: {
+        registros_encontrados: 0,
+        watermark_anterior: ultimoVisa,
+        watermark_nuevo: ultimoVisa,
+        detalle: [],
+      },
     })
   }
 
@@ -60,6 +66,7 @@ export async function GET(req: NextRequest) {
 
   let creados = 0
   let actualizados = 0
+  const debugDetalle: Array<{ knumezet: string; accion: string; razon: string }> = []
 
   for (const row of rows) {
     try {
@@ -79,13 +86,20 @@ export async function GET(req: NextRequest) {
 
       if (!prod) {
         // === PRODUCTO NUEVO ===
+        if (!bodegaArjunId || !adminId) {
+          debugDetalle.push({ knumezet, accion: "ignorado", razon: "falta Bodega Arjun o admin user" })
+          continue
+        }
         const insertResult = await db.execute(
           `INSERT INTO productos (codigo, descripcion, packing, knumezet, origen_winfac, created_at, updated_at)
            VALUES ('${codunico.replace(/'/g, "''")}', '${descEscaped}', ${packing}, '${knumEscaped}', true, now(), now())
            RETURNING id`
         )
         const productoId = (insertResult.rows[0] as any)?.id
-        if (!productoId || !bodegaArjunId || !adminId) continue
+        if (!productoId) {
+          debugDetalle.push({ knumezet, accion: "ignorado", razon: "fallo INSERT productos" })
+          continue
+        }
 
         // Stock en Bodega Arjun
         const stockRow = await db.execute(
@@ -117,12 +131,16 @@ export async function GET(req: NextRequest) {
         )
 
         creados++
+        debugDetalle.push({ knumezet, accion: "creado", razon: `producto nuevo, stock inicial=${stocdispNum}` })
       } else {
         // === PRODUCTO EXISTENTE ===
         const productoId: string = prod.id
         const ubicacion: string | null = prod.ubicacion
         const bodegaId = ubicacion || bodegaArjunId
-        if (!bodegaId || !adminId) continue
+        if (!bodegaId || !adminId) {
+          debugDetalle.push({ knumezet, accion: "ignorado", razon: `falta bodega (ubicacion=${ubicacion}) o admin` })
+          continue
+        }
 
         // Sumar entradas previas de winfac_futuro para este producto
         const sumaResult = await db.execute(
@@ -133,7 +151,10 @@ export async function GET(req: NextRequest) {
         const totalPrevio = Number((sumaResult.rows[0] as any)?.total) || 0
         const delta = stocdispNum - totalPrevio
 
-        if (delta <= 0) continue // ignorar delta negativo o cero
+        if (delta <= 0) {
+          debugDetalle.push({ knumezet, accion: "ignorado", razon: `delta=${delta} <= 0 (stocdisp=${stocdispNum}, previo=${totalPrevio})` })
+          continue
+        }
 
         // Stock
         const stockRow = await db.execute(
@@ -171,9 +192,12 @@ export async function GET(req: NextRequest) {
         )
 
         actualizados++
+        debugDetalle.push({ knumezet, accion: "actualizado", razon: `delta=${delta} (stocdisp=${stocdispNum}, previo=${totalPrevio})` })
       }
     } catch (err) {
-      console.error("Sync WinFac: error procesando fila", row?.knumezet, err)
+      const msg = err instanceof Error ? err.message : String(err)
+      console.error("Sync WinFac: error procesando fila", row?.knumezet, msg)
+      debugDetalle.push({ knumezet: row?.knumezet ?? "desconocido", accion: "ignorado", razon: `error: ${msg}` })
       continue
     }
   }
@@ -191,5 +215,11 @@ export async function GET(req: NextRequest) {
     productos_creados: creados,
     productos_actualizados: actualizados,
     ultimo_numero_visa: nuevoVisa,
+    debug: {
+      registros_encontrados: rows.length,
+      watermark_anterior: ultimoVisa,
+      watermark_nuevo: nuevoVisa,
+      detalle: debugDetalle,
+    },
   })
 }
