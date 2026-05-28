@@ -126,6 +126,18 @@ export default function SalidaForm({
     setError(null);
     setSuccess(false);
 
+    // Validación client-side: módulo y bodega requeridos
+    if (!data.moduloDestinoId) {
+      setError("Selecciona un módulo de destino");
+      setLoading(false);
+      return;
+    }
+    if (!data.bodegaOrigenId) {
+      setError("Selecciona una bodega de origen");
+      setLoading(false);
+      return;
+    }
+
     // Validación client-side: stock suficiente
     const disponible = stockEnBodega(data.bodegaOrigenId);
     if (data.cantidad > disponible) {
