@@ -7,5 +7,9 @@
   "mobile_pwa": false,
   "mobile_salidas": false,
   "mobile_stock": false,
-  "mobile_foto": false
+  "mobile_foto": false,
+  "sync_winfac_automatico": {
+    "activo": true,
+    "descripcion": "Sync automatico de ingresos nuevos desde WinFac. Activado 28 mayo 2026. Watermark de corte: 26194159"
+  }
 }
