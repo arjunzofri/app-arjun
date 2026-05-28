@@ -7,9 +7,10 @@ type Props = {
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
+  max?: number;
 };
 
-export function NumericInput({ value, onChange, placeholder, className }: Props) {
+export function NumericInput({ value, onChange, placeholder, className, max }: Props) {
   const [display, setDisplay] = useState(String(value ?? ""));
   const ref = useRef<HTMLInputElement>(null);
 
@@ -28,10 +29,16 @@ export function NumericInput({ value, onChange, placeholder, className }: Props)
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const raw = e.target.value.replace(/[^0-9.]/g, "");
+      const n = Number(raw);
+      if (raw !== "" && max !== undefined && n > max) {
+        setDisplay(String(max));
+        onChange(String(max));
+        return;
+      }
       setDisplay(raw);
       onChange(raw);
     },
-    [onChange]
+    [onChange, max]
   );
 
   return (

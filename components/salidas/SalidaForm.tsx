@@ -125,6 +125,15 @@ export default function SalidaForm({
     setLoading(true);
     setError(null);
     setSuccess(false);
+
+    // Validación client-side: stock suficiente
+    const disponible = stockEnBodega(data.bodegaOrigenId);
+    if (data.cantidad > disponible) {
+      setError(`Stock insuficiente. Disponible: ${disponible} unidades en esa bodega.`);
+      setLoading(false);
+      return;
+    }
+
     try {
       const result: any = await registrarSalida(data);
       if (result?.error) {
@@ -326,7 +335,7 @@ export default function SalidaForm({
             value={cantidad}
             onChange={(n) => setValue("cantidad", n)}
             packing={packing}
-            max={stockEnBodega(selectedBodegaId) || 999}
+            max={selectedProductoId && selectedBodegaId ? stockEnBodega(selectedBodegaId) : 999}
           />
         </div>
 
@@ -365,16 +374,6 @@ export default function SalidaForm({
           type="submit"
           className="w-full h-14 text-lg font-bold bg-[#16a34a] text-white hover:bg-[#15803d]"
           disabled={loading}
-          onClick={() => {
-            if (!watch("moduloDestinoId")) {
-              setError("Selecciona un módulo de destino");
-              return;
-            }
-            if (!watch("bodegaOrigenId")) {
-              setError("Selecciona una bodega de origen");
-              return;
-            }
-          }}
         >
           {loading ? "PROCESANDO..." : "CONFIRMAR DESPACHO"}
         </Button>
@@ -489,7 +488,7 @@ export default function SalidaForm({
               value={cantidad}
               onChange={(n) => setValue("cantidad", n)}
               packing={packing}
-              max={stockEnBodega(selectedBodegaId) || 999}
+              max={selectedProductoId && selectedBodegaId ? stockEnBodega(selectedBodegaId) : 999}
             />
           </div>
 
@@ -530,16 +529,12 @@ export default function SalidaForm({
             <div className="bg-[#f1f5f9] rounded-lg p-4 space-y-3">
               <div>
                 <p className="text-xs font-semibold text-[#1e293b] mb-2">Saldo físico contado:</p>
-                <input
-                  type="number"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  min={0}
+                <NumericInput
                   value={conteoCantidad}
-                  onChange={(e) => {
-                    const n = parseInt(e.target.value, 10);
+                  onChange={(v) => {
+                    const n = parseInt(v, 10);
                     if (!isNaN(n) && n >= 0) setConteoCantidad(n);
-                    else if (e.target.value === "") setConteoCantidad(0);
+                    else if (v === "") setConteoCantidad(0);
                   }}
                   className="w-full h-14 text-center text-2xl font-bold border-2 border-[#c4c6cf] rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:border-transparent"
                 />
@@ -580,16 +575,6 @@ export default function SalidaForm({
             type="submit"
             className="w-full h-14 text-lg font-bold bg-[#16a34a] text-white hover:bg-[#15803d]"
             disabled={loading}
-            onClick={() => {
-              if (!watch("moduloDestinoId")) {
-                setError("Selecciona un módulo de destino");
-                return;
-              }
-              if (!watch("bodegaOrigenId")) {
-                setError("Selecciona una bodega de origen");
-                return;
-              }
-            }}
           >
             {loading ? "PROCESANDO..." : "CONFIRMAR DESPACHO"}
           </Button>
