@@ -267,6 +267,7 @@ components/
 - Buscador /entradas busca en public.productos + arjun.inv_sdo combinado ✅
 - Sync WinFac activado con watermark de corte 26194159 (28 mayo 2026) ✅
 - Reset de saldos a 0 ejecutado (fecha de corte) ✅
+- Fix eliminarProducto: orden correcto de DELETE dependientes antes de borrar producto ✅
 
 **Pendiente:**
 - Modulo IA Kingnex (flag kingnex_ocr en false)
