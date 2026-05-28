@@ -1,7 +1,7 @@
 ﻿"use server";
 
 import { db } from "@/db";
-import { productos, stock, stockModulos, entradas, notasVenta, activityLog, codigoPersonalAuditoria, salidas, bodegas } from "@/db/schema";
+import { productos, stock, stockModulos, entradas, notasVenta, activityLog, codigoPersonalAuditoria, salidas, bodegas, productoImagenes } from "@/db/schema";
 import { eq, sql, and, ilike, or, desc } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { ProductoSchema, EntradaSchema, SalidaSchema } from "@/lib/validations";
@@ -437,8 +437,15 @@ export async function eliminarProducto(id: string) {
     return { error: `No se puede eliminar — el producto tiene ${totalStock} unidades en stock` };
   }
 
-  await db.delete(productos).where(eq(productos.id, id));
+  // Eliminar dependientes en orden (FK constraints)
+  await db.delete(activityLog).where(eq(activityLog.registroId, id));
+  await db.delete(productoImagenes).where(eq(productoImagenes.productoId, id));
+  await db.delete(stockModulos).where(eq(stockModulos.productoId, id));
+  await db.delete(stock).where(eq(stock.productoId, id));
+  await db.delete(entradas).where(eq(entradas.productoId, id));
+  await db.delete(salidas).where(eq(salidas.productoId, id));
 
+  // Registrar antes de borrar el producto (la referencia se pierde despues)
   await db.insert(activityLog).values({
     usuarioId: session.user?.id ?? "",
     accion: "PRODUCTO_ELIMINADO",
@@ -446,6 +453,8 @@ export async function eliminarProducto(id: string) {
     registroId: id,
     detalle: { id },
   });
+
+  await db.delete(productos).where(eq(productos.id, id));
 
   revalidatePath("/");
   revalidatePath("/entradas");
