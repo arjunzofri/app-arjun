@@ -3,6 +3,7 @@ import { sql } from "drizzle-orm";
 import { Warehouse, ArrowUpRight, AlertTriangle, Database } from "lucide-react";
 import Link from "next/link";
 import { getCloudinaryVidaDigitalUrl } from "@/lib/utils/extract-modelo";
+import { getVisaCorte } from "@/lib/utils/get-visa-corte";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -20,6 +21,8 @@ export default async function DashboardPage() {
     hour: "2-digit", minute: "2-digit",
   });
 
+  const corte = await getVisaCorte();
+
   try {
     const [bs, md, ab] = await Promise.all([
       db.execute(sql`
@@ -27,7 +30,9 @@ export default async function DashboardPage() {
                SUM(s.cantidad_actual)::int as unidades
         FROM stock s
         JOIN bodegas b ON b.id = s.bodega_id
+        JOIN productos p ON p.id = s.producto_id
         WHERE s.cantidad_actual > 0
+          AND (p.knumezet IS NULL OR (split_part(p.knumezet, '-', 2)::bigint * 1000000 + split_part(p.knumezet, '-', 3)::bigint) >= ${corte})
         GROUP BY b.id, b.nombre
       `),
       db.execute(sql`
@@ -43,6 +48,7 @@ export default async function DashboardPage() {
                COALESCE(SUM(s.cantidad_actual), 0)::int as total_stock
         FROM productos p
         LEFT JOIN stock s ON s.producto_id = p.id
+        WHERE (p.knumezet IS NULL OR (split_part(p.knumezet, '-', 2)::bigint * 1000000 + split_part(p.knumezet, '-', 3)::bigint) >= ${corte})
         GROUP BY p.id, p.codigo, p.descripcion, p.packing
         HAVING COALESCE(SUM(s.cantidad_actual), 0) > 0
            AND COALESCE(SUM(s.cantidad_actual), 0) < COALESCE(p.packing, 1)

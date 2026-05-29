@@ -110,11 +110,32 @@ describe('Filtros de búsqueda global — /modulos/[id]', () => {
   })
 })
 
+describe('Filtros de búsqueda global — Dashboard page.tsx', () => {
+  it('dashboard page.tsx debe incluir filtro knumezet con split_part', () => {
+    const content = readFileSync(
+      join(process.cwd(), 'app', '(dashboard)', 'page.tsx'),
+      'utf-8'
+    )
+    expect(content).toContain('split_part')
+  })
+
+  it('dashboard page.tsx debe usar getVisaCorte o fallback 26194159', () => {
+    const content = readFileSync(
+      join(process.cwd(), 'app', '(dashboard)', 'page.tsx'),
+      'utf-8'
+    )
+    const hasCorte = content.includes('getVisaCorte')
+                  || content.includes('26194159')
+    expect(hasCorte).toBe(true)
+  })
+})
+
 describe('Filtros de búsqueda global — Smoke E2E', () => {
-  it('los 5 archivos deben usar getVisaCorte o el fallback 26194159', () => {
+  it('los 6 archivos deben usar getVisaCorte o el fallback 26194159', () => {
     const files = [
       join(process.cwd(), 'lib', 'actions.ts'),
       join(process.cwd(), 'app', 'api', 'productos', 'buscar', 'route.ts'),
+      join(process.cwd(), 'app', '(dashboard)', 'page.tsx'),
       join(process.cwd(), 'app', '(dashboard)', 'salidas', 'page.tsx'),
       join(process.cwd(), 'app', '(dashboard)', 'bodegas', '[bodegaId]', 'page.tsx'),
       join(process.cwd(), 'app', '(dashboard)', 'modulos', '[moduloId]', 'page.tsx'),
