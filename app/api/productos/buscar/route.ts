@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { neon } from "@neondatabase/serverless";
 import { getCloudinaryVidaDigitalUrl } from "@/lib/utils/extract-modelo";
+import { getVisaCorte } from "@/lib/utils/get-visa-corte";
 
 export async function GET(request: NextRequest) {
   const q = request.nextUrl.searchParams.get("q");
@@ -12,6 +13,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const s = neon(process.env.DATABASE_URL!);
+    const corte = await getVisaCorte();
 
     // Buscar en ambas fuentes en paralelo
     const [appRows, wfRows] = await Promise.all([
@@ -25,9 +27,13 @@ export async function GET(request: NextRequest) {
           ORDER BY created_at ASC
           LIMIT 1
         ) pi ON true
-        WHERE p.codigo ILIKE ${search}
+        LEFT JOIN public.stock s ON s.producto_id = p.id
+        WHERE (p.codigo ILIKE ${search}
            OR p.descripcion ILIKE ${search}
-           OR p.codigo_personal ILIKE ${search}
+           OR p.codigo_personal ILIKE ${search})
+          AND (p.knumezet IS NULL OR (split_part(p.knumezet, '-', 2)::bigint * 1000000 + split_part(p.knumezet, '-', 3)::bigint) >= ${corte})
+        GROUP BY p.id, pi.url
+        HAVING COALESCE(SUM(s.cantidad_actual), 0) > 0
         ORDER BY p.codigo
         LIMIT 20
       `,
@@ -36,8 +42,10 @@ export async function GET(request: NextRequest) {
           codunico as codigo, descript as descripcion,
           GREATEST(COALESCE(cantcaja, 1), 1)::int as packing, knumezet
         FROM arjun.inv_sdo
-        WHERE codunico ILIKE ${search}
-           OR descript ILIKE ${search}
+        WHERE (codunico ILIKE ${search}
+           OR descript ILIKE ${search})
+          AND stocdisp > 0
+          AND (split_part(knumezet, '-', 2)::bigint * 1000000 + split_part(knumezet, '-', 3)::bigint) >= ${corte}
         ORDER BY codunico
         LIMIT 20
       `,

@@ -7,6 +7,7 @@ import { auth } from "@/lib/auth";
 import { ProductoSchema, EntradaSchema, SalidaSchema } from "@/lib/validations";
 import { revalidatePath } from "next/cache";
 import { neon } from "@neondatabase/serverless";
+import { getVisaCorte } from "@/lib/utils/get-visa-corte";
 
 export async function createOrUpdateProducto(data: any) {
   const session = await auth();
@@ -360,6 +361,8 @@ export async function actualizarUbicacionProducto(productoId: string, bodegaId: 
 export async function buscarProductos(query: string) {
   if (!query || query.trim().length < 2) return []
 
+  const corte = await getVisaCorte();
+
   const results = await db.select({
     id: productos.id,
     codigo: productos.codigo,
@@ -373,14 +376,18 @@ export async function buscarProductos(query: string) {
   .from(productos)
   .leftJoin(stock, sql`${productos.id} = ${stock.productoId}`)
   .where(
-    or(
-      ilike(productos.codigo, `%${query}%`),
-      ilike(productos.descripcion, `%${query}%`),
-      ilike(productos.codigoPersonal, `%${query}%`),
-      ilike(productos.knumezet, `%${query}%`)
+    and(
+      or(
+        ilike(productos.codigo, `%${query}%`),
+        ilike(productos.descripcion, `%${query}%`),
+        ilike(productos.codigoPersonal, `%${query}%`),
+        ilike(productos.knumezet, `%${query}%`)
+      ),
+      sql`(${productos.knumezet} IS NULL OR (split_part(${productos.knumezet}, '-', 2)::bigint * 1000000 + split_part(${productos.knumezet}, '-', 3)::bigint) >= ${corte})`
     )
   )
   .groupBy(productos.id)
+  .having(sql`COALESCE(SUM(${stock.cantidadActual}), 0) > 0`)
   .orderBy(productos.codigo)
   .limit(20)
 

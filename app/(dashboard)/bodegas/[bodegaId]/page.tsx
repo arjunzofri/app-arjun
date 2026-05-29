@@ -2,6 +2,7 @@ import { db } from "@/db";
 import { sql } from "drizzle-orm";
 import { neon } from "@neondatabase/serverless";
 import { getCloudinaryVidaDigitalUrl } from "@/lib/utils/extract-modelo";
+import { getVisaCorte } from "@/lib/utils/get-visa-corte";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Search } from "lucide-react";
@@ -24,6 +25,7 @@ export default async function BodegaDetailPage({
 
   const limit = 21;
   const searchTerm = q ? `%${q}%` : null;
+  const corte = await getVisaCorte();
 
   let query;
   if (searchTerm && cursor) {
@@ -35,6 +37,7 @@ export default async function BodegaDetailPage({
       WHERE s.bodega_id = ${bodegaId}::uuid
         AND s.cantidad_actual > 0
         AND (p.codigo ILIKE ${searchTerm} OR p.descripcion ILIKE ${searchTerm})
+        AND (p.knumezet IS NULL OR (split_part(p.knumezet, '-', 2)::bigint * 1000000 + split_part(p.knumezet, '-', 3)::bigint) >= ${corte})
         AND s.updated_at < ${cursor}::timestamptz
       ORDER BY s.updated_at DESC
       LIMIT ${limit}
@@ -48,6 +51,7 @@ export default async function BodegaDetailPage({
       WHERE s.bodega_id = ${bodegaId}::uuid
         AND s.cantidad_actual > 0
         AND (p.codigo ILIKE ${searchTerm} OR p.descripcion ILIKE ${searchTerm})
+        AND (p.knumezet IS NULL OR (split_part(p.knumezet, '-', 2)::bigint * 1000000 + split_part(p.knumezet, '-', 3)::bigint) >= ${corte})
       ORDER BY s.updated_at DESC
       LIMIT ${limit}
     `;
@@ -59,6 +63,7 @@ export default async function BodegaDetailPage({
       JOIN productos p ON p.id = s.producto_id
       WHERE s.bodega_id = ${bodegaId}::uuid
         AND s.cantidad_actual > 0
+        AND (p.knumezet IS NULL OR (split_part(p.knumezet, '-', 2)::bigint * 1000000 + split_part(p.knumezet, '-', 3)::bigint) >= ${corte})
         AND s.updated_at < ${cursor}::timestamptz
       ORDER BY s.updated_at DESC
       LIMIT ${limit}
@@ -71,6 +76,7 @@ export default async function BodegaDetailPage({
       JOIN productos p ON p.id = s.producto_id
       WHERE s.bodega_id = ${bodegaId}::uuid
         AND s.cantidad_actual > 0
+        AND (p.knumezet IS NULL OR (split_part(p.knumezet, '-', 2)::bigint * 1000000 + split_part(p.knumezet, '-', 3)::bigint) >= ${corte})
       ORDER BY s.updated_at DESC
       LIMIT ${limit}
     `;
