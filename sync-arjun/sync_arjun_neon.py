@@ -23,6 +23,7 @@ import json
 import logging
 from datetime import datetime, date
 from decimal import Decimal
+from xml.etree import ElementTree
 
 from dbfread import DBF
 import psycopg2
@@ -56,7 +57,7 @@ TABLAS = {
         "pk_columns": ["knumezet"],
         "columnas": [
             "knumezet", "codunico", "descript", "stocdisp", "cifunita",
-            "cosunita", "cantcaja"
+            "cosunita", "cantcaja", "vendedor_rut"
         ],
     },
     "infnvta": {
@@ -211,6 +212,11 @@ def sync_tabla(conn, tabla, config, dbf_path):
         log.warning("  Sin filas validas para arjun.%s", tabla)
         return 0
 
+    # Enriquecer inv_sdo con vendedor_rut desde XML
+    if tabla == "inv_sdo":
+        for row in rows:
+            row["vendedor_rut"] = leer_vendedor_rut(row.get("knumezet", ""))
+
     all_columns = columnas + ["raw"]
     update_cols = [c for c in columnas if c not in pk]
     update_set = ", ".join([f"{c} = EXCLUDED.{c}" for c in update_cols])
@@ -238,6 +244,40 @@ def sync_tabla(conn, tabla, config, dbf_path):
         conn.rollback()
         log.error("  Error en arjun.%s: %s", tabla, e)
         return 0
+
+
+# ============================================================
+# VENDEDOR RUT
+# ============================================================
+
+DOCSVE_PATH = r"Z:\newdesar\winfac_sve\base\docsve"
+
+
+def leer_vendedor_rut(knumezet):
+    """
+    Extrae el vendedor_rut_numero desde el XML de visación correspondiente.
+    Retorna el RUT como string o None si el archivo no existe o falla el parseo.
+    No lanza excepciones.
+    """
+    if not knumezet:
+        return None
+    try:
+        # Visación base: primeros 3 segmentos separados por "-"
+        partes = knumezet.split("-")
+        if len(partes) < 3:
+            return None
+        visacion = "-".join(partes[:3])
+        xml_path = os.path.join(DOCSVE_PATH, f"{visacion}.xml")
+        if not os.path.exists(xml_path):
+            return None
+        tree = ElementTree.parse(xml_path)
+        root = tree.getroot()
+        el = root.find("vendedor_rut_numero")
+        if el is not None and el.text:
+            return el.text.strip()
+        return None
+    except Exception:
+        return None
 
 
 # ============================================================

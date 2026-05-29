@@ -9,6 +9,7 @@ type Encabezado = {
   val_doc: number | null
   canbulto: number | null
   cliente: string | null
+  vendedorRut: string | null
 }
 
 export async function GET(req: NextRequest) {
@@ -26,7 +27,7 @@ export async function GET(req: NextRequest) {
   const sql = neon(process.env.DATABASE_URL!)
   const likeParam = `%${query}%`
   const rows = await sql`
-    SELECT knumezet, codunico, descript, stocdisp, cifunita, cantcaja
+    SELECT knumezet, codunico, descript, stocdisp, cifunita, cantcaja, vendedor_rut
     FROM arjun.inv_sdo
     WHERE knumezet LIKE ${likeParam}
     ORDER BY knumezet
@@ -43,6 +44,7 @@ export async function GET(req: NextRequest) {
     val_doc: null,
     canbulto: null,
     cliente: null,
+    vendedorRut: rows[0]?.vendedor_rut ?? null,
   }
 
   const productos = rows.map((r) => ({

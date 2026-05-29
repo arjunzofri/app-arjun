@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { registrarEntrada, createOrUpdateProducto } from "@/lib/actions"
+import { getBodegaPorVendedor } from "@/lib/utils/get-bodega-por-vendedor"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -50,6 +51,10 @@ export default function WinFacPanel({ bodegasData }: { bodegasData: Bodega[] }) 
       if (!res.ok) throw new Error(data.error || "Error al buscar")
       setEncabezado(data.encabezado)
       setProductos(data.productos)
+      // Pre-seleccionar bodega según vendedor_rut
+      if (data.encabezado?.vendedorRut) {
+        setBodegaId(getBodegaPorVendedor(data.encabezado.vendedorRut))
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al buscar")
     } finally {

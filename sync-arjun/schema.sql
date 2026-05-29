@@ -27,6 +27,8 @@ CREATE TABLE IF NOT EXISTS arjun.inv_sdo (
   raw JSONB
 );
 
+ALTER TABLE arjun.inv_sdo ADD COLUMN IF NOT EXISTS vendedor_rut TEXT;
+
 CREATE TABLE IF NOT EXISTS arjun.inv (
   zeta TEXT PRIMARY KEY,
   codigo TEXT,
