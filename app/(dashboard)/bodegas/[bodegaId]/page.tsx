@@ -3,6 +3,7 @@ import { sql } from "drizzle-orm";
 import { neon } from "@neondatabase/serverless";
 import { getCloudinaryVidaDigitalUrl } from "@/lib/utils/extract-modelo";
 import { getVisaCorte } from "@/lib/utils/get-visa-corte";
+import BodegaProductList from "@/components/bodegas/BodegaProductList";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Search } from "lucide-react";
@@ -22,6 +23,8 @@ export default async function BodegaDetailPage({
   `);
   if (bodegaResult.rows.length === 0) notFound();
   const bodega = bodegaResult.rows[0] as { id: string; nombre: string };
+
+  const allBodegas = await db.query.bodegas.findMany();
 
   const limit = 21;
   const searchTerm = q ? `%${q}%` : null;
@@ -161,51 +164,16 @@ export default async function BodegaDetailPage({
       </form>
 
       {productos.length > 0 ? (
-        <>
-          <div className="space-y-2">
-            {productos.map((p) => {
-              const imagenUrl = imagenMap.get(p.id) ?? getCloudinaryVidaDigitalUrl(p.descripcion) ?? null;
-              return (
-              <Link key={p.id} href={`/productos/${p.id}`}>
-                <div className="bg-white border border-[#e2e8f0] rounded-lg p-4 flex items-center gap-4 hover:shadow-sm hover:border-[#e2e8f0] transition-all">
-                  {imagenUrl ? (
-                    <img
-                      src={imagenUrl}
-                      alt={p.codigo}
-                      className="w-12 h-12 rounded object-cover bg-[#f1f5f9] shrink-0"
-                    />
-                  ) : (
-                    <div className="w-12 h-12 rounded bg-[#e2e8f0] shrink-0" />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-mono font-bold text-[#1e3a5f] truncate">
-                      {p.codigo}
-                    </p>
-                    <p className="text-xs text-[#74777f] truncate">{p.descripcion}</p>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <p className="text-xl font-bold text-[#111c2d]">
-                      {p.cantidad_actual.toLocaleString("es-CL")}
-                    </p>
-                    <p className="text-[10px] text-[#94a3b8]">u · caja x{p.packing}</p>
-                  </div>
-                </div>
-              </Link>
-              );
-            })}
-          </div>
-
-          {hasMore && lastUpdated && (
-            <div className="text-center">
-              <Link
-                href={`/bodegas/${bodegaId}?cursor=${encodeURIComponent(String(lastUpdated))}${qParam}`}
-                className="inline-block px-6 py-2 bg-[#1e3a5f] text-white rounded-lg text-sm font-medium hover:bg-[#162e50] transition-colors"
-              >
-                Cargar más
-              </Link>
-            </div>
-          )}
-        </>
+        <BodegaProductList
+          productos={productos}
+          bodegaOrigenId={bodegaId}
+          bodegas={allBodegas}
+          imagenMap={imagenMap}
+          hasMore={hasMore}
+          lastUpdated={lastUpdated}
+          qParam={qParam}
+          cursorParam={cursorParam}
+        />
       ) : (
         <div className="text-center py-16 space-y-2">
           <p className="text-[#74777f]">

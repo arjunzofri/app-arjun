@@ -8,6 +8,7 @@ import {
   date,
   pgEnum,
   jsonb,
+  unique,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
@@ -111,7 +112,9 @@ export const stock = pgTable("stock", {
     .notNull(),
   cantidadActual: integer("cantidad_actual").default(0).notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+}, (table) => [
+  unique("stock_producto_bodega").on(table.productoId, table.bodegaId),
+]);
 
 export const stockModulos = pgTable("stock_modulos", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -144,6 +147,25 @@ export const salidas = pgTable("salidas", {
   observaciones: text("observaciones"),
 });
 
+export const traslados = pgTable("traslados", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  productoId: uuid("producto_id")
+    .references(() => productos.id)
+    .notNull(),
+  bodegaOrigenId: uuid("bodega_origen_id")
+    .references(() => bodegas.id)
+    .notNull(),
+  bodegaDestinoId: uuid("bodega_destino_id")
+    .references(() => bodegas.id)
+    .notNull(),
+  cantidad: integer("cantidad").notNull(),
+  usuarioId: uuid("usuario_id")
+    .references(() => usuarios.id)
+    .notNull(),
+  observaciones: text("observaciones"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const activityLog = pgTable("activity_log", {
   id: uuid("id").primaryKey().defaultRandom(),
   usuarioId: uuid("usuario_id").references(() => usuarios.id),
@@ -160,6 +182,7 @@ export const productoRelations = relations(productos, ({ many }) => ({
   entradas: many(entradas),
   stock: many(stock),
   salidas: many(salidas),
+  traslados: many(traslados),
   auditoriaCodigo: many(codigoPersonalAuditoria),
 }));
 
