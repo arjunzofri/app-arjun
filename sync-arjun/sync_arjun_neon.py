@@ -252,6 +252,14 @@ def sync_tabla(conn, tabla, config, dbf_path):
 
 DOCSVE_PATH = r"Z:\newdesar\winfac_sve\base\docsve"
 
+# Constantes para sync_productos_publicos
+BODEGA_VIDA_DIGITAL_1 = "e9a760f0-6a29-4b38-bc9b-d94d55d3f272"
+BODEGA_ARJUN = "8c18bacf-698c-443f-b5ae-6a40e22bbe7e"
+RUTS_VIDA_DIGITAL = {"77854664", "76254375"}
+USUARIO_SYNC_ID = "cfc9d9fd-51fe-4db2-a31b-54b41b890263"
+VISA_CORTE = 26194159
+ORIGEN_ENTRADA = "winfac"
+
 
 def leer_vendedor_rut(knumezet):
     """
@@ -272,12 +280,135 @@ def leer_vendedor_rut(knumezet):
             return None
         tree = ElementTree.parse(xml_path)
         root = tree.getroot()
-        el = root.find("vendedor_rut_numero")
+        enc = root.find("encabezado")
+        el = enc.find("vendedor_rut_numero") if enc is not None else None
         if el is not None and el.text:
             return el.text.strip()
         return None
     except Exception:
         return None
+
+
+# ============================================================
+# SYNC PUBLIC
+# ============================================================
+
+def determinar_bodega(vendedor_rut):
+    """Determina la bodega según el RUT del vendedor."""
+    if vendedor_rut and vendedor_rut in RUTS_VIDA_DIGITAL:
+        return BODEGA_VIDA_DIGITAL_1
+    return BODEGA_ARJUN
+
+
+def sync_productos_publicos(conn):
+    """
+    Crea/actualiza productos, stock y entradas en schema public
+    a partir de arjun.inv_sdo, solo para productos con stocdisp > 0
+    y visa_key >= VISA_CORTE.
+    """
+    log.info("")
+    log.info("=" * 60)
+    log.info("SYNC PUBLIC: WinFac -> public.productos + public.stock + public.entradas")
+    log.info("=" * 60)
+
+    select_sql = """
+        SELECT knumezet, codunico, descript, stocdisp, cifunita, cantcaja, vendedor_rut
+        FROM arjun.inv_sdo
+        WHERE stocdisp > 0
+          AND (
+            split_part(knumezet, '-', 2)::bigint * 1000000 +
+            split_part(knumezet, '-', 3)::bigint
+          ) >= %s
+    """
+
+    upsert_producto_sql = """
+        INSERT INTO public.productos (codigo, knumezet, descripcion, packing, origen_winfac)
+        VALUES (%s, %s, %s, GREATEST(COALESCE(%s, 1), 1)::int, true)
+        ON CONFLICT (knumezet) DO UPDATE SET
+            descripcion = EXCLUDED.descripcion,
+            packing = GREATEST(COALESCE(EXCLUDED.packing, 1), 1)::int,
+            updated_at = NOW()
+        RETURNING id
+    """
+
+    upsert_stock_sql = """
+        INSERT INTO public.stock (producto_id, bodega_id, cantidad_actual)
+        VALUES (%s, %s, %s)
+        ON CONFLICT (producto_id, bodega_id) DO UPDATE SET
+            cantidad_actual = EXCLUDED.cantidad_actual,
+            updated_at = NOW()
+    """
+
+    insert_entrada_sql = """
+        INSERT INTO public.entradas (producto_id, bodega_id, cantidad, precio_unitario, usuario_id, origen)
+        VALUES (%s, %s, %s, %s, %s, %s)
+    """
+
+    try:
+        with conn.cursor() as cur:
+            cur.execute(select_sql, (VISA_CORTE,))
+            rows = cur.fetchall()
+
+            if not rows:
+                log.info("Sync public: 0 productos elegibles")
+                return 0
+
+            nuevos = 0
+            actualizados = 0
+            entradas = 0
+
+            for row in rows:
+                knumezet = row[0]
+                codunico = row[1]
+                descript = row[2]
+                stocdisp = int(row[3]) if row[3] else 0
+                cifunita = row[4]
+                cantcaja = row[5]
+                vendedor_rut = row[6]
+
+                bodega_id = determinar_bodega(vendedor_rut)
+
+                # Detectar si el producto ya existe
+                cur.execute(
+                    "SELECT id FROM public.productos WHERE knumezet = %s",
+                    (knumezet,)
+                )
+                existente = cur.fetchone()
+                es_nuevo = existente is None
+
+                # UPSERT producto
+                cur.execute(upsert_producto_sql, (codunico, knumezet, descript, cantcaja))
+                producto_id = cur.fetchone()[0]
+
+                if es_nuevo:
+                    nuevos += 1
+                else:
+                    actualizados += 1
+
+                # UPSERT stock
+                cur.execute(upsert_stock_sql, (producto_id, bodega_id, stocdisp))
+
+                # INSERT entrada solo si es nuevo
+                if es_nuevo:
+                    cur.execute(insert_entrada_sql, (
+                        producto_id, bodega_id, stocdisp, cifunita,
+                        USUARIO_SYNC_ID, ORIGEN_ENTRADA
+                    ))
+                    entradas += 1
+
+            conn.commit()
+
+            log.info(
+                "Sync public: %d productos procesados (%d nuevos, %d actualizados)",
+                len(rows), nuevos, actualizados
+            )
+            log.info("Sync public: %d entradas registradas", entradas)
+            return len(rows)
+
+    except Exception as e:
+        conn.rollback()
+        log.error("Sync public: error - %s", e)
+        return 0
 
 
 # ============================================================
@@ -318,6 +449,9 @@ def main():
             log.warning("  Archivo no encontrado: %s", dbf_path)
             continue
         total_sync += sync_tabla(conn, tabla, config, dbf_path)
+
+    # Paso adicional: crear productos públicos desde inv_sdo
+    sync_productos_publicos(conn)
 
     conn.close()
 
