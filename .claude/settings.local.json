@@ -16,7 +16,15 @@
       "PowerShell(git *)",
       "Bash(Get-ChildItem -Recurse -File -Name \"C:\\\\Users\\\\pablo\\\\Documents\\\\vida-digital-api\")",
       "Bash(Select-Object -First 100)",
-      "PowerShell(Get-ChildItem -File -Name \"C:\\\\Users\\\\pablo\\\\Documents\\\\vida-digital-api\" | Where-Object { $_ -notmatch '^0\\\\d' -and $_ -notmatch '\\\\.ps1$' -and $_ -notmatch '\\\\.xls' })"
+      "PowerShell(Get-ChildItem -File -Name \"C:\\\\Users\\\\pablo\\\\Documents\\\\vida-digital-api\" | Where-Object { $_ -notmatch '^0\\\\d' -and $_ -notmatch '\\\\.ps1$' -and $_ -notmatch '\\\\.xls' })",
+      "Bash(Get-ChildItem -Recurse -Depth 2)",
+      "Bash(Select-Object -First 80)",
+      "Bash(psql *)",
+      "Bash(node *)",
+      "Bash(npx eslint *)",
+      "PowerShell(npm i *)",
+      "Bash(vercel link *)",
+      "Bash(vercel list *)"
     ]
   }
 }

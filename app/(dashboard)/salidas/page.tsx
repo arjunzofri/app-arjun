@@ -24,6 +24,8 @@ export default async function SalidasPage() {
     db.query.modulosDestino.findMany(),
   ]);
 
+  console.log("[salidas] corte:", corte, "| productosData count:", productosData.length);
+
   return (
     <SalidasShell
       productosData={productosData}

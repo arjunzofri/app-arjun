@@ -82,6 +82,9 @@ export async function GET(request: NextRequest) {
     // Combinar: app primero, luego WinFac no duplicados
     const combined = [...appResults, ...wfResults].slice(0, 20);
 
+    console.log("[buscar] corte:", corte, "| appRows:", appRows.length, "| wfRows:", wfRows.length, "| combined:", combined.length);
+    console.log("[buscar] primeros 2:", JSON.stringify(combined.slice(0, 2)));
+
     return NextResponse.json(combined);
   } catch (error) {
     return NextResponse.json(
