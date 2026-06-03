@@ -84,6 +84,28 @@ describe('Bug — knumezet no debe filtrar en /bodegas/[bodegaId]', () => {
   })
 })
 
+describe('Bug — salidas/page.tsx no debe filtrar productos por knumezet', () => {
+  const pagePath = join(
+    process.cwd(), 'app', '(dashboard)', 'salidas', 'page.tsx'
+  )
+
+  it('NO debe importar getVisaCorte', () => {
+    const content = readFileSync(pagePath, 'utf-8')
+    expect(content).not.toContain('getVisaCorte')
+  })
+
+  it('NO debe filtrar por split_part (knumezet >= corte) en el where', () => {
+    const content = readFileSync(pagePath, 'utf-8')
+    // Mismo fix que /bodegas y /api/productos/buscar
+    expect(content).not.toContain('split_part')
+  })
+
+  it('NO debe llamar a getVisaCorte()', () => {
+    const content = readFileSync(pagePath, 'utf-8')
+    expect(content).not.toContain('await getVisaCorte()')
+  })
+})
+
 describe('Smoke E2E — Flujo completo edición desde bodega', () => {
   const pagePath = join(
     process.cwd(), 'app', '(dashboard)', 'bodegas', '[bodegaId]', 'page.tsx'
