@@ -7,6 +7,7 @@ import BodegaProductList from "@/components/bodegas/BodegaProductList";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Search } from "lucide-react";
+import { auth } from "@/lib/auth";
 
 export default async function BodegaDetailPage({
   params,
@@ -17,6 +18,8 @@ export default async function BodegaDetailPage({
 }) {
   const { bodegaId } = await params;
   const { q, cursor } = await searchParams;
+  const session = await auth();
+  const userRole = session?.user?.role || "operador";
 
   const bodegaResult = await db.execute(sql`
     SELECT id, nombre FROM bodegas WHERE id = ${bodegaId}::uuid
@@ -34,53 +37,53 @@ export default async function BodegaDetailPage({
   if (searchTerm && cursor) {
     query = sql`
       SELECT p.id, p.codigo, p.descripcion, p.packing,
+             p.codigo_personal, p.observaciones,
              s.cantidad_actual, s.updated_at
       FROM stock s
       JOIN productos p ON p.id = s.producto_id
       WHERE s.bodega_id = ${bodegaId}::uuid
-        AND s.cantidad_actual > 0
         AND (p.codigo ILIKE ${searchTerm} OR p.descripcion ILIKE ${searchTerm})
         AND (p.knumezet IS NULL OR (split_part(p.knumezet, '-', 2)::bigint * 1000000 + split_part(p.knumezet, '-', 3)::bigint) >= ${corte})
         AND s.updated_at < ${cursor}::timestamptz
-      ORDER BY s.updated_at DESC
+      ORDER BY (CASE WHEN s.cantidad_actual > 0 THEN 0 ELSE 1 END), s.updated_at DESC
       LIMIT ${limit}
     `;
   } else if (searchTerm) {
     query = sql`
       SELECT p.id, p.codigo, p.descripcion, p.packing,
+             p.codigo_personal, p.observaciones,
              s.cantidad_actual, s.updated_at
       FROM stock s
       JOIN productos p ON p.id = s.producto_id
       WHERE s.bodega_id = ${bodegaId}::uuid
-        AND s.cantidad_actual > 0
         AND (p.codigo ILIKE ${searchTerm} OR p.descripcion ILIKE ${searchTerm})
         AND (p.knumezet IS NULL OR (split_part(p.knumezet, '-', 2)::bigint * 1000000 + split_part(p.knumezet, '-', 3)::bigint) >= ${corte})
-      ORDER BY s.updated_at DESC
+      ORDER BY (CASE WHEN s.cantidad_actual > 0 THEN 0 ELSE 1 END), s.updated_at DESC
       LIMIT ${limit}
     `;
   } else if (cursor) {
     query = sql`
       SELECT p.id, p.codigo, p.descripcion, p.packing,
+             p.codigo_personal, p.observaciones,
              s.cantidad_actual, s.updated_at
       FROM stock s
       JOIN productos p ON p.id = s.producto_id
       WHERE s.bodega_id = ${bodegaId}::uuid
-        AND s.cantidad_actual > 0
         AND (p.knumezet IS NULL OR (split_part(p.knumezet, '-', 2)::bigint * 1000000 + split_part(p.knumezet, '-', 3)::bigint) >= ${corte})
         AND s.updated_at < ${cursor}::timestamptz
-      ORDER BY s.updated_at DESC
+      ORDER BY (CASE WHEN s.cantidad_actual > 0 THEN 0 ELSE 1 END), s.updated_at DESC
       LIMIT ${limit}
     `;
   } else {
     query = sql`
       SELECT p.id, p.codigo, p.descripcion, p.packing,
+             p.codigo_personal, p.observaciones,
              s.cantidad_actual, s.updated_at
       FROM stock s
       JOIN productos p ON p.id = s.producto_id
       WHERE s.bodega_id = ${bodegaId}::uuid
-        AND s.cantidad_actual > 0
         AND (p.knumezet IS NULL OR (split_part(p.knumezet, '-', 2)::bigint * 1000000 + split_part(p.knumezet, '-', 3)::bigint) >= ${corte})
-      ORDER BY s.updated_at DESC
+      ORDER BY (CASE WHEN s.cantidad_actual > 0 THEN 0 ELSE 1 END), s.updated_at DESC
       LIMIT ${limit}
     `;
   }
@@ -88,7 +91,8 @@ export default async function BodegaDetailPage({
   const result = await db.execute(query);
   const rows = result.rows as {
     id: string; codigo: string; descripcion: string;
-    packing: number; cantidad_actual: number; updated_at: string;
+    packing: number; codigo_personal: string | null; observaciones: string | null;
+    cantidad_actual: number; updated_at: string;
   }[];
 
   const hasMore = rows.length > 20;
@@ -173,6 +177,7 @@ export default async function BodegaDetailPage({
           lastUpdated={lastUpdated}
           qParam={qParam}
           cursorParam={cursorParam}
+          userRole={userRole}
         />
       ) : (
         <div className="text-center py-16 space-y-2">

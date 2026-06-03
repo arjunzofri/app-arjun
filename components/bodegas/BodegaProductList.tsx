@@ -2,8 +2,9 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { ArrowRightLeft } from "lucide-react"
+import { ArrowRightLeft, Pencil } from "lucide-react"
 import TrasladoModal from "./TrasladoModal"
+import { ProductoEditModal } from "@/components/shared/ProductoEditModal"
 import { getCloudinaryVidaDigitalUrl } from "@/lib/utils/extract-modelo"
 
 type Bodega = { id: string; nombre: string }
@@ -14,6 +15,8 @@ type ProductoRow = {
   descripcion: string
   packing: number
   cantidad_actual: number
+  codigo_personal?: string | null
+  observaciones?: string | null
 }
 
 type Props = {
@@ -25,6 +28,7 @@ type Props = {
   lastUpdated: string | null
   qParam: string
   cursorParam: string
+  userRole: string
 }
 
 export default function BodegaProductList({
@@ -36,8 +40,10 @@ export default function BodegaProductList({
   lastUpdated,
   qParam,
   cursorParam,
+  userRole,
 }: Props) {
   const [modalProducto, setModalProducto] = useState<ProductoRow | null>(null)
+  const [editProducto, setEditProducto] = useState<ProductoRow | null>(null)
 
   return (
     <>
@@ -76,6 +82,14 @@ export default function BodegaProductList({
                 </div>
               </Link>
               <button
+                type="button"
+                onClick={() => setEditProducto(p)}
+                className="p-1 text-[#94a3b8] hover:text-[#1e3a5f] shrink-0"
+                title="Editar producto"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+              </button>
+              <button
                 onClick={() => setModalProducto(p)}
                 className="shrink-0 px-3 py-2 bg-[#1e3a5f] text-white text-xs font-bold rounded-lg hover:bg-[#162e50] transition-colors flex items-center gap-1"
                 title="Trasladar a otra bodega"
@@ -109,6 +123,22 @@ export default function BodegaProductList({
             window.location.reload()
           }}
           onClose={() => setModalProducto(null)}
+        />
+      )}
+
+      {editProducto && (
+        <ProductoEditModal
+          producto={{
+            id: editProducto.id,
+            codigo: editProducto.codigo,
+            codigoPersonal: editProducto.codigo_personal,
+            descripcion: editProducto.descripcion,
+            packing: editProducto.packing,
+            observaciones: editProducto.observaciones,
+          }}
+          userRole={userRole}
+          open={true}
+          onClose={() => setEditProducto(null)}
         />
       )}
     </>
