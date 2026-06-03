@@ -46,6 +46,28 @@ describe('Vista de cards en productos', () => {
   })
 })
 
+describe('Limpieza UI — Resumen sin Info Logística ni Código Personal', () => {
+  const detallePath = join(
+    process.cwd(), 'components', 'productos', 'ProductoDetalle.tsx'
+  )
+
+  it('NO debe contener card "Info Logística"', () => {
+    const content = readFileSync(detallePath, 'utf-8')
+    expect(content).not.toContain('Info Logística')
+  })
+
+  it('NO debe contener card "Código Personal"', () => {
+    const content = readFileSync(detallePath, 'utf-8')
+    // La card Código Personal se elimina del Resumen
+    expect(content).not.toContain('Código Personal')
+  })
+
+  it('Stock Actual debe usar md:col-span-2 para ocupar más espacio', () => {
+    const content = readFileSync(detallePath, 'utf-8')
+    expect(content).toContain('md:col-span-2')
+  })
+})
+
 describe('Eliminar tab Historial Código', () => {
   const detallePath = join(
     process.cwd(), 'components', 'productos', 'ProductoDetalle.tsx'

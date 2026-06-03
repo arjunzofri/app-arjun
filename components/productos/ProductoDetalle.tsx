@@ -39,7 +39,7 @@ export default function ProductoDetalle({ product }: { product: any }) {
       {tab === "overview" && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="bg-white border-[#c4c6cf]">
+            <Card className="bg-white border-[#c4c6cf] md:col-span-2">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-mono uppercase text-[#74777f]">Stock Actual</CardTitle>
               </CardHeader>
@@ -53,68 +53,44 @@ export default function ProductoDetalle({ product }: { product: any }) {
                   ))}
                   {product.stock.length === 0 && <p className="text-[#74777f] text-sm">Sin unidades en bodega</p>}
                 </div>
+                <p className="text-xs text-[#74777f] mt-3 pt-3 border-t border-[#e2e8f0]">
+                  Packing: {product.packing} u/caja
+                </p>
               </CardContent>
             </Card>
 
-            <Card className="bg-white border-[#c4c6cf]">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-mono uppercase text-[#74777f]">Info Logística</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-[#74777f]">Packing:</span>
-                  <span className="text-[#111c2d]">{product.packing} u/caja</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-[#74777f]">Ubicación:</span>
-                  <span className="text-[#0051d5] font-mono uppercase">{product.ubicacion || "N/A"}</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-white border-[#c4c6cf]">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-mono uppercase text-[#74777f]">Código Personal</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-[#111c2d]">
-                  {product.codigoPersonal || <span className="text-[#94a3b8] italic">No asignado</span>}
-                </div>
-              </CardContent>
-            </Card>
+            {(() => {
+              const vidaDigitalUrl = getCloudinaryVidaDigitalUrl(product.descripcion)
+              return (
+                <Card className="bg-white border-[#c4c6cf]">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-mono uppercase text-[#74777f]">Imágenes</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {product.imagenes.length > 0 && (
+                      <div className="flex flex-wrap gap-3">
+                        {product.imagenes.map((img: any) => (
+                          <div key={img.id} className="w-32 h-32 rounded border border-[#e2e8f0] overflow-hidden bg-[#f9f9ff]">
+                            <img src={img.url} alt={product.descripcion} className="w-full h-full object-contain" />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {product.imagenes.length === 0 && vidaDigitalUrl && (
+                      <div className="w-32 h-32 rounded border border-[#e2e8f0] overflow-hidden bg-[#f9f9ff]">
+                        <img src={vidaDigitalUrl} alt={product.descripcion} className="w-full h-full object-contain"
+                             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                      </div>
+                    )}
+                    {product.imagenes.length === 0 && !vidaDigitalUrl && (
+                      <p className="text-xs text-[#74777f]">Sin imágenes cargadas</p>
+                    )}
+                    <ImageUploader productoId={product.id} />
+                  </CardContent>
+                </Card>
+              )
+            })()}
           </div>
-
-          {(() => {
-            const vidaDigitalUrl = getCloudinaryVidaDigitalUrl(product.descripcion)
-            return (
-              <Card className="bg-white border-[#c4c6cf]">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-mono uppercase text-[#74777f]">Imágenes</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {product.imagenes.length > 0 && (
-                    <div className="flex flex-wrap gap-3">
-                      {product.imagenes.map((img: any) => (
-                        <div key={img.id} className="w-32 h-32 rounded border border-[#e2e8f0] overflow-hidden bg-[#f9f9ff]">
-                          <img src={img.url} alt={product.descripcion} className="w-full h-full object-contain" />
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  {product.imagenes.length === 0 && vidaDigitalUrl && (
-                    <div className="w-32 h-32 rounded border border-[#e2e8f0] overflow-hidden bg-[#f9f9ff]">
-                      <img src={vidaDigitalUrl} alt={product.descripcion} className="w-full h-full object-contain"
-                           onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
-                    </div>
-                  )}
-                  {product.imagenes.length === 0 && !vidaDigitalUrl && (
-                    <p className="text-xs text-[#74777f]">Sin imágenes cargadas</p>
-                  )}
-                  <ImageUploader productoId={product.id} />
-                </CardContent>
-              </Card>
-            )
-          })()}
         </div>
       )}
 
