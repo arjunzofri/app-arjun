@@ -46,6 +46,28 @@ describe('Vista de cards en productos', () => {
   })
 })
 
+describe('Eliminar tab Historial Código', () => {
+  const detallePath = join(
+    process.cwd(), 'components', 'productos', 'ProductoDetalle.tsx'
+  )
+
+  it('Tab NO debe incluir "history"', () => {
+    const content = readFileSync(detallePath, 'utf-8')
+    // La tab "history" fue eliminada — solo quedan overview, edit, movimientos
+    expect(content).not.toContain('"history"')
+  })
+
+  it('NO debe renderizar "Historial Código"', () => {
+    const content = readFileSync(detallePath, 'utf-8')
+    expect(content).not.toContain('Historial Código')
+  })
+
+  it('NO debe importar History de lucide-react', () => {
+    const content = readFileSync(detallePath, 'utf-8')
+    expect(content).not.toContain('import { History }')
+  })
+})
+
 describe('Tab Movimientos en producto detail', () => {
   const detallePath = join(
     process.cwd(), 'components', 'productos', 'ProductoDetalle.tsx'

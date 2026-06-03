@@ -6,10 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ProductoForm from "@/components/productos/ProductoForm";
 import ImageUploader from "@/components/productos/ImageUploader";
 import ProductoMovimientos from "@/components/productos/ProductoMovimientos";
-import { History } from "lucide-react";
 import { getCloudinaryVidaDigitalUrl } from "@/lib/utils/extract-modelo";
 
-type Tab = "overview" | "edit" | "history" | "movimientos";
+type Tab = "overview" | "edit" | "movimientos";
 
 export default function ProductoDetalle({ product }: { product: any }) {
   const [tab, setTab] = useState<Tab>("overview");
@@ -20,7 +19,6 @@ export default function ProductoDetalle({ product }: { product: any }) {
         {([
           { id: "overview" as const, label: "Resumen" },
           { id: "edit" as const, label: "Editar" },
-          { id: "history" as const, label: "Historial Código" },
           { id: "movimientos" as const, label: "Movimientos" },
         ]).map((opt) => (
           <button
@@ -123,26 +121,6 @@ export default function ProductoDetalle({ product }: { product: any }) {
       {tab === "edit" && (
         <div className="bg-white border border-[#c4c6cf] rounded-xl p-8">
           <ProductoForm initialData={product} />
-        </div>
-      )}
-
-      {tab === "history" && (
-        <div className="bg-white border border-[#c4c6cf] rounded-xl overflow-hidden">
-          <div className="p-4 border-b border-[#c4c6cf] bg-[#f0f3ff]">
-            <h3 className="font-bold">Historial de Cambios en Código Personal</h3>
-          </div>
-          <div className="divide-y divide-[#e2e8f0]">
-            {product.auditoriaCodigo.map((log: any) => (
-              <div key={log.id} className="p-4 flex items-center justify-between text-sm">
-                <div>
-                  <p className="text-[#74777f]">De <span className="text-[#74777f] line-through">{log.valorAnterior || "NULL"}</span> a <span className="text-[#111c2d] font-bold">{log.valorNuevo || "NULL"}</span></p>
-                  <p className="text-xs text-[#64748b] mt-1">Cambiado por {(log.usuario as { nombre: string } | null)?.nombre ?? 'Usuario desconocido'} • {new Date(log.changedAt).toLocaleString()}</p>
-                </div>
-                <History className="h-4 w-4 text-[#64748b]" />
-              </div>
-            ))}
-            {product.auditoriaCodigo.length === 0 && <p className="p-8 text-center text-[#64748b]">No hay cambios registrados</p>}
-          </div>
         </div>
       )}
 
