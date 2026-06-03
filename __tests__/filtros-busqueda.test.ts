@@ -101,12 +101,13 @@ describe('Filtros de búsqueda global — /bodegas/[id]', () => {
 })
 
 describe('Filtros de búsqueda global — /modulos/[id]', () => {
-  it('modulos/[moduloId]/page.tsx debe incluir filtro knumezet con split_part', () => {
+  it('modulos/[moduloId]/page.tsx NO debe filtrar por knumezet (sin split_part)', () => {
     const content = readFileSync(
       join(process.cwd(), 'app', '(dashboard)', 'modulos', '[moduloId]', 'page.tsx'),
       'utf-8'
     )
-    expect(content).toContain('split_part')
+    // Fix: el filtro knumezet fue removido — mismo fix que /bodegas y /salidas
+    expect(content).not.toContain('split_part')
   })
 })
 
@@ -133,12 +134,11 @@ describe('Filtros de búsqueda global — Dashboard page.tsx', () => {
 describe('Filtros de búsqueda global — Smoke E2E', () => {
   it('los archivos que usan corte WinFac deben tener getVisaCorte o fallback 26194159', () => {
     // Solo archivos donde el filtro knumezet >= corte TIENE SENTIDO:
-    // sync, dashboard, modulos, acciones de búsqueda.
-    // Excluye: /bodegas, /salidas (stock físico manda) y /api/productos/buscar (buscador genérico).
+    // sync, dashboard, acciones de búsqueda.
+    // Excluye: /bodegas, /salidas, /modulos (stock físico manda) y /api/productos/buscar (buscador genérico).
     const files = [
       join(process.cwd(), 'lib', 'actions.ts'),
       join(process.cwd(), 'app', '(dashboard)', 'page.tsx'),
-      join(process.cwd(), 'app', '(dashboard)', 'modulos', '[moduloId]', 'page.tsx'),
     ]
     for (const file of files) {
       if (existsSync(file)) {

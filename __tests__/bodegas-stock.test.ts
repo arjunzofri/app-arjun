@@ -137,6 +137,27 @@ describe('Smoke E2E — Flujo completo edición desde bodega', () => {
   })
 })
 
+describe('Bug — modulos/[moduloId] no debe filtrar por knumezet', () => {
+  const pagePath = join(
+    process.cwd(), 'app', '(dashboard)', 'modulos', '[moduloId]', 'page.tsx'
+  )
+
+  it('NO debe importar getVisaCorte', () => {
+    const content = readFileSync(pagePath, 'utf-8')
+    expect(content).not.toContain('getVisaCorte')
+  })
+
+  it('NO debe filtrar por split_part en el WHERE', () => {
+    const content = readFileSync(pagePath, 'utf-8')
+    expect(content).not.toContain('split_part')
+  })
+
+  it('NO debe llamar a getVisaCorte()', () => {
+    const content = readFileSync(pagePath, 'utf-8')
+    expect(content).not.toContain('await getVisaCorte()')
+  })
+})
+
 describe('Bug — buscador /api/productos/buscar no debe filtrar por knumezet', () => {
   const routePath = join(
     process.cwd(), 'app', 'api', 'productos', 'buscar', 'route.ts'

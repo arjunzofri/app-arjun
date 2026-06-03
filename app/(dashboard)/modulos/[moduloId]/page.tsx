@@ -2,7 +2,6 @@ import { db } from "@/db";
 import { sql } from "drizzle-orm";
 import { neon } from "@neondatabase/serverless";
 import { getCloudinaryVidaDigitalUrl } from "@/lib/utils/extract-modelo";
-import { getVisaCorte } from "@/lib/utils/get-visa-corte";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Search, AlertTriangle } from "lucide-react";
@@ -37,7 +36,6 @@ export default async function ModuloDetailPage({
 
     const limit = 21;
     const searchTerm = q ? `%${q}%` : null;
-    const corte = await getVisaCorte();
 
   let query;
   if (searchTerm && cursor) {
@@ -49,7 +47,6 @@ export default async function ModuloDetailPage({
       WHERE sm.modulo_id = ${moduloId}::uuid
         AND sm.cantidad_acumulada > 0
         AND (p.codigo ILIKE ${searchTerm} OR p.descripcion ILIKE ${searchTerm})
-        AND (p.knumezet IS NULL OR (split_part(p.knumezet, '-', 2)::bigint * 1000000 + split_part(p.knumezet, '-', 3)::bigint) >= ${corte})
         AND sm.updated_at < ${cursor}::timestamptz
       ORDER BY sm.updated_at DESC
       LIMIT ${limit}
@@ -63,7 +60,6 @@ export default async function ModuloDetailPage({
       WHERE sm.modulo_id = ${moduloId}::uuid
         AND sm.cantidad_acumulada > 0
         AND (p.codigo ILIKE ${searchTerm} OR p.descripcion ILIKE ${searchTerm})
-        AND (p.knumezet IS NULL OR (split_part(p.knumezet, '-', 2)::bigint * 1000000 + split_part(p.knumezet, '-', 3)::bigint) >= ${corte})
       ORDER BY sm.updated_at DESC
       LIMIT ${limit}
     `;
@@ -75,7 +71,6 @@ export default async function ModuloDetailPage({
       JOIN productos p ON p.id = sm.producto_id
       WHERE sm.modulo_id = ${moduloId}::uuid
         AND sm.cantidad_acumulada > 0
-        AND (p.knumezet IS NULL OR (split_part(p.knumezet, '-', 2)::bigint * 1000000 + split_part(p.knumezet, '-', 3)::bigint) >= ${corte})
         AND sm.updated_at < ${cursor}::timestamptz
       ORDER BY sm.updated_at DESC
       LIMIT ${limit}
@@ -88,7 +83,6 @@ export default async function ModuloDetailPage({
       JOIN productos p ON p.id = sm.producto_id
       WHERE sm.modulo_id = ${moduloId}::uuid
         AND sm.cantidad_acumulada > 0
-        AND (p.knumezet IS NULL OR (split_part(p.knumezet, '-', 2)::bigint * 1000000 + split_part(p.knumezet, '-', 3)::bigint) >= ${corte})
       ORDER BY sm.updated_at DESC
       LIMIT ${limit}
     `;
