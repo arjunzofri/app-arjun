@@ -5,10 +5,11 @@ import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ProductoForm from "@/components/productos/ProductoForm";
 import ImageUploader from "@/components/productos/ImageUploader";
+import ProductoMovimientos from "@/components/productos/ProductoMovimientos";
 import { History } from "lucide-react";
 import { getCloudinaryVidaDigitalUrl } from "@/lib/utils/extract-modelo";
 
-type Tab = "overview" | "edit" | "history";
+type Tab = "overview" | "edit" | "history" | "movimientos";
 
 export default function ProductoDetalle({ product }: { product: any }) {
   const [tab, setTab] = useState<Tab>("overview");
@@ -20,6 +21,7 @@ export default function ProductoDetalle({ product }: { product: any }) {
           { id: "overview" as const, label: "Resumen" },
           { id: "edit" as const, label: "Editar" },
           { id: "history" as const, label: "Historial Código" },
+          { id: "movimientos" as const, label: "Movimientos" },
         ]).map((opt) => (
           <button
             key={opt.id}
@@ -142,6 +144,10 @@ export default function ProductoDetalle({ product }: { product: any }) {
             {product.auditoriaCodigo.length === 0 && <p className="p-8 text-center text-[#64748b]">No hay cambios registrados</p>}
           </div>
         </div>
+      )}
+
+      {tab === "movimientos" && (
+        <ProductoMovimientos productoId={product.id} />
       )}
     </div>
   );
