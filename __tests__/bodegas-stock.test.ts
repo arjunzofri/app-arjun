@@ -59,6 +59,31 @@ describe('P3 — Editar producto desde /bodegas (ícono lápiz)', () => {
   })
 })
 
+describe('Bug — knumezet no debe filtrar en /bodegas/[bodegaId]', () => {
+  const pagePath = join(
+    process.cwd(),
+    'app', '(dashboard)', 'bodegas', '[bodegaId]', 'page.tsx'
+  )
+
+  it('NO debe contener el filtro knumezet en el WHERE', () => {
+    const content = readFileSync(pagePath, 'utf-8')
+    // El filtro knumezet >= corte excluye productos WinFac antiguos
+    // que sí tienen stock físico en la bodega. No debe estar.
+    expect(content).not.toContain('knumezet')
+  })
+
+  it('NO debe importar getVisaCorte (el corte ya no se usa)', () => {
+    const content = readFileSync(pagePath, 'utf-8')
+    expect(content).not.toContain('getVisaCorte')
+  })
+
+  it('NO debe llamar a getVisaCorte()', () => {
+    const content = readFileSync(pagePath, 'utf-8')
+    expect(content).not.toContain('corte')
+    expect(content).not.toContain('getVisaCorte()')
+  })
+})
+
 describe('Smoke E2E — Flujo completo edición desde bodega', () => {
   const pagePath = join(
     process.cwd(), 'app', '(dashboard)', 'bodegas', '[bodegaId]', 'page.tsx'

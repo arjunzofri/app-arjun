@@ -2,7 +2,6 @@ import { db } from "@/db";
 import { sql } from "drizzle-orm";
 import { neon } from "@neondatabase/serverless";
 import { getCloudinaryVidaDigitalUrl } from "@/lib/utils/extract-modelo";
-import { getVisaCorte } from "@/lib/utils/get-visa-corte";
 import BodegaProductList from "@/components/bodegas/BodegaProductList";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -31,7 +30,6 @@ export default async function BodegaDetailPage({
 
   const limit = 21;
   const searchTerm = q ? `%${q}%` : null;
-  const corte = await getVisaCorte();
 
   let query;
   if (searchTerm && cursor) {
@@ -43,7 +41,6 @@ export default async function BodegaDetailPage({
       JOIN productos p ON p.id = s.producto_id
       WHERE s.bodega_id = ${bodegaId}::uuid
         AND (p.codigo ILIKE ${searchTerm} OR p.descripcion ILIKE ${searchTerm})
-        AND (p.knumezet IS NULL OR (split_part(p.knumezet, '-', 2)::bigint * 1000000 + split_part(p.knumezet, '-', 3)::bigint) >= ${corte})
         AND s.updated_at < ${cursor}::timestamptz
       ORDER BY (CASE WHEN s.cantidad_actual > 0 THEN 0 ELSE 1 END), s.updated_at DESC
       LIMIT ${limit}
@@ -57,7 +54,6 @@ export default async function BodegaDetailPage({
       JOIN productos p ON p.id = s.producto_id
       WHERE s.bodega_id = ${bodegaId}::uuid
         AND (p.codigo ILIKE ${searchTerm} OR p.descripcion ILIKE ${searchTerm})
-        AND (p.knumezet IS NULL OR (split_part(p.knumezet, '-', 2)::bigint * 1000000 + split_part(p.knumezet, '-', 3)::bigint) >= ${corte})
       ORDER BY (CASE WHEN s.cantidad_actual > 0 THEN 0 ELSE 1 END), s.updated_at DESC
       LIMIT ${limit}
     `;
@@ -69,7 +65,6 @@ export default async function BodegaDetailPage({
       FROM stock s
       JOIN productos p ON p.id = s.producto_id
       WHERE s.bodega_id = ${bodegaId}::uuid
-        AND (p.knumezet IS NULL OR (split_part(p.knumezet, '-', 2)::bigint * 1000000 + split_part(p.knumezet, '-', 3)::bigint) >= ${corte})
         AND s.updated_at < ${cursor}::timestamptz
       ORDER BY (CASE WHEN s.cantidad_actual > 0 THEN 0 ELSE 1 END), s.updated_at DESC
       LIMIT ${limit}
@@ -82,7 +77,6 @@ export default async function BodegaDetailPage({
       FROM stock s
       JOIN productos p ON p.id = s.producto_id
       WHERE s.bodega_id = ${bodegaId}::uuid
-        AND (p.knumezet IS NULL OR (split_part(p.knumezet, '-', 2)::bigint * 1000000 + split_part(p.knumezet, '-', 3)::bigint) >= ${corte})
       ORDER BY (CASE WHEN s.cantidad_actual > 0 THEN 0 ELSE 1 END), s.updated_at DESC
       LIMIT ${limit}
     `;
