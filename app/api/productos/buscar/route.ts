@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { neon } from "@neondatabase/serverless";
 import { getCloudinaryVidaDigitalUrl } from "@/lib/utils/extract-modelo";
-import { getVisaCorte } from "@/lib/utils/get-visa-corte";
 
 export async function GET(request: NextRequest) {
   const q = request.nextUrl.searchParams.get("q");
@@ -13,7 +12,6 @@ export async function GET(request: NextRequest) {
 
   try {
     const s = neon(process.env.DATABASE_URL!);
-    const corte = await getVisaCorte();
 
     // Buscar en ambas fuentes en paralelo
     const [appRows, wfRows] = await Promise.all([
@@ -31,7 +29,6 @@ export async function GET(request: NextRequest) {
         WHERE (p.codigo ILIKE ${search}
            OR p.descripcion ILIKE ${search}
            OR p.codigo_personal ILIKE ${search})
-          AND (p.knumezet IS NULL OR (split_part(p.knumezet, '-', 2)::bigint * 1000000 + split_part(p.knumezet, '-', 3)::bigint) >= ${corte})
         GROUP BY p.id, pi.url
         HAVING COALESCE(SUM(s.cantidad_actual), 0) > 0
         ORDER BY p.codigo
@@ -45,7 +42,6 @@ export async function GET(request: NextRequest) {
         WHERE (codunico ILIKE ${search}
            OR descript ILIKE ${search})
           AND stocdisp > 0
-          AND (split_part(knumezet, '-', 2)::bigint * 1000000 + split_part(knumezet, '-', 3)::bigint) >= ${corte}
         ORDER BY codunico
         LIMIT 20
       `,
@@ -81,9 +77,6 @@ export async function GET(request: NextRequest) {
 
     // Combinar: app primero, luego WinFac no duplicados
     const combined = [...appResults, ...wfResults].slice(0, 20);
-
-    console.log("[buscar] corte:", corte, "| appRows:", appRows.length, "| wfRows:", wfRows.length, "| combined:", combined.length);
-    console.log("[buscar] primeros 2:", JSON.stringify(combined.slice(0, 2)));
 
     return NextResponse.json(combined);
   } catch (error) {

@@ -50,12 +50,13 @@ describe('Filtros de búsqueda global — buscarProductos()', () => {
 })
 
 describe('Filtros de búsqueda global — API /api/productos/buscar', () => {
-  it('la query de app debe filtrar stock > 0 y knumezet', () => {
+  it('la query de app NO debe filtrar por knumezet (sin split_part)', () => {
     const content = readFileSync(
       join(process.cwd(), 'app', 'api', 'productos', 'buscar', 'route.ts'),
       'utf-8'
     )
-    expect(content).toContain('split_part')
+    // El filtro knumezet fue removido — mismo fix que /bodegas
+    expect(content).not.toContain('split_part')
   })
 
   it('la query de WinFac debe filtrar stocdisp > 0', () => {
@@ -91,12 +92,13 @@ describe('Filtros de búsqueda global — /salidas', () => {
 })
 
 describe('Filtros de búsqueda global — /bodegas/[id]', () => {
-  it('bodegas/[bodegaId]/page.tsx debe incluir filtro knumezet con split_part', () => {
+  it('bodegas/[bodegaId]/page.tsx NO debe filtrar por knumezet (sin split_part)', () => {
     const content = readFileSync(
       join(process.cwd(), 'app', '(dashboard)', 'bodegas', '[bodegaId]', 'page.tsx'),
       'utf-8'
     )
-    expect(content).toContain('split_part')
+    // Fix: el filtro knumezet fue removido — el stock físico manda
+    expect(content).not.toContain('split_part')
   })
 })
 
@@ -131,13 +133,14 @@ describe('Filtros de búsqueda global — Dashboard page.tsx', () => {
 })
 
 describe('Filtros de búsqueda global — Smoke E2E', () => {
-  it('los 6 archivos deben usar getVisaCorte o el fallback 26194159', () => {
+  it('los archivos que usan corte WinFac deben tener getVisaCorte o fallback 26194159', () => {
+    // Solo archivos donde el filtro knumezet >= corte TIENE SENTIDO:
+    // sync, dashboard, salidas, modulos, acciones de búsqueda.
+    // Excluye: /bodegas (stock físico manda) y /api/productos/buscar (buscador genérico).
     const files = [
       join(process.cwd(), 'lib', 'actions.ts'),
-      join(process.cwd(), 'app', 'api', 'productos', 'buscar', 'route.ts'),
       join(process.cwd(), 'app', '(dashboard)', 'page.tsx'),
       join(process.cwd(), 'app', '(dashboard)', 'salidas', 'page.tsx'),
-      join(process.cwd(), 'app', '(dashboard)', 'bodegas', '[bodegaId]', 'page.tsx'),
       join(process.cwd(), 'app', '(dashboard)', 'modulos', '[moduloId]', 'page.tsx'),
     ]
     for (const file of files) {

@@ -114,3 +114,27 @@ describe('Smoke E2E — Flujo completo edición desde bodega', () => {
     expect(content).toContain('observaciones')
   })
 })
+
+describe('Bug — buscador /api/productos/buscar no debe filtrar por knumezet', () => {
+  const routePath = join(
+    process.cwd(), 'app', 'api', 'productos', 'buscar', 'route.ts'
+  )
+
+  it('NO debe importar getVisaCorte', () => {
+    const content = readFileSync(routePath, 'utf-8')
+    expect(content).not.toContain('getVisaCorte')
+  })
+
+  it('NO debe filtrar por knumezet >= corte (sin split_part en WHERE)', () => {
+    const content = readFileSync(routePath, 'utf-8')
+    // split_part solo aparece en el filtro knumezet del WHERE.
+    // knumezet en sí se sigue usando en SELECT y deduplicación.
+    expect(content).not.toContain('split_part')
+  })
+
+  it('NO debe llamar a getVisaCorte() ni declarar variable corte', () => {
+    const content = readFileSync(routePath, 'utf-8')
+    expect(content).not.toContain('await getVisaCorte()')
+    expect(content).not.toContain('const corte')
+  })
+})
