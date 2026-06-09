@@ -145,7 +145,7 @@ export async function GET(req: NextRequest) {
         const sumaResult = await db.execute(
           `SELECT COALESCE(SUM(cantidad), 0) as total
            FROM entradas
-           WHERE producto_id = '${productoId}' AND origen = 'winfac_futuro'`
+           WHERE producto_id = '${productoId}' AND origen IN ('winfac', 'winfac_futuro')`
         )
         const totalPrevio = Number((sumaResult.rows[0] as any)?.total) || 0
         const delta = stocdispNum - totalPrevio
