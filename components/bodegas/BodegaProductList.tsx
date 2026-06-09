@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { ArrowRightLeft, Pencil } from "lucide-react"
 import TrasladoModal from "./TrasladoModal"
@@ -28,6 +29,7 @@ type Props = {
   lastUpdated: string | null
   qParam: string
   cursorParam: string
+  scsParam: string
   userRole: string
 }
 
@@ -40,13 +42,43 @@ export default function BodegaProductList({
   lastUpdated,
   qParam,
   cursorParam,
+  scsParam,
   userRole,
 }: Props) {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const currentQ = searchParams.get("q") || ""
+  const soloConStock = searchParams.get("soloConStock")
+  const mostrarTodos = soloConStock === "false" // checkbox checked = mostrar todos
+
   const [modalProducto, setModalProducto] = useState<ProductoRow | null>(null)
   const [editProducto, setEditProducto] = useState<ProductoRow | null>(null)
 
+  function buildToggleUrl(showAll: boolean) {
+    const params = new URLSearchParams()
+    if (currentQ) params.set("q", currentQ)
+    if (showAll) params.set("soloConStock", "false")
+    const qs = params.toString()
+    return `/bodegas/${bodegaOrigenId}${qs ? `?${qs}` : ""}`
+  }
+
   return (
     <>
+      {/* Toggle "Solo con stock" */}
+      <label className="flex items-center gap-2 cursor-pointer select-none text-sm">
+        <input
+          type="checkbox"
+          checked={mostrarTodos}
+          onChange={(e) => {
+            router.push(buildToggleUrl(e.target.checked))
+          }}
+          className="w-4 h-4 rounded border-[#c4c6cf] text-[#1e3a5f] focus:ring-[#1e3a5f]"
+        />
+        <span className={mostrarTodos ? "text-[#74777f]" : "text-[#1e3a5f] font-medium"}>
+          Solo con stock
+        </span>
+      </label>
+
       <div className="space-y-2">
         {productos.map((p) => {
           const imagenUrl =
@@ -105,7 +137,7 @@ export default function BodegaProductList({
       {hasMore && lastUpdated && (
         <div className="text-center mt-4">
           <Link
-            href={`/bodegas/${bodegaOrigenId}?cursor=${encodeURIComponent(String(lastUpdated))}${qParam}`}
+            href={`/bodegas/${bodegaOrigenId}?cursor=${encodeURIComponent(String(lastUpdated))}${qParam}${scsParam}`}
             className="inline-block px-6 py-2 bg-[#1e3a5f] text-white rounded-lg text-sm font-medium hover:bg-[#162e50] transition-colors"
           >
             Cargar más
