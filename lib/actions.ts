@@ -330,7 +330,9 @@ export async function registrarConteoFisico(productoId: string, bodegaId: string
   const session = await auth();
   if (!session) throw new Error("No autorizado");
 
-  // Insertar entrada de conteo físico
+  const s = neon(process.env.DATABASE_URL!);
+
+  // Insertar entrada de conteo físico (audit trail)
   await db.insert(entradas).values({
     productoId,
     bodegaId,
@@ -339,24 +341,14 @@ export async function registrarConteoFisico(productoId: string, bodegaId: string
     origen: "conteo_fisico",
   });
 
-  // Upsert stock
-  const existingStock = await db.query.stock.findFirst({
-    where: and(eq(stock.productoId, productoId), eq(stock.bodegaId, bodegaId))
-  });
-
-  if (existingStock) {
-    await db.update(stock).set({
-      cantidadActual: cantidad,
-      updatedAt: new Date(),
-    }).where(eq(stock.id, existingStock.id));
-  } else {
-    await db.insert(stock).values({
-      productoId,
-      bodegaId,
-      cantidadActual: cantidad,
-      updatedAt: new Date(),
-    });
-  }
+  // Upsert stock con SQL crudo — REEMPLAZA cantidad_actual, no suma.
+  // ON CONFLICT cubre tanto INSERT (nuevo) como UPDATE (existente).
+  await s`
+    INSERT INTO stock (producto_id, bodega_id, cantidad_actual, updated_at)
+    VALUES (${productoId}::uuid, ${bodegaId}::uuid, ${cantidad}, NOW())
+    ON CONFLICT (producto_id, bodega_id)
+    DO UPDATE SET cantidad_actual = ${cantidad}, updated_at = NOW()
+  `;
 
   await db.insert(activityLog).values({
     usuarioId: session.user?.id ?? "",
