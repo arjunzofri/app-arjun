@@ -189,31 +189,60 @@ export async function registrarSalida(data: any) {
 
   const validated = SalidaSchema.parse(data);
 
-  const existingStock = await db.query.stock.findFirst({
-    where: and(eq(stock.productoId, validated.productoId), eq(stock.bodegaId, validated.bodegaOrigenId))
-  });
+  const s = neon(process.env.DATABASE_URL!);
 
-  if (!existingStock || existingStock.cantidadActual < validated.cantidad) {
+  // 1. Lectura previa SOLO para mensaje de error con cantidad disponible
+  const [stockRow] = await s`
+    SELECT cantidad_actual FROM stock
+    WHERE producto_id = ${validated.productoId}::uuid
+      AND bodega_id = ${validated.bodegaOrigenId}::uuid
+  `;
+
+  const disponible: number = stockRow?.cantidad_actual ?? 0;
+  if (disponible < validated.cantidad) {
     return {
-      error: `Stock insuficiente. Disponible: ${existingStock?.cantidadActual ?? 0} unidades en esa bodega.`
+      error: `Stock insuficiente. Disponible: ${disponible} unidades en esa bodega.`
     };
   }
 
-  const [salida] = await db.insert(salidas).values({
-    productoId: validated.productoId,
-    bodegaOrigenId: validated.bodegaOrigenId,
-    moduloDestinoId: validated.moduloDestinoId,
-    cantidad: validated.cantidad,
-    observaciones: validated.observaciones,
-    usuarioId: session.user?.id ?? "",
-  }).returning();
+  // 2. CTE atómico: INSERT salida + UPDATE stock en una sola sentencia.
+  //    FOR UPDATE bloquea la fila stock mientras se ejecuta el CTE.
+  //    Si stock_row.cantidad_actual < cantidad, inserted_salida retorna 0 filas
+  //    y update_stock no modifica nada → atómico y sin salidas huérfanas.
+  const [salida] = await s`
+    WITH stock_row AS (
+      SELECT id, cantidad_actual FROM stock
+      WHERE producto_id = ${validated.productoId}::uuid
+        AND bodega_id = ${validated.bodegaOrigenId}::uuid
+      FOR UPDATE
+    ),
+    inserted_salida AS (
+      INSERT INTO salidas (producto_id, bodega_origen_id, modulo_destino_id, cantidad, observaciones, usuario_id)
+      SELECT ${validated.productoId}::uuid, ${validated.bodegaOrigenId}::uuid, ${validated.moduloDestinoId}::uuid,
+             ${validated.cantidad}, ${validated.observaciones ?? null}, ${session.user?.id}::uuid
+      FROM stock_row
+      WHERE stock_row.cantidad_actual >= ${validated.cantidad}
+      RETURNING *
+    ),
+    update_stock AS (
+      UPDATE stock
+      SET cantidad_actual = cantidad_actual - ${validated.cantidad}, updated_at = NOW()
+      FROM stock_row
+      WHERE stock.id = stock_row.id
+        AND stock_row.cantidad_actual >= ${validated.cantidad}
+    )
+    SELECT * FROM inserted_salida
+  `;
 
-  await db.update(stock).set({
-    cantidadActual: existingStock.cantidadActual - validated.cantidad,
-    updatedAt: new Date(),
-  }).where(eq(stock.id, existingStock.id));
+  if (!salida) {
+    // Race condition: entre la lectura previa y el CTE, otro despacho agotó el stock.
+    // La guarda cantidad_actual >= cantidad previno la inserción y el decremento.
+    return {
+      error: `Stock insuficiente. Otro despacho concurrente agotó las unidades. Reintentá.`
+    };
+  }
 
-  // Upsert stock_modulos (acumulado por módulo)
+  // 3. Upsert stock_modulos (no crítico para atomicidad — valor derivado)
   const existingModuloStock = await db.query.stockModulos.findFirst({
     where: and(
       eq(stockModulos.productoId, validated.productoId),
@@ -233,6 +262,7 @@ export async function registrarSalida(data: any) {
     });
   }
 
+  // 4. Activity log
   await db.insert(activityLog).values({
     usuarioId: session.user?.id ?? "",
     accion: "SALIDA_REGISTRADA",
@@ -241,7 +271,7 @@ export async function registrarSalida(data: any) {
     detalle: validated,
   });
 
-  // Guardar bodega como ubicación del producto para futuras salidas
+  // 5. Guardar bodega como ubicación del producto para futuras salidas
   const bodegaSeleccionada = await db.query.bodegas.findFirst({
     where: eq(bodegas.id, validated.bodegaOrigenId)
   });

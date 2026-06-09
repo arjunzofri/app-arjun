@@ -6,12 +6,23 @@ const TEST_PRODUCTO_ID = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'
 const TEST_BODEGA_ID = 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22'
 const TEST_MODULO_ID = 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33'
 
+// Mock neon() para el nuevo registrarSalida (usa CTE con FOR UPDATE)
+vi.mock('@neondatabase/serverless', () => {
+  const s = vi.fn((_strings: TemplateStringsArray, ..._values: unknown[]) => {
+    // Debe devolver Promise<Array> para que el destructuring [row] funcione
+    return Promise.resolve([{ cantidad_actual: 100, id: 'stock-1' }])
+  })
+  return { neon: vi.fn(() => s) }
+})
+
 vi.mock('@/db', () => ({
   db: {
     query: {
       stock: { findFirst: vi.fn().mockResolvedValue({ id: 'stock-1', cantidadActual: 100 }) },
       productos: { findFirst: vi.fn().mockResolvedValue(null) },
       usuarios: { findFirst: vi.fn().mockResolvedValue(null) },
+      stockModulos: { findFirst: vi.fn().mockResolvedValue(null) },
+      bodegas: { findFirst: vi.fn().mockResolvedValue({ id: 'bodega-1', nombre: 'Bodega 1' }) },
     },
     insert: vi.fn(() => ({
       values: vi.fn(() => ({
