@@ -46,7 +46,8 @@
       "Bash(Copy-Item *)",
       "PowerShell(New-Item *)",
       "Bash(python *)",
-      "PowerShell(npm run *)"
+      "PowerShell(npm run *)",
+      "PowerShell(npx eslint app/api/traslados/route.ts 2>&1)"
     ]
   }
 }

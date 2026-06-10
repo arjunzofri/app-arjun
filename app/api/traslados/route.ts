@@ -32,49 +32,46 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const s = neon(process.env.DATABASE_URL!)
+    const sql = neon(process.env.DATABASE_URL!)
 
-    // Transacción atómica con guarda en WHERE: evita TOCTOU entre verificación y escritura
-    await s.transaction([
-      s`
-        DO $$
-        DECLARE
-          _affected int;
-        BEGIN
-          UPDATE public.stock
-          SET cantidad_actual = cantidad_actual - ${cant},
-              updated_at = NOW()
-          WHERE producto_id = ${productoId}::uuid
-            AND bodega_id = ${bodegaOrigenId}::uuid
-            AND cantidad_actual >= ${cant};
+    // CTE encadenada: UPDATE atómico con guarda → UPSERT destino → INSERT traslado.
+    // Si el UPDATE no afecta ninguna fila (stock insuficiente o fila inexistente),
+    // los CTEs siguientes no ejecutan inserciones y el RETURNING final devuelve 0 filas.
+    // Sin PL/pgSQL — compatible con Neon HTTP driver.
+    const result = await sql`
+      WITH rebaja AS (
+        UPDATE public.stock
+        SET cantidad_actual = cantidad_actual - ${cant},
+            updated_at = NOW()
+        WHERE producto_id = ${productoId}::uuid
+          AND bodega_id = ${bodegaOrigenId}::uuid
+          AND cantidad_actual >= ${cant}
+        RETURNING 1 AS done
+      ),
+      destino AS (
+        INSERT INTO public.stock (producto_id, bodega_id, cantidad_actual)
+        SELECT ${productoId}::uuid, ${bodegaDestinoId}::uuid, ${cant}
+        WHERE EXISTS (SELECT 1 FROM rebaja)
+        ON CONFLICT (producto_id, bodega_id)
+        DO UPDATE SET cantidad_actual = public.stock.cantidad_actual + ${cant},
+                      updated_at = NOW()
+      )
+      INSERT INTO public.traslados (producto_id, bodega_origen_id, bodega_destino_id, cantidad, usuario_id, observaciones)
+      SELECT ${productoId}::uuid, ${bodegaOrigenId}::uuid, ${bodegaDestinoId}::uuid, ${cant}, ${session.user.id}::uuid, ${observaciones ?? null}
+      WHERE EXISTS (SELECT 1 FROM rebaja)
+      RETURNING 1 AS ok
+    `
 
-          GET DIAGNOSTICS _affected = ROW_COUNT;
-
-          IF _affected = 0 THEN
-            RAISE EXCEPTION 'Stock insuficiente' USING ERRCODE = 'P0001';
-          END IF;
-
-          INSERT INTO public.stock (producto_id, bodega_id, cantidad_actual)
-          VALUES (${productoId}::uuid, ${bodegaDestinoId}::uuid, ${cant})
-          ON CONFLICT (producto_id, bodega_id)
-          DO UPDATE SET cantidad_actual = public.stock.cantidad_actual + ${cant},
-                        updated_at = NOW();
-
-          INSERT INTO public.traslados (producto_id, bodega_origen_id, bodega_destino_id, cantidad, usuario_id, observaciones)
-          VALUES (${productoId}::uuid, ${bodegaOrigenId}::uuid, ${bodegaDestinoId}::uuid, ${cant}, ${session.user.id}::uuid, ${observaciones ?? null});
-        END $$;
-      `
-    ]);
-
-    return NextResponse.json({ ok: true })
-  } catch (error) {
-    const msg = error instanceof Error ? error.message : String(error)
-    if (msg.includes("Stock insuficiente")) {
+    if (result.length === 0) {
       return NextResponse.json(
-        { error: `Stock insuficiente` },
+        { error: "Stock insuficiente" },
         { status: 400 }
       )
     }
+
+    return NextResponse.json({ ok: true })
+  } catch (error) {
+    console.error("Error en traslado:", error instanceof Error ? error.message : error)
     return NextResponse.json(
       { error: "Error al procesar el traslado" },
       { status: 500 }
