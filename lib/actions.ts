@@ -119,7 +119,7 @@ export async function registrarEntrada(data: any) {
 
   const parsed = EntradaSchema.safeParse(data);
   if (!parsed.success) {
-    console.log("[registrarEntrada] Zod validation failed:", JSON.stringify(parsed.error?.errors));
+    console.log("[registrarEntrada] Zod validation failed:", JSON.stringify(parsed.error?.issues));
     return { error: "Datos inválidos" };
   }
   const validated = parsed.data;
