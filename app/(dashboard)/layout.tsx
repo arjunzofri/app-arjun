@@ -7,7 +7,7 @@ import { SessionProvider } from "@/components/layout/SessionProvider";
 import { neon } from "@neondatabase/serverless";
 import { redirect } from "next/navigation"
 
-export const revalidate = 30
+export const dynamic = "force-dynamic"
 
 export default async function DashboardLayout({
   children,
