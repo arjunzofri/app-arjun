@@ -151,7 +151,7 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
         productoId = producto.id;
       }
 
-      await registrarEntrada({
+      const result = await registrarEntrada({
         productoId,
         bodegaId,
         cantidad,
@@ -159,6 +159,10 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
         origen: prod.fuente === 'app' ? 'manual' : (esWinFac ? "winfac" : "manual"),
         observaciones: observaciones.trim() || undefined,
       });
+      if (result && "error" in result) {
+        setError(result.error);
+        return;
+      }
 
       setDescripcionManual("");
       setObservacionesManual("");
