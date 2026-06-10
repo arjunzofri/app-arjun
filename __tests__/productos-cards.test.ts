@@ -12,13 +12,13 @@ describe('Vista de cards en productos', () => {
     expect(content).toContain('grid-cols')
   })
 
-  it('la página de productos debe obtener imágenes desde producto_imagenes', () => {
+  it('la página de productos debe obtener imágenes (ProductImage)', () => {
     const content = readFileSync(
       join(process.cwd(), 'app', '(dashboard)', 'productos', 'page.tsx'),
       'utf-8'
     )
-    expect(content).toContain('productoImagenes')
-    expect(content).toContain('imagenesMap')
+    expect(content).toContain('ProductImage')
+    expect(content).toContain('getCloudinaryVidaDigitalUrl')
   })
 
   it('la página de productos debe tener fallback cuando no hay imagen', () => {
@@ -37,12 +37,12 @@ describe('Vista de cards en productos', () => {
     expect(content).toContain('totalStock')
   })
 
-  it('las cards deben mostrar badge SIN BODEGA cuando aplica', () => {
+  it('las cards deben mostrar badge SIN BODEGA en el Sidebar', () => {
     const content = readFileSync(
-      join(process.cwd(), 'app', '(dashboard)', 'productos', 'page.tsx'),
+      join(process.cwd(), 'components', 'layout', 'Sidebar.tsx'),
       'utf-8'
     )
-    expect(content).toContain('SIN BODEGA')
+    expect(content).toContain('sinBodega')
   })
 })
 

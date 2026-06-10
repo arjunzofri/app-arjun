@@ -1,55 +1,55 @@
-﻿import { describe, it, expect } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'fs'
 import { join } from 'path'
 
-describe('WinFac búsqueda por NV y visación', () => {
-  it('la API debe buscar en vida.movidcto', () => {
+describe('WinFac búsqueda y sync', () => {
+  it('la API de búsqueda debe consultar arjun.inv_sdo', () => {
     const content = readFileSync(
-      join(process.cwd(), 'app', 'api', 'entradas', 'winfac', 'route.ts'),
+      join(process.cwd(), 'app', 'api', 'productos', 'buscar', 'route.ts'),
       'utf-8'
     )
-    expect(content).toContain('vida.movidcto')
+    expect(content).toContain('arjun.inv_sdo')
   })
 
-  it('la API debe buscar en sanjh.movidcto', () => {
+  it('la API de búsqueda debe usar autenticación', () => {
     const content = readFileSync(
-      join(process.cwd(), 'app', 'api', 'entradas', 'winfac', 'route.ts'),
+      join(process.cwd(), 'app', 'api', 'productos', 'buscar', 'route.ts'),
       'utf-8'
     )
-    expect(content).toContain('sanjh.movidcto')
+    expect(content).toContain('auth()')
+    expect(content).toContain('Unauthorized')
   })
 
-  it('la API debe filtrar por kcodclie IN (2, 20, 173, 218)', () => {
+  it('la API de sync debe usar split_part para visa_key', () => {
     const content = readFileSync(
-      join(process.cwd(), 'app', 'api', 'entradas', 'winfac', 'route.ts'),
+      join(process.cwd(), 'app', 'api', 'sync', 'winfac', 'route.ts'),
       'utf-8'
     )
-    expect(content).toContain('173')
-    expect(content).toContain('kcodclie')
+    expect(content).toContain('split_part')
+    expect(content).toContain('visa_key')
   })
 
-  it('la API debe soportar busqueda por visaadua', () => {
+  it('el sync debe tener watermark condicional (lastSuccessfulVisaKey)', () => {
     const content = readFileSync(
-      join(process.cwd(), 'app', 'api', 'entradas', 'winfac', 'route.ts'),
+      join(process.cwd(), 'app', 'api', 'sync', 'winfac', 'route.ts'),
       'utf-8'
     )
-    expect(content).toContain('visaadua')
+    expect(content).toContain('lastSuccessfulVisaKey')
   })
 
-  it('la API debe usar vida.itemdcto para obtener productos', () => {
+  it('el sync debe resolver bodega por nombre', () => {
     const content = readFileSync(
-      join(process.cwd(), 'app', 'api', 'entradas', 'winfac', 'route.ts'),
+      join(process.cwd(), 'app', 'api', 'sync', 'winfac', 'route.ts'),
       'utf-8'
     )
-    expect(content).toContain('vida.itemdcto')
+    expect(content).toContain('SELECT id FROM bodegas WHERE nombre')
   })
 
-  it('el WinFacPanel debe mostrar número de NV y visación en el resultado', () => {
+  it('el WinFacPanel debe mostrar productos con código y descripción', () => {
     const content = readFileSync(
       join(process.cwd(), 'components', 'entradas', 'WinFacPanel.tsx'),
       'utf-8'
     )
-    expect(content).toContain('visaadua')
-    expect(content).toContain('fechanvt')
+    expect(content).toContain('codigo')
   })
 })

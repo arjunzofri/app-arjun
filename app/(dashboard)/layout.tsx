@@ -4,9 +4,8 @@ import { Header } from "@/components/layout/Header";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { SessionProvider } from "@/components/layout/SessionProvider";
-import { db } from "@/db"
-import { entradas } from "@/db/schema"
-import { isNull } from "drizzle-orm"
+import { neon } from "@neondatabase/serverless";
+import { redirect } from "next/navigation"
 
 export const revalidate = 30
 
@@ -16,11 +15,10 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const session = await auth();
-  const sinBodegaResult = await db
-    .selectDistinct({ productoId: entradas.productoId })
-    .from(entradas)
-    .where(isNull(entradas.bodegaId))
-  const sinBodegaCount = sinBodegaResult.length
+  if (!session) redirect("/login");
+  const s = neon(process.env.DATABASE_URL!);
+  const [sinBodegaRow] = await s`SELECT COUNT(*)::int as c FROM productos WHERE id NOT IN (SELECT producto_id FROM stock)`;
+  const sinBodegaCount = Number(sinBodegaRow?.c ?? 0);
 
   return (
     <div className="min-h-screen bg-[#f9f9ff]">

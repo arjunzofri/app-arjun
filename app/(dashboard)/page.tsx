@@ -32,7 +32,7 @@ export default async function DashboardPage() {
         JOIN bodegas b ON b.id = s.bodega_id
         JOIN productos p ON p.id = s.producto_id
         WHERE s.cantidad_actual > 0
-          AND (p.knumezet IS NULL OR (split_part(p.knumezet, '-', 2)::bigint * 1000000 + split_part(p.knumezet, '-', 3)::bigint) >= ${corte})
+          AND (p.knumezet IS NULL OR p.knumezet NOT LIKE '%-%-%' OR (split_part(p.knumezet, '-', 2)::bigint * 1000000 + split_part(p.knumezet, '-', 3)::bigint) >= ${corte})
         GROUP BY b.id, b.nombre
       `),
       db.execute(sql`
@@ -48,7 +48,7 @@ export default async function DashboardPage() {
                COALESCE(SUM(s.cantidad_actual), 0)::int as total_stock
         FROM productos p
         LEFT JOIN stock s ON s.producto_id = p.id
-        WHERE (p.knumezet IS NULL OR (split_part(p.knumezet, '-', 2)::bigint * 1000000 + split_part(p.knumezet, '-', 3)::bigint) >= ${corte})
+        WHERE (p.knumezet IS NULL OR p.knumezet NOT LIKE '%-%-%' OR (split_part(p.knumezet, '-', 2)::bigint * 1000000 + split_part(p.knumezet, '-', 3)::bigint) >= ${corte})
         GROUP BY p.id, p.codigo, p.descripcion, p.packing
         HAVING COALESCE(SUM(s.cantidad_actual), 0) > 0
            AND COALESCE(SUM(s.cantidad_actual), 0) < COALESCE(p.packing, 1)

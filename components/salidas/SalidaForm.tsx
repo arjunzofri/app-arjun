@@ -310,8 +310,8 @@ export default function SalidaForm({
                 <button
                   key={b.id}
                   type="button"
-                  onClick={() => {
-                    actualizarUbicacionProducto(selectedProductoId, b.id);
+                  onClick={async () => {
+                    try { await actualizarUbicacionProducto(selectedProductoId, b.id); } catch {}
                     setValue("bodegaOrigenId", b.id);
                   }}
                   className={`flex flex-col items-center justify-center gap-0.5 py-4 px-3 rounded-xl border-2 font-bold transition-all text-sm ${

@@ -170,9 +170,9 @@ describe("eliminarStockModulo", () => {
 
     const { eliminarStockModulo } = await import("../lib/actions");
 
-    await expect(
-      eliminarStockModulo(TEST_PRODUCTO_ID, TEST_MODULO_ID)
-    ).rejects.toThrow("Solo administradores");
+    const result = await eliminarStockModulo(TEST_PRODUCTO_ID, TEST_MODULO_ID);
+    expect(result).toHaveProperty("error");
+    expect(result.error).toContain("Solo administradores");
   });
 
   it("debe eliminar el registro y escribir en activity_log si es admin", async () => {

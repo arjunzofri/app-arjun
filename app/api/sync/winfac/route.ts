@@ -66,6 +66,7 @@ export async function GET(req: NextRequest) {
 
   let creados = 0
   let actualizados = 0
+  let lastSuccessfulVisaKey = ultimoVisa
   const debugDetalle: Array<{ knumezet: string; accion: string; razon: string }> = []
 
   for (const row of rows) {
@@ -131,12 +132,19 @@ export async function GET(req: NextRequest) {
         )
 
         creados++
+        lastSuccessfulVisaKey = Number(row.visa_key)
         debugDetalle.push({ knumezet, accion: "creado", razon: `producto nuevo, stock inicial=${stocdispNum}` })
       } else {
         // === PRODUCTO EXISTENTE ===
         const productoId: string = prod.id
         const ubicacion: string | null = prod.ubicacion
-        const bodegaId = ubicacion || bodegaArjunId
+        let bodegaId = bodegaArjunId
+        if (ubicacion) {
+          const bodegaRes = await db.execute(
+            `SELECT id FROM bodegas WHERE nombre = '${ubicacion.replace(/'/g, "''")}' LIMIT 1`
+          )
+          bodegaId = (bodegaRes.rows[0] as any)?.id || bodegaArjunId
+        }
         if (!bodegaId || !adminId) {
           debugDetalle.push({ knumezet, accion: "ignorado", razon: `falta bodega (ubicacion=${ubicacion}) o admin` })
           continue
@@ -192,6 +200,7 @@ export async function GET(req: NextRequest) {
         )
 
         actualizados++
+        lastSuccessfulVisaKey = Number(row.visa_key)
         debugDetalle.push({ knumezet, accion: "actualizado", razon: `delta=${delta} (stocdisp=${stocdispNum}, previo=${totalPrevio})` })
       }
     } catch (err) {
@@ -202,13 +211,15 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  const nuevoVisa = rows[rows.length - 1].visa_key
+  const nuevoVisa = lastSuccessfulVisaKey
 
-  // Actualizar watermark
+  // Actualizar watermark solo si al menos una fila se procesó con éxito
   const totalProcesados = creados + actualizados
-  await db.execute(
-    `UPDATE sync_winfac_log SET ultimo_numero_visa = ${nuevoVisa}, ultima_sync_at = now(), productos_creados = productos_creados + ${totalProcesados} WHERE id = (SELECT id FROM sync_winfac_log ORDER BY id DESC LIMIT 1)`
-  )
+  if (lastSuccessfulVisaKey > ultimoVisa) {
+    await db.execute(
+      `UPDATE sync_winfac_log SET ultimo_numero_visa = ${nuevoVisa}, ultima_sync_at = now(), productos_creados = productos_creados + ${totalProcesados} WHERE id = (SELECT id FROM sync_winfac_log ORDER BY id DESC LIMIT 1)`
+    )
+  }
 
   return NextResponse.json({
     message: "Sync completado",

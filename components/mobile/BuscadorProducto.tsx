@@ -65,6 +65,12 @@ export function BuscadorProducto({ productos, onSelect, selected }: Props) {
             value={query}
             onChange={(e) => { setQuery(e.target.value); setOpen(true) }}
             onFocus={() => setOpen(true)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && results.length > 0) {
+                e.preventDefault();
+                onSelect(results[0]); setQuery(""); setOpen(false);
+              }
+            }}
             className="w-full h-12 pl-10 pr-4 text-base border border-[#c4c6cf] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:border-transparent"
           />
         </div>

@@ -13,6 +13,7 @@ export default async function MobileStockPage() {
   const stocksPlanos = stocks
     .filter(s => s.bodega)
     .map(s => ({
+      productoId: s.productoId,
       bodegaId: s.bodegaId,
       bodegaNombre: s.bodega!.nombre,
       cantidadActual: s.cantidadActual,

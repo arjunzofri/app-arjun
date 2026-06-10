@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { neon } from "@neondatabase/serverless";
+import { auth } from "@/lib/auth";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const session = await auth();
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   const { id } = await params;
   const cursor = request.nextUrl.searchParams.get("cursor");
   const limit = 21;
@@ -12,9 +16,8 @@ export async function GET(
   try {
     const s = neon(process.env.DATABASE_URL!);
 
-    const cursorClause = cursor
-      ? `AND e.created_at < '${cursor}'::timestamptz AND s.timestamp_salida < '${cursor}'::timestamptz`
-      : "";
+    const cursorTs = cursor ? cursor.split("|")[0] : null;
+    const cursorId = cursor ? cursor.split("|")[1] : null;
 
     const rows = await s`
       SELECT * FROM (
@@ -30,7 +33,6 @@ export async function GET(
         JOIN public.bodegas b ON b.id = e.bodega_id
         LEFT JOIN public.usuarios u ON u.id = e.usuario_id
         WHERE e.producto_id = ${id}::uuid
-          ${cursor ? s`AND e.created_at < ${cursor}::timestamptz` : s``}
 
         UNION ALL
 
@@ -47,8 +49,10 @@ export async function GET(
         JOIN public.modulos_destino m ON m.id = s.modulo_destino_id
         LEFT JOIN public.usuarios u ON u.id = s.usuario_id
         WHERE s.producto_id = ${id}::uuid
-          ${cursor ? s`AND s.timestamp_salida < ${cursor}::timestamptz` : s``}
       ) movimientos
+      WHERE ${cursorTs && cursorId
+        ? s`(fecha, id) < (${cursorTs}::timestamptz, ${cursorId}::uuid)`
+        : s`TRUE`}
       ORDER BY fecha DESC
       LIMIT ${limit}
     `;
@@ -56,7 +60,7 @@ export async function GET(
     const items = rows.slice(0, 20);
     const hasMore = rows.length > 20;
     const nextCursor = hasMore && items.length > 0
-      ? (items[items.length - 1] as any).fecha
+      ? `${(items[items.length - 1] as any).fecha}|${(items[items.length - 1] as any).id}`
       : null;
 
     return NextResponse.json({ items, nextCursor });

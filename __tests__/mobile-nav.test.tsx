@@ -24,8 +24,10 @@ describe('MobileNav — navegación móvil', () => {
 
   it('el link Salidas apunta a /salidas', () => {
     render(<MobileNav />)
-    const link = screen.getByRole('link')
-    expect(link.getAttribute('href')).toBe('/salidas')
+    const links = screen.getAllByRole('link')
+    const salidasLink = links.find(l => l.getAttribute('href') === '/salidas')
+    expect(salidasLink).toBeTruthy()
+    expect(salidasLink!.getAttribute('href')).toBe('/salidas')
   })
 
   it('renderiza botón Salir', () => {

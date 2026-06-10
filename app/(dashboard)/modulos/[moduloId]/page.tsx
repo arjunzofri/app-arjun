@@ -27,18 +27,20 @@ export default async function ModuloDetailPage({
   let dbError: string | null = null;
   const imagenMap = new Map<string, string>();
 
-  try {
-    const moduloResult = await db.execute(sql`
-      SELECT id, nombre FROM modulos_destino WHERE id = ${moduloId}::uuid
-    `);
-    if (moduloResult.rows.length === 0) notFound();
-    modulo = moduloResult.rows[0] as { id: string; nombre: string };
+  const moduloResult = await db.execute(sql`
+    SELECT id, nombre FROM modulos_destino WHERE id = ${moduloId}::uuid
+  `);
+  if (moduloResult.rows.length === 0) notFound();
+  modulo = moduloResult.rows[0] as { id: string; nombre: string };
 
+  try {
     const limit = 21;
     const searchTerm = q ? `%${q}%` : null;
+    const cursorTs = cursor ? cursor.split("|")[0] : null;
+    const cursorId = cursor ? cursor.split("|")[1] : null;
 
   let query;
-  if (searchTerm && cursor) {
+  if (searchTerm && cursorTs && cursorId) {
     query = sql`
       SELECT p.id, p.codigo, p.descripcion, p.packing,
              sm.cantidad_acumulada, sm.updated_at
@@ -47,7 +49,7 @@ export default async function ModuloDetailPage({
       WHERE sm.modulo_id = ${moduloId}::uuid
         AND sm.cantidad_acumulada > 0
         AND (p.codigo ILIKE ${searchTerm} OR p.descripcion ILIKE ${searchTerm})
-        AND sm.updated_at < ${cursor}::timestamptz
+        AND (sm.updated_at, sm.id) < (${cursorTs}::timestamptz, ${cursorId}::uuid)
       ORDER BY sm.updated_at DESC
       LIMIT ${limit}
     `;
@@ -63,7 +65,7 @@ export default async function ModuloDetailPage({
       ORDER BY sm.updated_at DESC
       LIMIT ${limit}
     `;
-  } else if (cursor) {
+  } else if (cursorTs && cursorId) {
     query = sql`
       SELECT p.id, p.codigo, p.descripcion, p.packing,
              sm.cantidad_acumulada, sm.updated_at
@@ -71,7 +73,7 @@ export default async function ModuloDetailPage({
       JOIN productos p ON p.id = sm.producto_id
       WHERE sm.modulo_id = ${moduloId}::uuid
         AND sm.cantidad_acumulada > 0
-        AND sm.updated_at < ${cursor}::timestamptz
+        AND (sm.updated_at, sm.id) < (${cursorTs}::timestamptz, ${cursorId}::uuid)
       ORDER BY sm.updated_at DESC
       LIMIT ${limit}
     `;
@@ -97,7 +99,7 @@ export default async function ModuloDetailPage({
     hasMore = rows.length > 20;
     productos = rows.slice(0, 20);
     lastUpdated = productos.length > 0
-      ? productos[productos.length - 1].updated_at
+      ? `${productos[productos.length - 1].updated_at}|${productos[productos.length - 1].id}`
       : null;
 
     // Resolver imágenes: DB primero, Cloudinary fallback

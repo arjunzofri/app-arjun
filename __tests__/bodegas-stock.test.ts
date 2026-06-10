@@ -12,11 +12,11 @@ describe('P2 — Mostrar productos con stock = 0', () => {
     'app', '(dashboard)', 'bodegas', '[bodegaId]', 'page.tsx'
   )
 
-  it('NO debe filtrar cantidad_actual > 0 en WHERE (mostrar todos los registros de stock)', () => {
+  it('debe usar toggle filtrarSinStock para el filtro condicional de stock > 0', () => {
     const content = readFileSync(pagePath, 'utf-8')
-    // Después del fix, la query NO debe filtrar stock > 0 en el WHERE
-    // (solo debe aparecer dentro del CASE WHEN del ORDER BY, no como filtro)
-    expect(content).not.toContain('AND s.cantidad_actual > 0')
+    // El filtro es opcional, controlado por el toggle "Solo con stock"
+    expect(content).toContain('filtrarSinStock')
+    expect(content).toContain('CASE WHEN s.cantidad_actual > 0 THEN 0 ELSE 1 END')
   })
 
   it('debe ordenar primero stock > 0, luego stock = 0', () => {

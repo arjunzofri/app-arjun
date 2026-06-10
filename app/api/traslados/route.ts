@@ -34,43 +34,47 @@ export async function POST(req: NextRequest) {
   try {
     const s = neon(process.env.DATABASE_URL!)
 
-    // Verificar stock suficiente en origen
-    const [stockRow] = await s`
-      SELECT cantidad_actual
-      FROM public.stock
-      WHERE producto_id = ${productoId}::uuid
-        AND bodega_id = ${bodegaOrigenId}::uuid
-    `
+    // Transacción atómica con guarda en WHERE: evita TOCTOU entre verificación y escritura
+    await s.transaction([
+      s`
+        DO $$
+        DECLARE
+          _affected int;
+        BEGIN
+          UPDATE public.stock
+          SET cantidad_actual = cantidad_actual - ${cant},
+              updated_at = NOW()
+          WHERE producto_id = ${productoId}::uuid
+            AND bodega_id = ${bodegaOrigenId}::uuid
+            AND cantidad_actual >= ${cant};
 
-    const stockActual = Number(stockRow?.cantidad_actual ?? 0)
-    if (stockActual < cant) {
+          GET DIAGNOSTICS _affected = ROW_COUNT;
+
+          IF _affected = 0 THEN
+            RAISE EXCEPTION 'Stock insuficiente' USING ERRCODE = 'P0001';
+          END IF;
+
+          INSERT INTO public.stock (producto_id, bodega_id, cantidad_actual)
+          VALUES (${productoId}::uuid, ${bodegaDestinoId}::uuid, ${cant})
+          ON CONFLICT (producto_id, bodega_id)
+          DO UPDATE SET cantidad_actual = public.stock.cantidad_actual + ${cant},
+                        updated_at = NOW();
+
+          INSERT INTO public.traslados (producto_id, bodega_origen_id, bodega_destino_id, cantidad, usuario_id, observaciones)
+          VALUES (${productoId}::uuid, ${bodegaOrigenId}::uuid, ${bodegaDestinoId}::uuid, ${cant}, ${session.user.id}::uuid, ${observaciones ?? null});
+        END $$;
+      `
+    ]);
+
+    return NextResponse.json({ ok: true })
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error)
+    if (msg.includes("Stock insuficiente")) {
       return NextResponse.json(
-        { error: `Stock insuficiente. Disponible: ${stockActual}, solicitado: ${cant}` },
+        { error: `Stock insuficiente` },
         { status: 400 }
       )
     }
-
-    // Transacción: restar origen, sumar destino, registrar traslado
-    const [traslado] = await s.transaction([
-      s`UPDATE public.stock
-         SET cantidad_actual = cantidad_actual - ${cant},
-             updated_at = NOW()
-         WHERE producto_id = ${productoId}::uuid
-           AND bodega_id = ${bodegaOrigenId}::uuid`,
-
-      s`INSERT INTO public.stock (producto_id, bodega_id, cantidad_actual)
-         VALUES (${productoId}::uuid, ${bodegaDestinoId}::uuid, ${cant})
-         ON CONFLICT (producto_id, bodega_id)
-         DO UPDATE SET cantidad_actual = public.stock.cantidad_actual + ${cant},
-                       updated_at = NOW()`,
-
-      s`INSERT INTO public.traslados (producto_id, bodega_origen_id, bodega_destino_id, cantidad, usuario_id, observaciones)
-         VALUES (${productoId}::uuid, ${bodegaOrigenId}::uuid, ${bodegaDestinoId}::uuid, ${cant}, ${session.user.id}::uuid, ${observaciones ?? null})
-         RETURNING *`,
-    ])
-
-    return NextResponse.json({ ok: true, traslado })
-  } catch (error) {
     return NextResponse.json(
       { error: "Error al procesar el traslado" },
       { status: 500 }

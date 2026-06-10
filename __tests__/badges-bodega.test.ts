@@ -1,22 +1,22 @@
-﻿import { describe, it, expect } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'fs'
 import { join } from 'path'
 
 describe('Badges productos sin bodega', () => {
-  it('la página de productos debe consultar entradas con bodega_id NULL', () => {
+  it('el layout debe consultar productos sin stock (NOT IN stock)', () => {
     const content = readFileSync(
-      join(process.cwd(), 'app', '(dashboard)', 'productos', 'page.tsx'),
+      join(process.cwd(), 'app', '(dashboard)', 'layout.tsx'),
       'utf-8'
     )
-    expect(content).toContain('bodegaId')
+    expect(content).toContain('NOT IN (SELECT producto_id FROM stock)')
   })
 
-  it('la página de productos debe mostrar badge SIN BODEGA', () => {
+  it('el layout debe mostrar badge SIN BODEGA via sinBodegaCount', () => {
     const content = readFileSync(
-      join(process.cwd(), 'app', '(dashboard)', 'productos', 'page.tsx'),
+      join(process.cwd(), 'app', '(dashboard)', 'layout.tsx'),
       'utf-8'
     )
-    expect(content).toContain('SIN BODEGA')
+    expect(content).toContain('sinBodegaCount')
   })
 
   it('el Sidebar debe mostrar un contador de productos sin bodega', () => {

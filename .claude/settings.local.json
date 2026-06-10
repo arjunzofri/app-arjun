@@ -24,7 +24,29 @@
       "Bash(npx eslint *)",
       "PowerShell(npm i *)",
       "Bash(vercel link *)",
-      "Bash(vercel list *)"
+      "Bash(vercel list *)",
+      "Bash(Test-Path \"C:\\\\sync-arjun\")",
+      "Bash(Get-ChildItem \"C:\\\\sync-arjun\" -Name)",
+      "Bash(Select-Object -First 30)",
+      "PowerShell(npx tsc --noEmit 2>&1 | Select-Object -First 40)",
+      "PowerShell(npx vitest run 2>&1)",
+      "PowerShell(npx vitest run __tests__/mobile-salidas.test.tsx 2>&1)",
+      "PowerShell(npx tsc --noEmit 2>&1)",
+      "PowerShell(npx vitest run __tests__/mobile-stock.test.tsx __tests__/mobile-salidas.test.tsx 2>&1)",
+      "PowerShell(npx vitest run __tests__/mobile-foto.test.tsx 2>&1)",
+      "PowerShell(npx vitest run __tests__/mobile-nav.test.tsx __tests__/mobile-salidas.test.tsx __tests__/mobile-stock.test.tsx __tests__/mobile-foto.test.tsx 2>&1)",
+      "PowerShell(npx tsc --noEmit 2>&1; npx vitest run __tests__/mobile-nav.test.tsx 2>&1)",
+      "PowerShell(npx vitest run __tests__/mobile-salidas.test.tsx __tests__/mobile-stock.test.tsx __tests__/mobile-foto.test.tsx __tests__/mobile-nav.test.tsx 2>&1)",
+      "PowerShell(npx vitest run __tests__/mobile-salidas.test.tsx __tests__/mobile-stock.test.tsx 2>&1)",
+      "Bash(New-Item *)",
+      "Bash(npm run *)",
+      "Bash(Select-String -Pattern \"modulos\")",
+      "Bash(npx vercel *)",
+      "Bash(Select-String -Pattern \"Test Files|Tests\")",
+      "Bash(Copy-Item *)",
+      "PowerShell(New-Item *)",
+      "Bash(python *)",
+      "PowerShell(npm run *)"
     ]
   }
 }

@@ -11,9 +11,11 @@ import { getVisaCorte } from "@/lib/utils/get-visa-corte";
 
 export async function createOrUpdateProducto(data: any) {
   const session = await auth();
-  if (!session) throw new Error("No autorizado");
+  if (!session) return { error: "No autorizado" };
 
-  const validated = ProductoSchema.parse(data);
+  const parsed = ProductoSchema.safeParse(data);
+  if (!parsed.success) return { error: "Datos inválidos" };
+  const validated = parsed.data;
   const id = data.id;
 
   if (id) {
@@ -45,6 +47,7 @@ export async function createOrUpdateProducto(data: any) {
 
     revalidatePath("/productos")
     const updated = await db.query.productos.findFirst({ where: eq(productos.id, id) })
+    if (!updated) return { error: "Producto no encontrado después de actualizar" };
     return updated
   } else {
     // Buscar si ya existe un producto con ese código
@@ -81,7 +84,9 @@ export async function createOrUpdateProducto(data: any) {
       });
 
       revalidatePath("/productos");
-      return existingSameCode;
+      const updatedSameCode = await db.query.productos.findFirst({ where: eq(productos.id, existingSameCode.id) });
+      if (!updatedSameCode) return { error: "Producto no encontrado después de actualizar" };
+      return updatedSameCode;
 
     } else {
       // Código nuevo → INSERT
@@ -110,9 +115,11 @@ export async function createOrUpdateProducto(data: any) {
 
 export async function registrarEntrada(data: any) {
   const session = await auth();
-  if (!session) throw new Error("No autorizado");
+  if (!session) return { error: "No autorizado" };
 
-  const validated = EntradaSchema.parse(data);
+  const parsed = EntradaSchema.safeParse(data);
+  if (!parsed.success) return { error: "Datos inválidos" };
+  const validated = parsed.data;
 
   let nvId = null;
   if (validated.notaVentaNumero) {
@@ -136,22 +143,14 @@ export async function registrarEntrada(data: any) {
     origen: validated.origen,
   }).returning();
 
-  const existingStock = await db.query.stock.findFirst({
-    where: and(eq(stock.productoId, validated.productoId), eq(stock.bodegaId, validated.bodegaId))
-  });
-
-  if (existingStock) {
-    await db.update(stock).set({
-      cantidadActual: existingStock.cantidadActual + validated.cantidad,
-      updatedAt: new Date(),
-    }).where(eq(stock.id, existingStock.id));
-  } else {
-    await db.insert(stock).values({
-      productoId: validated.productoId,
-      bodegaId: validated.bodegaId,
-      cantidadActual: validated.cantidad,
-    });
-  }
+  // UPSERT atómico para evitar race condition (lost update)
+  const upsertStock = neon(process.env.DATABASE_URL!);
+  await upsertStock`
+    INSERT INTO stock (producto_id, bodega_id, cantidad_actual)
+    VALUES (${validated.productoId}::uuid, ${validated.bodegaId}::uuid, ${validated.cantidad})
+    ON CONFLICT (producto_id, bodega_id)
+    DO UPDATE SET cantidad_actual = stock.cantidad_actual + EXCLUDED.cantidad_actual
+  `;
 
   // Si es entrada de Vida Digital, asignar bodega por defecto al producto
   if (validated.proveedor === "vida_digital") {
@@ -185,9 +184,11 @@ export async function registrarEntrada(data: any) {
 
 export async function registrarSalida(data: any) {
   const session = await auth();
-  if (!session) throw new Error("No autorizado");
+  if (!session) return { error: "No autorizado" };
 
-  const validated = SalidaSchema.parse(data);
+  const parsed = SalidaSchema.safeParse(data);
+  if (!parsed.success) return { error: "Datos inválidos" };
+  const validated = parsed.data;
 
   const s = neon(process.env.DATABASE_URL!);
 
@@ -288,7 +289,7 @@ export async function registrarSalida(data: any) {
 
 export async function actualizarStock(productoId: string, bodegaId: string, cantidadActual: number) {
   const session = await auth();
-  if (!session) throw new Error("No autorizado");
+  if (!session) return { error: "No autorizado" };
 
   const existingStock = await db.query.stock.findFirst({
     where: and(eq(stock.productoId, productoId), eq(stock.bodegaId, bodegaId))
@@ -328,18 +329,9 @@ export async function getStockWinfac(codigo: string): Promise<number> {
 
 export async function registrarConteoFisico(productoId: string, bodegaId: string, cantidad: number) {
   const session = await auth();
-  if (!session) throw new Error("No autorizado");
+  if (!session) return { error: "No autorizado" };
 
   const s = neon(process.env.DATABASE_URL!);
-
-  // Insertar entrada de conteo físico (audit trail)
-  await db.insert(entradas).values({
-    productoId,
-    bodegaId,
-    cantidad,
-    usuarioId: session.user?.id ?? "",
-    origen: "conteo_fisico",
-  });
 
   // Upsert stock con SQL crudo — REEMPLAZA cantidad_actual, no suma.
   // ON CONFLICT cubre tanto INSERT (nuevo) como UPDATE (existente).
@@ -365,12 +357,12 @@ export async function registrarConteoFisico(productoId: string, bodegaId: string
 
 export async function actualizarUbicacionProducto(productoId: string, bodegaId: string) {
   const session = await auth();
-  if (!session) throw new Error("No autorizado");
+  if (!session) return { error: "No autorizado" };
 
   const bodega = await db.query.bodegas.findFirst({
     where: eq(bodegas.id, bodegaId)
   });
-  if (!bodega) throw new Error("Bodega no encontrada");
+  if (!bodega) return { error: "Bodega no encontrada" };
 
   await db.update(productos)
     .set({ ubicacion: bodega.nombre, updatedAt: new Date() })
@@ -405,7 +397,7 @@ export async function buscarProductos(query: string) {
         ilike(productos.codigoPersonal, `%${query}%`),
         ilike(productos.knumezet, `%${query}%`)
       ),
-      sql`(${productos.knumezet} IS NULL OR (split_part(${productos.knumezet}, '-', 2)::bigint * 1000000 + split_part(${productos.knumezet}, '-', 3)::bigint) >= ${corte})`
+      sql`(${productos.knumezet} IS NULL OR ${productos.knumezet} NOT LIKE '%-%-%' OR (split_part(${productos.knumezet}, '-', 2)::bigint * 1000000 + split_part(${productos.knumezet}, '-', 3)::bigint) >= ${corte})`
     )
   )
   .groupBy(productos.id)
@@ -423,12 +415,12 @@ export async function editarProducto(id: string, data: {
   observaciones?: string;
 }) {
   const session = await auth();
-  if (!session) throw new Error("No autorizado");
+  if (!session) return { error: "No autorizado" };
 
   const existing = await db.query.productos.findFirst({
     where: eq(productos.id, id),
   });
-  if (!existing) throw new Error("Producto no encontrado");
+  if (!existing) return { error: "Producto no encontrado" };
 
   await db.update(productos).set({
     codigoPersonal: data.codigoPersonal ?? existing.codigoPersonal,
@@ -454,8 +446,8 @@ export async function editarProducto(id: string, data: {
 
 export async function eliminarProducto(id: string) {
   const session = await auth();
-  if (!session) throw new Error("No autorizado");
-  if (session.user?.role !== "admin") throw new Error("Solo administradores pueden eliminar productos");
+  if (!session) return { error: "No autorizado" };
+  if (session.user?.role !== "admin") return { error: "Solo administradores pueden eliminar productos" };
 
   const stocks = await db.query.stock.findMany({
     where: eq(stock.productoId, id),
@@ -466,24 +458,21 @@ export async function eliminarProducto(id: string) {
     return { error: `No se puede eliminar — el producto tiene ${totalStock} unidades en stock` };
   }
 
-  // Eliminar dependientes en orden (FK constraints)
-  await db.delete(activityLog).where(eq(activityLog.registroId, id));
-  await db.delete(productoImagenes).where(eq(productoImagenes.productoId, id));
-  await db.delete(stockModulos).where(eq(stockModulos.productoId, id));
-  await db.delete(stock).where(eq(stock.productoId, id));
-  await db.delete(entradas).where(eq(entradas.productoId, id));
-  await db.delete(salidas).where(eq(salidas.productoId, id));
+  // Eliminar dependientes en orden dentro de una transacción atómica
+  const s = neon(process.env.DATABASE_URL!);
+  const userId = session.user?.id ?? "";
 
-  // Registrar antes de borrar el producto (la referencia se pierde despues)
-  await db.insert(activityLog).values({
-    usuarioId: session.user?.id ?? "",
-    accion: "PRODUCTO_ELIMINADO",
-    tablaAfectada: "productos",
-    registroId: id,
-    detalle: { id },
-  });
-
-  await db.delete(productos).where(eq(productos.id, id));
+  await s.transaction([
+    s`DELETE FROM activity_log WHERE registro_id = ${id}::uuid AND tabla_afectada = 'productos'`,
+    s`DELETE FROM producto_imagenes WHERE producto_id = ${id}::uuid`,
+    s`DELETE FROM stock_modulos WHERE producto_id = ${id}::uuid`,
+    s`DELETE FROM stock WHERE producto_id = ${id}::uuid`,
+    s`DELETE FROM entradas WHERE producto_id = ${id}::uuid`,
+    s`DELETE FROM salidas WHERE producto_id = ${id}::uuid`,
+    s`DELETE FROM traslados WHERE producto_id = ${id}::uuid`,
+    s`INSERT INTO activity_log (usuario_id, accion, tabla_afectada, registro_id, detalle) VALUES (${userId}::uuid, 'PRODUCTO_ELIMINADO', 'productos', ${id}::uuid, ${JSON.stringify({ id })}::jsonb)`,
+    s`DELETE FROM productos WHERE id = ${id}::uuid`,
+  ]);
 
   revalidatePath("/");
   revalidatePath("/entradas");
@@ -493,9 +482,9 @@ export async function eliminarProducto(id: string) {
 
 export async function eliminarEntrada(entradaId: string) {
   const session = await auth();
-  if (!session) throw new Error("No autorizado");
+  if (!session) return { error: "No autorizado" };
   if (session.user?.role !== "admin")
-    throw new Error("Solo administradores pueden eliminar entradas");
+    return { error: "Solo administradores pueden eliminar entradas" };
 
   const entrada = await db.query.entradas.findFirst({
     where: eq(entradas.id, entradaId),
@@ -550,7 +539,7 @@ export async function editarStockModulo(
   data: { cantidadAcumulada: number }
 ) {
   const session = await auth();
-  if (!session) throw new Error("No autorizado");
+  if (!session) return { error: "No autorizado" };
 
   const existing = await db.query.stockModulos.findFirst({
     where: and(
@@ -558,7 +547,7 @@ export async function editarStockModulo(
       eq(stockModulos.moduloId, moduloId)
     ),
   });
-  if (!existing) throw new Error("Registro no encontrado");
+  if (!existing) return { error: "Registro no encontrado" };
 
   const cantidadAnterior = existing.cantidadAcumulada;
   const cantidadNueva = data.cantidadAcumulada;
@@ -617,9 +606,9 @@ export async function editarStockModulo(
 
 export async function eliminarStockModulo(productoId: string, moduloId: string) {
   const session = await auth();
-  if (!session) throw new Error("No autorizado");
+  if (!session) return { error: "No autorizado" };
   if (session.user?.role !== "admin")
-    throw new Error("Solo administradores pueden eliminar registros de módulo");
+    return { error: "Solo administradores pueden eliminar registros de módulo" };
 
   const existing = await db.query.stockModulos.findFirst({
     where: and(
@@ -627,7 +616,7 @@ export async function eliminarStockModulo(productoId: string, moduloId: string) 
       eq(stockModulos.moduloId, moduloId)
     ),
   });
-  if (!existing) throw new Error("Registro no encontrado");
+  if (!existing) return { error: "Registro no encontrado" };
 
   await db.delete(stockModulos).where(eq(stockModulos.id, existing.id));
 

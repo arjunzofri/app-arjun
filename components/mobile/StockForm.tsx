@@ -9,7 +9,7 @@ import { actualizarStock } from "@/lib/actions"
 
 type Producto = { id: string; codigo: string; descripcion: string; packing: number; imagenes?: any[] }
 type Bodega = { id: string; nombre: string }
-type StockInfo = { bodegaId: string; bodegaNombre: string; cantidadActual: number }
+type StockInfo = { productoId: string; bodegaId: string; bodegaNombre: string; cantidadActual: number }
 
 type Props = { productos: Producto[]; bodegas: Bodega[]; stocks: StockInfo[] }
 
@@ -28,7 +28,7 @@ export default function StockForm({ productos, bodegas, stocks }: Props) {
   )
 
   const stockProducto = useMemo(() =>
-    producto ? stocks.filter(s => s.bodegaId && s.bodegaId !== "") : [],
+    producto ? stocks.filter(s => s.productoId === producto.id) : [],
     [producto, stocks]
   )
 
@@ -95,7 +95,7 @@ export default function StockForm({ productos, bodegas, stocks }: Props) {
             <div className="mt-2 space-y-1">
               <span className="font-semibold">Stock actual:</span>
               {stockProducto.map(s => (
-                <div key={s.bodegaId} className="flex justify-between text-xs">
+                <div key={s.productoId + s.bodegaId} className="flex justify-between text-xs">
                   <span>{s.bodegaNombre}</span>
                   <span className="font-bold">{s.cantidadActual} unid</span>
                 </div>

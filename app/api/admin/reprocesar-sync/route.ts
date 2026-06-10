@@ -134,7 +134,13 @@ export async function GET(req: NextRequest) {
         // === PRODUCTO EXISTENTE ===
         const productoId: string = prod.id
         const ubicacion: string | null = prod.ubicacion
-        const bodegaId = ubicacion || bodegaArjunId
+        let bodegaId = bodegaArjunId
+        if (ubicacion) {
+          const bodegaRes = await db.execute(
+            `SELECT id FROM bodegas WHERE nombre = '${ubicacion.replace(/'/g, "''")}' LIMIT 1`
+          )
+          bodegaId = (bodegaRes.rows[0] as any)?.id || bodegaArjunId
+        }
         if (!bodegaId || !adminId) {
           detalle.push({ knumezet, accion: "ignorado", razon: `falta bodega (ubicacion=${ubicacion}) o admin` })
           ignorados++

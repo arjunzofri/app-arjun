@@ -37,7 +37,9 @@ describe('BuscadorProducto', () => {
     const onSelect = vi.fn()
     render(<BuscadorProducto productos={productos} onSelect={onSelect} selected={null} />)
     fireEvent.change(screen.getByPlaceholderText(/buscar producto/i), { target: { value: 'carg' } })
-    fireEvent.click(screen.getByText('K-001'))
+    const item = screen.getByText('K-001')
+    fireEvent.pointerDown(item, { clientY: 100 })
+    fireEvent.pointerUp(item, { clientY: 100 })
     expect(onSelect).toHaveBeenCalledWith(expect.objectContaining({ id: 'uuid-1', codigo: 'K-001' }))
   })
 

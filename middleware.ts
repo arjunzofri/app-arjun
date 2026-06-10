@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const protectedRoutes = ["/", "/productos", "/entradas", "/salidas", "/usuarios"]
+const protectedRoutes = ["/", "/productos", "/entradas", "/salidas", "/usuarios", "/bodegas", "/modulos", "/mobile/stock"]
 const authRoutes = ["/login"]
 const publicRoutes = ["/setup", "/api/setup"]
 

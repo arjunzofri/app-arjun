@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createOrUpdateProducto } from "../lib/actions";
 import { db } from "../db";
-import { productos } from "../db/schema";
 import { auth } from "../lib/auth";
 
 // Mock DB and Auth
@@ -17,17 +16,26 @@ vi.mock("../db", () => ({
         returning: vi.fn(() => [{ id: "new-id", codigo: "EXISTENTE", ubicacion: "PASILLO-1" }]),
       })),
     })),
-    insertActivityLog: vi.fn(),
+    update: vi.fn(() => ({
+      set: vi.fn(() => ({
+        where: vi.fn(),
+      })),
+    })),
   },
 }));
 
 vi.mock("../db/schema", () => ({
   productos: { id: "id", codigo: "codigo" },
   activityLog: { id: "id" },
+  codigoPersonalAuditoria: { id: "id" },
 }));
 
 vi.mock("../lib/auth", () => ({
   auth: vi.fn(),
+}));
+
+vi.mock("next/cache", () => ({
+  revalidatePath: vi.fn(),
 }));
 
 describe("Heredar Ubicación", () => {
@@ -37,11 +45,20 @@ describe("Heredar Ubicación", () => {
 
   it("debe heredar la ubicación si el código ya existe y el nuevo no tiene ubicación", async () => {
     (auth as any).mockResolvedValue({ user: { id: "user-1" } });
-    
-    // Mock existing product with location
-    (db.query.productos.findFirst as any).mockResolvedValue({
-      codigo: "EXISTENTE",
-      ubicacion: "PASILLO-1",
+
+    // Mock existing product with location (first findFirst call)
+    // Second call returns the updated product (post-update fetch)
+    let callCount = 0;
+    (db.query.productos.findFirst as any).mockImplementation(() => {
+      callCount++;
+      return {
+        id: "existing-id",
+        codigo: "EXISTENTE",
+        descripcion: "Producto Importado",
+        packing: 1,
+        ubicacion: "PASILLO-1",
+        codigoPersonal: callCount === 1 ? undefined : undefined,
+      };
     });
 
     const newData = {
@@ -53,6 +70,7 @@ describe("Heredar Ubicación", () => {
 
     const result = await createOrUpdateProducto(newData);
 
-    expect(result?.ubicacion).toBe("PASILLO-1");
+    if ("error" in result) throw new Error(`createOrUpdateProducto returned error: ${result.error}`);
+    expect(result.ubicacion).toBe("PASILLO-1");
   });
 });

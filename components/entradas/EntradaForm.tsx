@@ -69,7 +69,10 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
         packing: selectedProducto.packing,
         knumezet: selectedProducto.knumezet,
       }).then((p: any) => {
-        if (p?.id) setProductoDbId(p.id);
+        if (p?.id) {
+          setProductoDbId(p.id);
+          setSelectedProducto(prev => prev ? { ...prev, id: p.id } : null);
+        }
       }).catch(() => setProductoDbId(null));
     } else {
       setProductoDbId(null);
@@ -144,7 +147,7 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
           knumezet: prod.knumezet,
           observaciones: esWinFac ? undefined : (observacionesManual.trim() || undefined),
         });
-        if (!producto?.id) throw new Error("No se pudo crear/actualizar el producto");
+        if ("error" in producto) throw new Error(producto.error);
         productoId = producto.id;
       }
 

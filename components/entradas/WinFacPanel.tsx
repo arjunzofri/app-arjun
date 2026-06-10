@@ -81,8 +81,8 @@ export default function WinFacPanel({ bodegasData }: { bodegasData: Bodega[] }) 
           observaciones: "",
         })
 
-        if (!resultado?.id) {
-          throw new Error(`No se pudo crear el producto ${p.codigo}`)
+        if ("error" in resultado) {
+          throw new Error(resultado.error)
         }
 
         // 2. Registrar la entrada con el productoId real
