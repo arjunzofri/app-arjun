@@ -118,10 +118,7 @@ export async function registrarEntrada(data: any) {
   if (!session) return { error: "No autorizado" };
 
   const parsed = EntradaSchema.safeParse(data);
-  if (!parsed.success) {
-    console.log("[registrarEntrada] Zod validation failed:", JSON.stringify(parsed.error?.issues));
-    return { error: "Datos inválidos" };
-  }
+  if (!parsed.success) return { error: "Datos inválidos" };
   const validated = parsed.data;
 
   let nvId = null;
