@@ -47,7 +47,8 @@
       "PowerShell(New-Item *)",
       "Bash(python *)",
       "PowerShell(npm run *)",
-      "PowerShell(npx eslint app/api/traslados/route.ts 2>&1)"
+      "PowerShell(npx eslint app/api/traslados/route.ts 2>&1)",
+      "PowerShell(npx eslint \"app/\\(dashboard\\)/bodegas/[bodegaId]/page.tsx\" 2>&1)"
     ]
   }
 }

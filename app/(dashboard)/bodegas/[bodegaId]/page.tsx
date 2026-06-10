@@ -35,6 +35,24 @@ export default async function BodegaDetailPage({
   // Fragmento SQL condicional: filtro de stock > 0 (default true)
   const stockFilter = filtrarSinStock ? sql`AND s.cantidad_actual > 0` : sql``;
 
+  // COUNT query: mismo filtro que la principal pero sin cursor ni LIMIT,
+  // para mostrar el total real en el subtítulo (no solo la página actual)
+  const countQuery = searchTerm
+    ? sql`
+      SELECT COUNT(*)::int AS total
+      FROM stock s
+      JOIN productos p ON p.id = s.producto_id
+      WHERE s.bodega_id = ${bodegaId}::uuid
+        AND (p.codigo ILIKE ${searchTerm} OR p.descripcion ILIKE ${searchTerm})
+        ${stockFilter}
+    `
+    : sql`
+      SELECT COUNT(*)::int AS total
+      FROM stock s
+      WHERE s.bodega_id = ${bodegaId}::uuid
+      ${stockFilter}
+    `;
+
   let query;
   if (searchTerm && cursor) {
     query = sql`
@@ -90,7 +108,11 @@ export default async function BodegaDetailPage({
     `;
   }
 
-  const result = await db.execute(query);
+  const [result, countResult] = await Promise.all([
+    db.execute(query),
+    db.execute(countQuery),
+  ]);
+  const totalProductos = (countResult.rows[0] as { total: number } | undefined)?.total ?? 0;
   const rows = result.rows as {
     id: string; codigo: string; descripcion: string;
     packing: number; codigo_personal: string | null; observaciones: string | null;
@@ -139,7 +161,7 @@ export default async function BodegaDetailPage({
         <div>
           <h1 className="text-2xl font-bold text-[#111c2d]">{bodega.nombre}</h1>
           <p className="text-sm text-[#74777f]">
-            {productos.length} producto{productos.length !== 1 ? "s" : ""} con stock
+            {totalProductos} producto{totalProductos !== 1 ? "s" : ""} con stock
           </p>
         </div>
       </div>
