@@ -17,6 +17,8 @@ export default async function DashboardLayout({
   const session = await auth();
   if (!session) redirect("/login");
   const s = neon(process.env.DATABASE_URL!);
+  const layoutQ = `SELECT COUNT(*)::int as c FROM productos WHERE id NOT IN (SELECT producto_id FROM stock)`;
+  console.log("[layout] query:", layoutQ);
   const [sinBodegaRow] = await s`SELECT COUNT(*)::int as c FROM productos WHERE id NOT IN (SELECT producto_id FROM stock)`;
   const sinBodegaCount = Number(sinBodegaRow?.c ?? 0);
 

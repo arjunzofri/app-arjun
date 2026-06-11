@@ -1,44 +1,44 @@
 import { neon } from "@neondatabase/serverless";
 import SalidasShell from "@/components/salidas/SalidasShell";
 
+const s = neon(process.env.DATABASE_URL!);
+
 export default async function SalidasPage() {
 
-  const s = neon(process.env.DATABASE_URL!);
-
-  // Query productos con stock > 0 usando SQL 100% crudo (sin Drizzle)
+  // Q1: productos con stock > 0
+  console.log("[salidas:q1] SELECT p.id,p.codigo,p.descripcion,p.packing,p.codigo_personal,p.observaciones,p.ubicacion,p.knumezet,p.created_at,p.updated_at FROM public.productos p WHERE EXISTS (SELECT 1 FROM public.stock st WHERE st.producto_id=p.id AND st.cantidad_actual>0) ORDER BY p.codigo");
   const productosRows = await s`
-    SELECT
-      p.id,
-      p.codigo,
-      p.descripcion,
-      p.packing,
-      p.codigo_personal,
-      p.observaciones,
-      p.ubicacion,
-      p.knumezet,
-      p.created_at,
-      p.updated_at
+    SELECT p.id, p.codigo, p.descripcion, p.packing,
+           p.codigo_personal, p.observaciones, p.ubicacion,
+           p.knumezet, p.created_at, p.updated_at
     FROM public.productos p
     WHERE EXISTS (
-      SELECT 1 FROM public.stock st WHERE st.producto_id = p.id AND st.cantidad_actual > 0
+      SELECT 1 FROM public.stock st
+      WHERE st.producto_id = p.id AND st.cantidad_actual > 0
     )
     ORDER BY p.codigo
   `;
 
-  const [bodegasData, modulosData] = await Promise.all([
-    s`SELECT id, nombre FROM public.bodegas ORDER BY nombre`.then(rows =>
-      rows.map((r: any) => ({ id: r.id, nombre: r.nombre }))
-    ),
-    s`SELECT id, nombre FROM public.modulos_destino ORDER BY nombre`.then(rows =>
-      rows.map((r: any) => ({ id: r.id, nombre: r.nombre }))
-    ),
-  ]);
+  // Q2: bodegas
+  console.log("[salidas:q2] SELECT id,nombre FROM public.bodegas ORDER BY nombre");
+  const bodegasDataP = s`
+    SELECT id, nombre FROM public.bodegas ORDER BY nombre
+  `.then(rows => rows.map((r: any) => ({ id: r.id, nombre: r.nombre })));
+
+  // Q3: modulos
+  console.log("[salidas:q3] SELECT id,nombre FROM public.modulos_destino ORDER BY nombre");
+  const modulosDataP = s`
+    SELECT id, nombre FROM public.modulos_destino ORDER BY nombre
+  `.then(rows => rows.map((r: any) => ({ id: r.id, nombre: r.nombre })));
+
+  const [bodegasData, modulosData] = await Promise.all([bodegasDataP, modulosDataP]);
 
   // Fetch stock por bodega para cada producto
   const productoIds = productosRows.map((p: any) => p.id);
   let stockMap = new Map<string, { bodegaId: string; cantidadActual: number }[]>();
 
   if (productoIds.length > 0) {
+    console.log("[salidas:q4] SELECT st.producto_id,st.bodega_id,st.cantidad_actual FROM public.stock st WHERE st.producto_id=ANY($1::uuid[]) AND st.cantidad_actual>0, ids:" + productoIds.length);
     const stockRows = await s`
       SELECT st.producto_id, st.bodega_id, st.cantidad_actual
       FROM public.stock st
@@ -57,15 +57,17 @@ export default async function SalidasPage() {
     }
   }
 
-  // Fetch imagenes (solo la primera por producto)
+  // Fetch imagenes
   let imagenMap = new Map<string, any[]>();
   if (productoIds.length > 0) {
+    console.log("[salidas:q5] SELECT pi.producto_id,pi.url,pi.cloudinary_public_id,pi.created_at FROM public.producto_imagenes pi WHERE pi.producto_id=ANY($1::uuid[]) ORDER BY pi.created_at ASC");
     const imgRows = await s`
       SELECT pi.producto_id, pi.url, pi.cloudinary_public_id, pi.created_at
       FROM public.producto_imagenes pi
       WHERE pi.producto_id = ANY(${productoIds}::uuid[])
       ORDER BY pi.created_at ASC
     `;
+
     for (const row of imgRows) {
       const existing = imagenMap.get(row.producto_id as string);
       if (!existing) {
