@@ -18,10 +18,13 @@ export default async function SalidasPage() {
   let stockMap = new Map<string, { bodegaId: string; cantidadActual: number }[]>();
   if (productosRaw.length > 0) {
     const s = neon(process.env.DATABASE_URL!);
+    const productoIds = productosRaw.map((p: any) => p.id);
+    const sqlQuery = `SELECT producto_id, bodega_id, cantidad_actual FROM public.stock WHERE producto_id = ANY($1::uuid[]) AND cantidad_actual > 0`;
+    console.log("[salidas/page] stock query:", sqlQuery, "ids:", productoIds.length);
     const stockRows = await s`
       SELECT producto_id, bodega_id, cantidad_actual
-      FROM stock
-      WHERE producto_id = ANY(${productosRaw.map((p: any) => p.id)}::uuid[])
+      FROM public.stock
+      WHERE producto_id = ANY(${productoIds}::uuid[])
         AND cantidad_actual > 0
     `;
     for (const row of stockRows) {
