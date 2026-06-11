@@ -1,10 +1,10 @@
 ﻿"use server";
 
 import { db } from "@/db";
-import { productos, stock, stockModulos, entradas, notasVenta, activityLog, codigoPersonalAuditoria, salidas, bodegas, productoImagenes } from "@/db/schema";
+import { productos, stock, stockModulos, entradas, notasVenta, activityLog, codigoPersonalAuditoria, salidas, bodegas, productoImagenes, retornos } from "@/db/schema";
 import { eq, sql, and, ilike, or, desc } from "drizzle-orm";
 import { auth } from "@/lib/auth";
-import { ProductoSchema, EntradaSchema, SalidaSchema } from "@/lib/validations";
+import { ProductoSchema, EntradaSchema, SalidaSchema, RetornoSchema } from "@/lib/validations";
 import { revalidatePath } from "next/cache";
 import { neon } from "@neondatabase/serverless";
 import { getVisaCorte } from "@/lib/utils/get-visa-corte";
@@ -660,5 +660,75 @@ export async function eliminarStockModulo(productoId: string, moduloId: string) 
 
   revalidatePath("/modulos");
   return { success: true };
+}
+
+export async function registrarRetorno(data: any) {
+  const session = await auth();
+  if (!session) return { error: "No autorizado" };
+
+  const parsed = RetornoSchema.safeParse(data);
+  if (!parsed.success) return { error: "Datos inválidos" };
+  const validated = parsed.data;
+
+  const s = neon(process.env.DATABASE_URL!);
+
+  // 1. Lectura previa para mensaje de error descriptivo
+  const [moduloStock] = await s`
+    SELECT cantidad_acumulada FROM public.stock_modulos
+    WHERE producto_id = ${validated.productoId}::uuid
+      AND modulo_id = ${validated.moduloOrigenId}::uuid
+  `;
+
+  const disponible: number = moduloStock?.cantidad_acumulada ?? 0;
+  if (disponible < validated.cantidad) {
+    return {
+      error: `Stock insuficiente en módulo. Disponible: ${disponible} unidades.`
+    };
+  }
+
+  // 2. CTE atómico: rebaja módulo → upsert bodega destino → insert retorno
+  const [retorno] = await s`
+    WITH rebaja AS (
+      UPDATE public.stock_modulos
+      SET cantidad_acumulada = cantidad_acumulada - ${validated.cantidad},
+          updated_at = NOW()
+      WHERE producto_id = ${validated.productoId}::uuid
+        AND modulo_id = ${validated.moduloOrigenId}::uuid
+        AND cantidad_acumulada >= ${validated.cantidad}
+      RETURNING 1 AS done
+    ),
+    destino AS (
+      INSERT INTO public.stock (producto_id, bodega_id, cantidad_actual)
+      SELECT ${validated.productoId}::uuid, ${validated.bodegaDestinoId}::uuid, ${validated.cantidad}
+      WHERE EXISTS (SELECT 1 FROM rebaja)
+      ON CONFLICT (producto_id, bodega_id)
+      DO UPDATE SET cantidad_actual = public.stock.cantidad_actual + ${validated.cantidad},
+                    updated_at = NOW()
+    )
+    INSERT INTO public.retornos (producto_id, modulo_origen_id, bodega_destino_id, cantidad, usuario_id, observaciones)
+    SELECT ${validated.productoId}::uuid, ${validated.moduloOrigenId}::uuid, ${validated.bodegaDestinoId}::uuid,
+           ${validated.cantidad}, ${session.user?.id}::uuid, ${validated.observaciones ?? null}
+    WHERE EXISTS (SELECT 1 FROM rebaja)
+    RETURNING *
+  `;
+
+  if (!retorno) {
+    return {
+      error: `Stock insuficiente en módulo. Otro despacho concurrente agotó las unidades. Reintentá.`
+    };
+  }
+
+  // 3. Activity log
+  await db.insert(activityLog).values({
+    usuarioId: session.user?.id ?? "",
+    accion: "RETORNO_REGISTRADO",
+    tablaAfectada: "retornos",
+    registroId: retorno.id,
+    detalle: validated,
+  });
+
+  revalidatePath("/modulos");
+  revalidatePath("/bodegas");
+  return retorno;
 }
 

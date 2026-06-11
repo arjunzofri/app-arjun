@@ -34,6 +34,14 @@ export const SalidaSchema = z.object({
   observaciones: z.string().optional(),
 });
 
+export const RetornoSchema = z.object({
+  productoId: z.string().uuid(),
+  moduloOrigenId: z.string().uuid(),
+  bodegaDestinoId: z.string().uuid(),
+  cantidad: z.number().int().positive(),
+  observaciones: z.string().optional(),
+});
+
 export const UsuarioSchema = z.object({
   nombre: z.string().min(1, "Nombre requerido"),
   username: z.string().min(3, "Mínimo 3 caracteres"),
@@ -57,5 +65,6 @@ export type LoginInput = z.infer<typeof LoginSchema>;
 export type ProductoInput = z.infer<typeof ProductoSchema>;
 export type EntradaInput = z.infer<typeof EntradaSchema>;
 export type SalidaInput = z.infer<typeof SalidaSchema>;
+export type RetornoInput = z.infer<typeof RetornoSchema>;
 export type UsuarioInput = z.infer<typeof UsuarioSchema>;
 export type KingnexOCRResponse = z.infer<typeof KingnexOCRResponseSchema>;

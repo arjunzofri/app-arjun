@@ -166,6 +166,25 @@ export const traslados = pgTable("traslados", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const retornos = pgTable("retornos", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  productoId: uuid("producto_id")
+    .references(() => productos.id)
+    .notNull(),
+  moduloOrigenId: uuid("modulo_origen_id")
+    .references(() => modulosDestino.id)
+    .notNull(),
+  bodegaDestinoId: uuid("bodega_destino_id")
+    .references(() => bodegas.id)
+    .notNull(),
+  cantidad: integer("cantidad").notNull(),
+  usuarioId: uuid("usuario_id")
+    .references(() => usuarios.id)
+    .notNull(),
+  observaciones: text("observaciones"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const activityLog = pgTable("activity_log", {
   id: uuid("id").primaryKey().defaultRandom(),
   usuarioId: uuid("usuario_id").references(() => usuarios.id),
@@ -183,7 +202,27 @@ export const productoRelations = relations(productos, ({ many }) => ({
   stock: many(stock),
   salidas: many(salidas),
   traslados: many(traslados),
+  retornos: many(retornos),
   auditoriaCodigo: many(codigoPersonalAuditoria),
+}));
+
+export const retornosRelations = relations(retornos, ({ one }) => ({
+  producto: one(productos, {
+    fields: [retornos.productoId],
+    references: [productos.id],
+  }),
+  moduloOrigen: one(modulosDestino, {
+    fields: [retornos.moduloOrigenId],
+    references: [modulosDestino.id],
+  }),
+  bodegaDestino: one(bodegas, {
+    fields: [retornos.bodegaDestinoId],
+    references: [bodegas.id],
+  }),
+  usuario: one(usuarios, {
+    fields: [retornos.usuarioId],
+    references: [usuarios.id],
+  }),
 }));
 
 export const stockRelations = relations(stock, ({ one }) => ({

@@ -7,6 +7,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, Search, AlertTriangle } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { ModuloProductoRow } from "@/components/modulos/ModuloProductoRow";
+import RetornoButton from "@/components/modulos/RetornoButton";
 
 export default async function ModuloDetailPage({
   params,
@@ -32,6 +33,8 @@ export default async function ModuloDetailPage({
   `);
   if (moduloResult.rows.length === 0) notFound();
   modulo = moduloResult.rows[0] as { id: string; nombre: string };
+
+  const allBodegas = await db.query.bodegas.findMany();
 
   try {
     const limit = 21;
@@ -146,19 +149,33 @@ export default async function ModuloDetailPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Link
-          href="/modulos"
-          className="p-1 text-[#74777f] hover:text-[#111c2d] transition-colors"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <div>
-          <h1 className="text-2xl font-bold text-[#111c2d]">{modulo!.nombre}</h1>
-          <p className="text-sm text-[#74777f]">
-            {productos.length} producto{productos.length !== 1 ? "s" : ""} con stock acumulado
-          </p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Link
+            href="/modulos"
+            className="p-1 text-[#74777f] hover:text-[#111c2d] transition-colors"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Link>
+          <div>
+            <h1 className="text-2xl font-bold text-[#111c2d]">{modulo!.nombre}</h1>
+            <p className="text-sm text-[#74777f]">
+              {productos.length} producto{productos.length !== 1 ? "s" : ""} con stock acumulado
+            </p>
+          </div>
         </div>
+
+        <RetornoButton
+          moduloId={moduloId}
+          productos={productos.map((p) => ({
+            id: p.id,
+            codigo: p.codigo,
+            descripcion: p.descripcion,
+            cantidadAcumulada: p.cantidad_acumulada,
+            packing: p.packing,
+          }))}
+          bodegas={allBodegas}
+        />
       </div>
 
       <form method="GET" className="flex gap-2">
