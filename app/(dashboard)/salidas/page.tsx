@@ -7,13 +7,9 @@ export default async function SalidasPage() {
   let productosRaw: any[];
   try {
     [productosRaw] = await Promise.all([
-      db.query.productos.findMany({
-        with: {
-          imagenes: { limit: 1 },
-        },
-      }),
+      db.query.productos.findMany(),
     ]);
-    console.log("[salidas/page] Drizzle findMany OK, count:", productosRaw.length);
+    console.log("[salidas/page] Drizzle findMany OK (sin with), count:", productosRaw.length);
   } catch (e: any) {
     console.error("[salidas/page] Drizzle findMany ERROR:", e.message, e.stack);
     throw e;
