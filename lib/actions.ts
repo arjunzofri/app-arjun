@@ -455,14 +455,14 @@ export async function eliminarProducto(id: string) {
 
   try {
     await s.transaction([
-      s`DELETE FROM activity_log WHERE registro_id = ${id}::uuid AND tabla_afectada = 'productos'`,
+      s`DELETE FROM activity_log WHERE registro_id = ${id} AND tabla_afectada = 'productos'`,
       s`DELETE FROM producto_imagenes WHERE producto_id = ${id}::uuid`,
       s`DELETE FROM stock_modulos WHERE producto_id = ${id}::uuid`,
       s`DELETE FROM stock WHERE producto_id = ${id}::uuid`,
       s`DELETE FROM entradas WHERE producto_id = ${id}::uuid`,
       s`DELETE FROM salidas WHERE producto_id = ${id}::uuid`,
       s`DELETE FROM traslados WHERE producto_id = ${id}::uuid`,
-      s`INSERT INTO activity_log (usuario_id, accion, tabla_afectada, registro_id, detalle) VALUES (${userId}::uuid, 'PRODUCTO_ELIMINADO', 'productos', ${id}::uuid, ${JSON.stringify({ id })}::jsonb)`,
+      s`INSERT INTO activity_log (usuario_id, accion, tabla_afectada, registro_id, detalle) VALUES (${userId}::uuid, 'PRODUCTO_ELIMINADO', 'productos', ${id}, ${JSON.stringify({ id })}::jsonb)`,
       s`DELETE FROM productos WHERE id = ${id}::uuid`,
     ]);
 
