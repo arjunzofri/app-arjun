@@ -453,22 +453,33 @@ export async function eliminarProducto(id: string) {
   const s = neon(process.env.DATABASE_URL!);
   const userId = session.user?.id ?? "";
 
-  await s.transaction([
-    s`DELETE FROM activity_log WHERE registro_id = ${id}::uuid AND tabla_afectada = 'productos'`,
-    s`DELETE FROM producto_imagenes WHERE producto_id = ${id}::uuid`,
-    s`DELETE FROM stock_modulos WHERE producto_id = ${id}::uuid`,
-    s`DELETE FROM stock WHERE producto_id = ${id}::uuid`,
-    s`DELETE FROM entradas WHERE producto_id = ${id}::uuid`,
-    s`DELETE FROM salidas WHERE producto_id = ${id}::uuid`,
-    s`DELETE FROM traslados WHERE producto_id = ${id}::uuid`,
-    s`INSERT INTO activity_log (usuario_id, accion, tabla_afectada, registro_id, detalle) VALUES (${userId}::uuid, 'PRODUCTO_ELIMINADO', 'productos', ${id}::uuid, ${JSON.stringify({ id })}::jsonb)`,
-    s`DELETE FROM productos WHERE id = ${id}::uuid`,
-  ]);
+  try {
+    await s.transaction([
+      s`DELETE FROM activity_log WHERE registro_id = ${id}::uuid AND tabla_afectada = 'productos'`,
+      s`DELETE FROM producto_imagenes WHERE producto_id = ${id}::uuid`,
+      s`DELETE FROM stock_modulos WHERE producto_id = ${id}::uuid`,
+      s`DELETE FROM stock WHERE producto_id = ${id}::uuid`,
+      s`DELETE FROM entradas WHERE producto_id = ${id}::uuid`,
+      s`DELETE FROM salidas WHERE producto_id = ${id}::uuid`,
+      s`DELETE FROM traslados WHERE producto_id = ${id}::uuid`,
+      s`INSERT INTO activity_log (usuario_id, accion, tabla_afectada, registro_id, detalle) VALUES (${userId}::uuid, 'PRODUCTO_ELIMINADO', 'productos', ${id}::uuid, ${JSON.stringify({ id })}::jsonb)`,
+      s`DELETE FROM productos WHERE id = ${id}::uuid`,
+    ]);
 
-  revalidatePath("/");
-  revalidatePath("/entradas");
-  revalidatePath("/salidas");
-  return { success: true };
+    revalidatePath("/");
+    revalidatePath("/entradas");
+    revalidatePath("/salidas");
+    return { success: true };
+  } catch (error: unknown) {
+    const e = error instanceof Error ? error : new Error(String(error));
+    console.error("[eliminarProducto] Error eliminando producto:", {
+      id,
+      message: e.message,
+      stack: e.stack,
+      cause: e.cause,
+    });
+    return { error: `Error al eliminar el producto: ${e.message}` };
+  }
 }
 
 export async function eliminarEntrada(entradaId: string) {
