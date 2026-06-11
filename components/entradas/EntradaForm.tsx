@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { registrarEntrada, createOrUpdateProducto } from "@/lib/actions";
+import { registrarEntrada, createOrUpdateProducto, getStockPorProducto } from "@/lib/actions";
 import { InputCantidad } from "@/components/mobile/InputCantidad";
 import { BotonFoto } from "@/components/mobile/BotonFoto";
 import { ProductoEditModal } from "@/components/shared/ProductoEditModal";
@@ -38,6 +38,7 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
   const [showObs, setShowObs] = useState(false);
   const [productoDbId, setProductoDbId] = useState<string | null>(null);
   const [editOpen, setEditOpen] = useState(false);
+  const [stocksBodega, setStocksBodega] = useState<{ bodegaId: string; bodegaNombre: string; cantidadActual: number }[] | undefined>();
   const { data: session } = useSession();
   const searchRef = useRef<HTMLDivElement>(null);
   const startY = useRef(0);
@@ -49,6 +50,13 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
+
+  // Fetch stock por bodega al abrir modal de edición
+  useEffect(() => {
+    if (editOpen && productoDbId) {
+      getStockPorProducto(productoDbId).then(setStocksBodega).catch(() => setStocksBodega(undefined));
+    }
+  }, [editOpen, productoDbId]);
 
   // Obtener DB id para habilitar BotonFoto y edición
   useEffect(() => {
@@ -617,6 +625,7 @@ export default function EntradaForm({ bodegasData }: { bodegasData: any[] }) {
             descripcion: selectedProducto.descripcion,
             packing: selectedProducto.packing,
           }}
+          stocksBodega={stocksBodega}
           userRole={session?.user?.role || "operador"}
           open={editOpen}
           onClose={() => setEditOpen(false)}

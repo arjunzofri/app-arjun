@@ -6,13 +6,17 @@ import { NumericInput } from "@/components/shared/NumericInput";
 import { Pencil, X, Trash2 } from "lucide-react";
 import { editarProducto, eliminarProducto } from "@/lib/actions";
 
+type StockBodega = { bodegaId: string; bodegaNombre: string; cantidadActual: number };
+
 export function ProductoEditModal({
   producto,
+  stocksBodega,
   userRole,
   open,
   onClose,
 }: {
   producto: { id: string; codigo: string; codigoPersonal?: string | null; descripcion: string; packing: number; observaciones?: string | null };
+  stocksBodega?: StockBodega[];
   userRole: string;
   open: boolean;
   onClose: () => void;
@@ -22,10 +26,20 @@ export function ProductoEditModal({
   const [descripcion, setDescripcion] = useState(producto.descripcion || "");
   const [packing, setPacking] = useState(producto.packing);
   const [observaciones, setObservaciones] = useState(producto.observaciones || "");
+  const [stockValues, setStockValues] = useState<Record<string, number>>({});
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  // Inicializar stockValues cuando se abre el modal o cambian los datos
+  useEffect(() => {
+    if (open && stocksBodega && stocksBodega.length > 0) {
+      const initial: Record<string, number> = {};
+      stocksBodega.forEach((s) => { initial[s.bodegaId] = s.cantidadActual; });
+      setStockValues(initial);
+    }
+  }, [open, stocksBodega]);
 
   // Bloquear scroll del body mientras el modal está abierto
   useEffect(() => {
@@ -41,11 +55,16 @@ export function ProductoEditModal({
     setSaving(true);
     setError(null);
     try {
+      const stocks = stocksBodega && stocksBodega.length > 0
+        ? stocksBodega.map((s) => ({ bodegaId: s.bodegaId, cantidadActual: stockValues[s.bodegaId] ?? s.cantidadActual }))
+        : undefined;
+
       await editarProducto(producto.id, {
         codigoPersonal: codigoPersonal.trim() || undefined,
         descripcion: descripcion.trim() || undefined,
         packing: packing > 0 ? packing : undefined,
         observaciones: observaciones.trim() || undefined,
+        stocks,
       });
       setSuccess("Producto actualizado");
       router.refresh();
@@ -130,6 +149,33 @@ export function ProductoEditModal({
               className="w-full px-3 py-2 text-sm border border-[#c4c6cf] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20 resize-none"
             />
           </div>
+
+          {stocksBodega && stocksBodega.length > 0 && (
+            <div>
+              <label className="text-xs font-semibold text-[#1e3a5f] mb-2 block uppercase tracking-wide">
+                Stock por bodega
+              </label>
+              <div className="space-y-2">
+                {stocksBodega.map((s) => (
+                  <div key={s.bodegaId} className="flex items-center gap-3">
+                    <span className="text-sm text-[#111c2d] flex-1 min-w-0 truncate">
+                      {s.bodegaNombre}
+                    </span>
+                    <NumericInput
+                      value={stockValues[s.bodegaId] ?? s.cantidadActual}
+                      onChange={(v) => {
+                        const n = parseInt(v);
+                        if (!isNaN(n) && n >= 0) {
+                          setStockValues((prev) => ({ ...prev, [s.bodegaId]: n }));
+                        }
+                      }}
+                      className="w-24 px-3 py-2 text-sm text-right border border-[#c4c6cf] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {error && (
             <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600">{error}</div>

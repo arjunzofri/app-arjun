@@ -611,6 +611,11 @@ export default function SalidaForm({
             packing: selectedProducto.packing,
             observaciones: selectedProducto.observaciones,
           }}
+          stocksBodega={selectedProducto.stock?.map((s: any) => ({
+            bodegaId: s.bodegaId,
+            bodegaNombre: bodegasData.find((b: any) => b.id === s.bodegaId)?.nombre ?? s.bodegaId,
+            cantidadActual: s.cantidadActual,
+          }))}
           userRole={session?.user?.role || "operador"}
           open={editOpen}
           onClose={() => setEditOpen(false)}

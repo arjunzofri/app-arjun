@@ -1,11 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { ArrowRightLeft, Pencil } from "lucide-react"
 import TrasladoModal from "./TrasladoModal"
 import { ProductoEditModal } from "@/components/shared/ProductoEditModal"
+import { getStockPorProducto } from "@/lib/actions"
 import { getCloudinaryVidaDigitalUrl } from "@/lib/utils/extract-modelo"
 
 type Bodega = { id: string; nombre: string }
@@ -53,6 +54,13 @@ export default function BodegaProductList({
 
   const [modalProducto, setModalProducto] = useState<ProductoRow | null>(null)
   const [editProducto, setEditProducto] = useState<ProductoRow | null>(null)
+  const [stocksBodega, setStocksBodega] = useState<{ bodegaId: string; bodegaNombre: string; cantidadActual: number }[] | undefined>()
+
+  useEffect(() => {
+    if (editProducto) {
+      getStockPorProducto(editProducto.id).then(setStocksBodega).catch(() => setStocksBodega(undefined));
+    }
+  }, [editProducto]);
 
   function buildToggleUrl(showAll: boolean) {
     const params = new URLSearchParams()
@@ -168,6 +176,7 @@ export default function BodegaProductList({
             packing: editProducto.packing,
             observaciones: editProducto.observaciones,
           }}
+          stocksBodega={stocksBodega}
           userRole={userRole}
           open={true}
           onClose={() => setEditProducto(null)}

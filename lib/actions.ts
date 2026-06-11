@@ -408,11 +408,28 @@ export async function buscarProductos(query: string) {
   return results
 }
 
+export async function getStockPorProducto(productoId: string) {
+  const s = neon(process.env.DATABASE_URL!);
+  const rows = await s`
+    SELECT s.bodega_id, s.cantidad_actual, b.nombre AS bodega_nombre
+    FROM stock s
+    JOIN bodegas b ON b.id = s.bodega_id
+    WHERE s.producto_id = ${productoId}::uuid
+    ORDER BY b.nombre
+  `;
+  return rows.map((r: any) => ({
+    bodegaId: r.bodega_id as string,
+    bodegaNombre: r.bodega_nombre as string,
+    cantidadActual: r.cantidad_actual as number,
+  }));
+}
+
 export async function editarProducto(id: string, data: {
   codigoPersonal?: string;
   descripcion?: string;
   packing?: number;
   observaciones?: string;
+  stocks?: { bodegaId: string; cantidadActual: number }[];
 }) {
   const session = await auth();
   if (!session) return { error: "No autorizado" };
@@ -429,6 +446,14 @@ export async function editarProducto(id: string, data: {
     observaciones: data.observaciones ?? existing.observaciones,
     updatedAt: new Date(),
   }).where(eq(productos.id, id));
+
+  // Update stock por bodega (solo filas existentes, no se crean nuevas)
+  if (data.stocks && data.stocks.length > 0) {
+    const s = neon(process.env.DATABASE_URL!);
+    for (const st of data.stocks) {
+      await s`UPDATE stock SET cantidad_actual = ${st.cantidadActual}, updated_at = NOW() WHERE producto_id = ${id}::uuid AND bodega_id = ${st.bodegaId}::uuid`;
+    }
+  }
 
   await db.insert(activityLog).values({
     usuarioId: session.user?.id ?? "",
