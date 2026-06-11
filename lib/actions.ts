@@ -376,36 +376,39 @@ export async function buscarProductos(query: string) {
   if (!query || query.trim().length < 2) return []
 
   const corte = await getVisaCorte();
+  const search = `%${query.trim()}%`;
+  const s = neon(process.env.DATABASE_URL!);
 
-  const results = await db.select({
-    id: productos.id,
-    codigo: productos.codigo,
-    knumezet: productos.knumezet,
-    codigoPersonal: productos.codigoPersonal,
-    descripcion: productos.descripcion,
-    packing: productos.packing,
-    ubicacion: productos.ubicacion,
-    totalStock: sql<number>`COALESCE(SUM(stock.cantidad_actual), 0)`
-  })
-  .from(productos)
-  .leftJoin(stock, sql`${productos.id} = ${stock.productoId}`)
-  .where(
-    and(
-      or(
-        ilike(productos.codigo, `%${query}%`),
-        ilike(productos.descripcion, `%${query}%`),
-        ilike(productos.codigoPersonal, `%${query}%`),
-        ilike(productos.knumezet, `%${query}%`)
-      ),
-      sql`(${productos.knumezet} IS NULL OR ${productos.knumezet} NOT LIKE '%-%-%' OR (split_part(${productos.knumezet}, '-', 2)::bigint * 1000000 + split_part(${productos.knumezet}, '-', 3)::bigint) >= ${corte})`
-    )
-  )
-  .groupBy(productos.id)
-  .having(sql`COALESCE(SUM(stock.cantidad_actual), 0) > 0`)
-  .orderBy(productos.codigo)
-  .limit(20)
+  const rows = await s`
+    SELECT p.id, p.codigo, p.knumezet, p.codigo_personal,
+           p.descripcion, p.packing, p.ubicacion,
+           COALESCE(SUM(st.cantidad_actual), 0)::int AS total_stock
+    FROM productos p
+    LEFT JOIN stock st ON st.producto_id = p.id
+    WHERE (p.codigo ILIKE ${search}
+       OR p.descripcion ILIKE ${search}
+       OR p.codigo_personal ILIKE ${search}
+       OR p.knumezet ILIKE ${search})
+      AND (p.knumezet IS NULL
+           OR p.knumezet NOT LIKE '%-%-%'
+           OR (split_part(p.knumezet, '-', 2)::bigint * 1000000
+               + split_part(p.knumezet, '-', 3)::bigint) >= ${corte})
+    GROUP BY p.id
+    HAVING COALESCE(SUM(st.cantidad_actual), 0) > 0
+    ORDER BY p.codigo
+    LIMIT 20
+  `;
 
-  return results
+  return rows.map((r: any) => ({
+    id: r.id,
+    codigo: r.codigo,
+    knumezet: r.knumezet,
+    codigoPersonal: r.codigo_personal,
+    descripcion: r.descripcion,
+    packing: r.packing,
+    ubicacion: r.ubicacion,
+    totalStock: r.total_stock,
+  }));
 }
 
 export async function getStockPorProducto(productoId: string) {
