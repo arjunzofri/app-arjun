@@ -6,8 +6,6 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { logout } from "@/app/actions/auth-actions"
 import {
-  Box,
-  LayoutDashboard,
   Warehouse,
   Store,
   ArrowDownLeft,
@@ -22,7 +20,6 @@ const NAV_GROUPS = [
   {
     title: "Inventario",
     items: [
-      { label: "Dashboard", href: "/", icon: LayoutDashboard },
       { label: "Bodegas", href: "/bodegas", icon: Warehouse },
     ]
   },
