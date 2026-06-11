@@ -1,20 +1,43 @@
 import { db } from "@/db";
+import { neon } from "@neondatabase/serverless";
 import SalidasShell from "@/components/salidas/SalidasShell";
 
 export default async function SalidasPage() {
 
-  const [productosData, bodegasData, modulosData] = await Promise.all([
+  const [productosRaw, bodegasData, modulosData] = await Promise.all([
     db.query.productos.findMany({
       with: {
         imagenes: { limit: 1 },
-        stock: true,
       },
-    }).then(rows => rows.filter((r: any) =>
-      (r.stock || []).reduce((sum: number, s: any) => sum + s.cantidadActual, 0) > 0
-    )),
+    }),
     db.query.bodegas.findMany(),
     db.query.modulosDestino.findMany(),
   ]);
+
+  // Fetch stock por separado para evitar LEFT JOIN ambiguo de Drizzle
+  let stockMap = new Map<string, { bodegaId: string; cantidadActual: number }[]>();
+  if (productosRaw.length > 0) {
+    const s = neon(process.env.DATABASE_URL!);
+    const stockRows = await s`
+      SELECT producto_id, bodega_id, cantidad_actual
+      FROM stock
+      WHERE producto_id = ANY(${productosRaw.map((p: any) => p.id)}::uuid[])
+        AND cantidad_actual > 0
+    `;
+    for (const row of stockRows) {
+      const entry = { bodegaId: row.bodega_id as string, cantidadActual: row.cantidad_actual as number };
+      const existing = stockMap.get(row.producto_id as string);
+      if (existing) {
+        existing.push(entry);
+      } else {
+        stockMap.set(row.producto_id as string, [entry]);
+      }
+    }
+  }
+
+  const productosData = productosRaw
+    .filter((p: any) => stockMap.has(p.id))
+    .map((p: any) => ({ ...p, stock: stockMap.get(p.id) || [] }));
 
   return (
     <SalidasShell
