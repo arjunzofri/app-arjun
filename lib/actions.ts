@@ -227,7 +227,7 @@ export async function registrarSalida(data: any) {
     ),
     update_stock AS (
       UPDATE stock
-      SET cantidad_actual = cantidad_actual - ${validated.cantidad}, updated_at = NOW()
+      SET cantidad_actual = stock.cantidad_actual - ${validated.cantidad}, updated_at = NOW()
       FROM stock_row
       WHERE stock.id = stock_row.id
         AND stock_row.cantidad_actual >= ${validated.cantidad}
