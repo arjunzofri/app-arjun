@@ -175,6 +175,19 @@ export default function SalidaForm({
     [productosData]
   );
 
+  const stocksBodega = useMemo(() => {
+    if (!selectedProducto?.stock) return undefined;
+    if (!Array.isArray(selectedProducto.stock)) {
+      console.error("[SalidaForm] selectedProducto.stock no es array:", typeof selectedProducto.stock, selectedProducto.stock);
+      return undefined;
+    }
+    return selectedProducto.stock.map((s: any) => ({
+      bodegaId: s.bodegaId,
+      bodegaNombre: bodegasData.find((b: any) => b.id === s.bodegaId)?.nombre ?? s.bodegaId,
+      cantidadActual: s.cantidadActual,
+    }));
+  }, [selectedProducto, bodegasData]);
+
   const imagenProducto = selectedProducto
     ? (selectedProducto.imagenes?.[0]?.url ?? getImagenVidaDigital(selectedProducto.descripcion))
     : null;
@@ -611,11 +624,7 @@ export default function SalidaForm({
             packing: selectedProducto.packing,
             observaciones: selectedProducto.observaciones,
           }}
-          stocksBodega={selectedProducto.stock?.map((s: any) => ({
-            bodegaId: s.bodegaId,
-            bodegaNombre: bodegasData.find((b: any) => b.id === s.bodegaId)?.nombre ?? s.bodegaId,
-            cantidadActual: s.cantidadActual,
-          }))}
+          stocksBodega={stocksBodega}
           userRole={session?.user?.role || "operador"}
           open={editOpen}
           onClose={() => setEditOpen(false)}
