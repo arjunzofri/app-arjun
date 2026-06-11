@@ -1,38 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { neon, NeonQueryFunction } from "@neondatabase/serverless";
+import { neon } from "@neondatabase/serverless";
 import { getCloudinaryVidaDigitalUrl } from "@/lib/utils/extract-modelo";
 import { auth } from "@/lib/auth";
-
-function createLoggedNeon(): NeonQueryFunction<false, false> {
-  const raw = neon(process.env.DATABASE_URL!);
-  return new Proxy(raw, {
-    apply(target, thisArg, args: [TemplateStringsArray, ...any[]]) {
-      const [strings, ...values] = args;
-      let sql = strings[0];
-      for (let i = 0; i < values.length; i++) {
-        const v = values[i];
-        if (Array.isArray(v)) sql += `[array:${v.length}]`;
-        else sql += String(v);
-        sql += strings[i + 1];
-      }
-      console.error(`[api/buscar:query:LEN=${sql.length}] ${sql.substring(0, 300)}`);
-      const result = (target as Function).apply(thisArg, args);
-      if (result && typeof result.then === "function") {
-        return result.catch((err: any) => {
-          console.error(`[api/buscar:error] ${err.message}`);
-          if (err.position) {
-            const pos = parseInt(err.position);
-            console.error(`[api/buscar:error:pos=${pos}] ...${sql.substring(Math.max(0, pos - 60), Math.min(sql.length, pos + 80))}...`);
-          }
-          throw err;
-        });
-      }
-      return result;
-    }
-  }) as unknown as NeonQueryFunction<false, false>;
-}
-
-const s = createLoggedNeon();
 
 export async function GET(request: NextRequest) {
   const session = await auth();
@@ -46,6 +15,7 @@ export async function GET(request: NextRequest) {
   const search = `%${q.trim()}%`;
 
   try {
+    const s = neon(process.env.DATABASE_URL!);
 
     // Buscar en ambas fuentes en paralelo
     const [appRows, wfRows] = await Promise.all([
@@ -59,12 +29,12 @@ export async function GET(request: NextRequest) {
           ORDER BY created_at ASC
           LIMIT 1
         ) pi ON true
-        LEFT JOIN public.stock s ON s.producto_id = p.id
+        LEFT JOIN public.stock st ON st.producto_id = p.id
         WHERE (p.codigo ILIKE ${search}
            OR p.descripcion ILIKE ${search}
            OR p.codigo_personal ILIKE ${search})
         GROUP BY p.id, pi.url
-        HAVING COALESCE(SUM(s.cantidad_actual), 0) > 0
+        HAVING COALESCE(SUM(st.cantidad_actual), 0) > 0
         ORDER BY p.codigo
         LIMIT 20
       `,
