@@ -43,6 +43,7 @@ function createLoggedNeon(): NeonQueryFunction<false, false> {
 const s = createLoggedNeon();
 
 export default async function SalidasPage() {
+  try {
   console.error("[salidas:start]");
 
   // Q1: productos con stock > 0
@@ -141,4 +142,8 @@ export default async function SalidasPage() {
       modulosData={modulosData}
     />
   );
+  } catch (e: any) {
+    console.error("[salidas:catch] PAGE-LEVEL ERROR:", e?.message, e?.stack);
+    throw e;
+  }
 }
