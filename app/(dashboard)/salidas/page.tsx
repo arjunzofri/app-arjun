@@ -11,7 +11,7 @@ export default async function SalidasPage() {
         stock: true,
       },
       extras: {
-        totalStock: sql<number>`COALESCE((SELECT SUM(cantidad_actual) FROM stock WHERE producto_id = productos.id), 0)`.as('total_stock')
+        totalStock: sql<number>`COALESCE((SELECT SUM(st2.cantidad_actual) FROM stock st2 WHERE st2.producto_id = productos.id), 0)`.as('total_stock')
       },
     }).then(rows => rows.filter((r: any) => r.totalStock > 0)),
     db.query.bodegas.findMany(),
