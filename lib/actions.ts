@@ -385,7 +385,7 @@ export async function buscarProductos(query: string) {
     descripcion: productos.descripcion,
     packing: productos.packing,
     ubicacion: productos.ubicacion,
-    totalStock: sql<number>`COALESCE(SUM(${stock.cantidadActual}), 0)`
+    totalStock: sql<number>`COALESCE(SUM(stock.cantidad_actual), 0)`
   })
   .from(productos)
   .leftJoin(stock, sql`${productos.id} = ${stock.productoId}`)
@@ -401,7 +401,7 @@ export async function buscarProductos(query: string) {
     )
   )
   .groupBy(productos.id)
-  .having(sql`COALESCE(SUM(${stock.cantidadActual}), 0) > 0`)
+  .having(sql`COALESCE(SUM(stock.cantidad_actual), 0) > 0`)
   .orderBy(productos.codigo)
   .limit(20)
 
