@@ -456,6 +456,7 @@ export async function eliminarProducto(id: string) {
   await s.transaction([
     s`DELETE FROM activity_log WHERE registro_id = ${id}::uuid AND tabla_afectada = 'productos'`,
     s`DELETE FROM producto_imagenes WHERE producto_id = ${id}::uuid`,
+    s`DELETE FROM stock_modulos WHERE producto_id = ${id}::uuid`,
     s`DELETE FROM stock WHERE producto_id = ${id}::uuid`,
     s`DELETE FROM entradas WHERE producto_id = ${id}::uuid`,
     s`DELETE FROM salidas WHERE producto_id = ${id}::uuid`,
