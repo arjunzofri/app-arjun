@@ -4,12 +4,13 @@ import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 
 type Movimiento = {
-  tipo: "entrada" | "salida";
+  tipo: "entrada" | "salida" | "traslado" | "retorno";
   id: string;
   fecha: string;
   cantidad: number;
-  bodega: string;
+  bodega: string | null;
   modulo: string | null;
+  destino: string | null;
   usuario: string;
 };
 
@@ -74,7 +75,13 @@ export default function ProductoMovimientos({
           >
             <div
               className={`w-2 h-2 rounded-full shrink-0 ${
-                m.tipo === "entrada" ? "bg-green-500" : "bg-blue-500"
+                m.tipo === "entrada"
+                  ? "bg-green-500"
+                  : m.tipo === "salida"
+                    ? "bg-blue-500"
+                    : m.tipo === "traslado"
+                      ? "bg-amber-500"
+                      : "bg-purple-500"
               }`}
             />
             <div className="flex-1 min-w-0">
@@ -87,9 +94,10 @@ export default function ProductoMovimientos({
                 </span>
               </div>
               <p className="text-xs text-[#74777f] truncate">
-                {m.tipo === "entrada"
-                  ? `→ ${m.bodega}`
-                  : `${m.bodega} → ${m.modulo}`}
+                {m.tipo === "entrada" && `→ ${m.bodega}`}
+                {m.tipo === "salida" && `${m.bodega} → ${m.modulo}`}
+                {m.tipo === "traslado" && `${m.bodega} → ${m.destino}`}
+                {m.tipo === "retorno" && `${m.modulo} → ${m.destino}`}
               </p>
             </div>
             <div className="text-right shrink-0">
