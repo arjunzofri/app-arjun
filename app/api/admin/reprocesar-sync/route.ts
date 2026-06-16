@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/db"
+import { getBodegaPorVendedor } from "@/lib/utils/get-bodega-por-vendedor"
 
 export async function GET(req: NextRequest) {
   const syncKey = req.headers.get("x-sync-key")
@@ -30,7 +31,7 @@ export async function GET(req: NextRequest) {
 
   // Buscar TODOS los registros en el rango (sin LIMIT)
   const rows = (await db.execute(
-    `SELECT knumezet, codunico, descript, stocdisp, cifunita, cantcaja,
+    `SELECT knumezet, codunico, descript, stocdisp, cifunita, cantcaja, vendedor_rut,
             (split_part(knumezet,'-',2)::bigint * 1000000 + split_part(knumezet,'-',3)::bigint) as visa_key
      FROM arjun.inv_sdo
      WHERE (split_part(knumezet,'-',2)::bigint * 1000000 + split_part(knumezet,'-',3)::bigint) >= ${desde}
@@ -48,11 +49,16 @@ export async function GET(req: NextRequest) {
     })
   }
 
-  // Obtener Bodega Arjun y admin user
-  const bodegaResult = await db.execute(
-    `SELECT id FROM bodegas WHERE nombre = 'Bodega Arjun' LIMIT 1`
+  // Obtener IDs de ambas bodegas y admin user
+  const bodegasResult = await db.execute(
+    `SELECT id, nombre FROM bodegas WHERE nombre IN ('Bodega 1 Vida Digital', 'Bodega Arjun')`
   )
-  const bodegaArjunId = (bodegaResult.rows[0] as any)?.id
+  const bodegaMap: Record<string, string> = {}
+  for (const b of bodegasResult.rows as any[]) {
+    bodegaMap[b.nombre] = b.id
+  }
+  const BODEGA_VIDA_DIGITAL_1 = bodegaMap["Bodega 1 Vida Digital"]
+  const BODEGA_ARJUN = bodegaMap["Bodega Arjun"]
 
   const adminResult = await db.execute(
     `SELECT id FROM usuarios WHERE rol = 'admin' LIMIT 1`
@@ -82,8 +88,11 @@ export async function GET(req: NextRequest) {
 
       if (!prod) {
         // === PRODUCTO NUEVO ===
-        if (!bodegaArjunId || !adminId) {
-          detalle.push({ knumezet, accion: "ignorado", razon: "falta Bodega Arjun o admin user" })
+        const vendedorRut: string | null = row.vendedor_rut ?? null
+        const bodegaId = getBodegaPorVendedor(vendedorRut)
+
+        if (!bodegaId || !adminId) {
+          detalle.push({ knumezet, accion: "ignorado", razon: "falta bodega o admin user" })
           ignorados++
           continue
         }
@@ -99,26 +108,26 @@ export async function GET(req: NextRequest) {
           continue
         }
 
-        // Stock en Bodega Arjun
+        // Stock en la bodega determinada por vendedor_rut
         const stockRow = await db.execute(
-          `SELECT id FROM stock WHERE producto_id = '${productoId}' AND bodega_id = '${bodegaArjunId}' LIMIT 1`
+          `SELECT id FROM stock WHERE producto_id = '${productoId}' AND bodega_id = '${bodegaId}' LIMIT 1`
         )
         if ((stockRow.rows[0] as any)?.id) {
           await db.execute(
             `UPDATE stock SET cantidad_actual = ${stocdispNum}, updated_at = now()
-             WHERE producto_id = '${productoId}' AND bodega_id = '${bodegaArjunId}'`
+             WHERE producto_id = '${productoId}' AND bodega_id = '${bodegaId}'`
           )
         } else {
           await db.execute(
             `INSERT INTO stock (producto_id, bodega_id, cantidad_actual)
-             VALUES ('${productoId}', '${bodegaArjunId}', ${stocdispNum})`
+             VALUES ('${productoId}', '${bodegaId}', ${stocdispNum})`
           )
         }
 
         // Entrada
         await db.execute(
           `INSERT INTO entradas (producto_id, bodega_id, cantidad, usuario_id, origen)
-           VALUES ('${productoId}', '${bodegaArjunId}', ${stocdispNum}, '${adminId}', 'winfac_futuro')`
+           VALUES ('${productoId}', '${bodegaId}', ${stocdispNum}, '${adminId}', 'winfac_futuro')`
         )
 
         // Activity log
@@ -134,12 +143,12 @@ export async function GET(req: NextRequest) {
         // === PRODUCTO EXISTENTE ===
         const productoId: string = prod.id
         const ubicacion: string | null = prod.ubicacion
-        let bodegaId = bodegaArjunId
+        let bodegaId = BODEGA_ARJUN
         if (ubicacion) {
           const bodegaRes = await db.execute(
             `SELECT id FROM bodegas WHERE nombre = '${ubicacion.replace(/'/g, "''")}' LIMIT 1`
           )
-          bodegaId = (bodegaRes.rows[0] as any)?.id || bodegaArjunId
+          bodegaId = (bodegaRes.rows[0] as any)?.id || BODEGA_ARJUN
         }
         if (!bodegaId || !adminId) {
           detalle.push({ knumezet, accion: "ignorado", razon: `falta bodega (ubicacion=${ubicacion}) o admin` })
