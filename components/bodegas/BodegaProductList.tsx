@@ -28,6 +28,7 @@ type Props = {
   imagenMap: Map<string, string>
   hasMore: boolean
   lastUpdated: string | null
+  cursorId?: string | null
   qParam: string
   cursorParam: string
   scsParam: string
@@ -41,6 +42,7 @@ export default function BodegaProductList({
   imagenMap,
   hasMore,
   lastUpdated,
+  cursorId,
   qParam,
   cursorParam,
   scsParam,
@@ -142,10 +144,10 @@ export default function BodegaProductList({
         })}
       </div>
 
-      {hasMore && lastUpdated && (
+      {hasMore && lastUpdated && cursorId && (
         <div className="text-center mt-4">
           <Link
-            href={`/bodegas/${bodegaOrigenId}?cursor=${encodeURIComponent(String(lastUpdated))}${qParam}${scsParam}`}
+            href={`/bodegas/${bodegaOrigenId}?cursor=${encodeURIComponent(String(lastUpdated))}&cursorId=${encodeURIComponent(cursorId)}${qParam}${scsParam}`}
             className="inline-block px-6 py-2 bg-[#1e3a5f] text-white rounded-lg text-sm font-medium hover:bg-[#162e50] transition-colors"
           >
             Cargar más
