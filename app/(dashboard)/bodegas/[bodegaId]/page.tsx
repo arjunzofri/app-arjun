@@ -63,9 +63,9 @@ export default async function BodegaDetailPage({
       JOIN productos p ON p.id = s.producto_id
       WHERE s.bodega_id = ${bodegaId}::uuid
         AND (p.codigo ILIKE ${searchTerm} OR p.descripcion ILIKE ${searchTerm})
-        AND s.id < ${cursorId}::uuid
+        AND p.id < ${cursorId}::uuid
         ${stockFilter}
-      ORDER BY (CASE WHEN s.cantidad_actual > 0 THEN 0 ELSE 1 END), s.id DESC
+      ORDER BY (CASE WHEN s.cantidad_actual > 0 THEN 0 ELSE 1 END), p.id DESC
       LIMIT ${limit}
     `;
   } else if (searchTerm) {
@@ -78,7 +78,7 @@ export default async function BodegaDetailPage({
       WHERE s.bodega_id = ${bodegaId}::uuid
         AND (p.codigo ILIKE ${searchTerm} OR p.descripcion ILIKE ${searchTerm})
         ${stockFilter}
-      ORDER BY (CASE WHEN s.cantidad_actual > 0 THEN 0 ELSE 1 END), s.id DESC
+      ORDER BY (CASE WHEN s.cantidad_actual > 0 THEN 0 ELSE 1 END), p.id DESC
       LIMIT ${limit}
     `;
   } else if (cursorId) {
@@ -89,9 +89,9 @@ export default async function BodegaDetailPage({
       FROM stock s
       JOIN productos p ON p.id = s.producto_id
       WHERE s.bodega_id = ${bodegaId}::uuid
-        AND s.id < ${cursorId}::uuid
+        AND p.id < ${cursorId}::uuid
         ${stockFilter}
-      ORDER BY (CASE WHEN s.cantidad_actual > 0 THEN 0 ELSE 1 END), s.id DESC
+      ORDER BY (CASE WHEN s.cantidad_actual > 0 THEN 0 ELSE 1 END), p.id DESC
       LIMIT ${limit}
     `;
   } else {
@@ -103,7 +103,7 @@ export default async function BodegaDetailPage({
       JOIN productos p ON p.id = s.producto_id
       WHERE s.bodega_id = ${bodegaId}::uuid
         ${stockFilter}
-      ORDER BY (CASE WHEN s.cantidad_actual > 0 THEN 0 ELSE 1 END), s.id DESC
+      ORDER BY (CASE WHEN s.cantidad_actual > 0 THEN 0 ELSE 1 END), p.id DESC
       LIMIT ${limit}
     `;
   }

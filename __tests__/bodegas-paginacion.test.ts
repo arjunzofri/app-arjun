@@ -25,10 +25,10 @@ describe('BodegaDetailPage — paginación con cursor solo por id', () => {
     expect(searchParamsBlock).not.toMatch(/\bcursor\s*\?/)
   })
 
-  // ── Test 2: cursor usa s.id < cursorId::uuid (sin updated_at) ────────────
-  it('CONTRATO: queries con cursor deben usar s.id < cursorId::uuid', () => {
+  // ── Test 2: cursor usa p.id < cursorId::uuid (producto, no stock) ──────
+  it('CONTRATO: queries con cursor deben usar p.id < cursorId::uuid', () => {
     const content = readPage()
-    expect(content).toMatch(/s\.id\s*<\s*\$\{cursorId\}::uuid/)
+    expect(content).toMatch(/p\.id\s*<\s*\$\{cursorId\}::uuid/)
   })
 
   // ── Test 3: NO debe persistir el patrón antiguo updated_at < cursor ──────
@@ -64,10 +64,11 @@ describe('BodegaDetailPage — paginación con cursor solo por id', () => {
     expect(content).toMatch(/cursorId\s*[,:}=]/)
   })
 
-  // ── Test 7: ORDER BY usa s.id DESC (no updated_at) ──────────────────────
-  it('CONTRATO: ORDER BY debe usar s.id DESC en vez de s.updated_at DESC', () => {
+  // ── Test 7: ORDER BY usa p.id DESC (producto, no stock) ──────────────────
+  it('CONTRATO: ORDER BY debe usar p.id DESC en vez de s.id o s.updated_at', () => {
     const content = readPage()
-    expect(content).toMatch(/s\.id\s+DESC/)
+    expect(content).toMatch(/p\.id\s+DESC/)
+    expect(content).not.toMatch(/s\.id\s+DESC/)
     expect(content).not.toMatch(/s\.updated_at\s+DESC/)
   })
 })
