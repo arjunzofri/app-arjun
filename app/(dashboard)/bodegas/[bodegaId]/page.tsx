@@ -13,10 +13,10 @@ export default async function BodegaDetailPage({
   searchParams,
 }: {
   params: Promise<{ bodegaId: string }>;
-  searchParams: Promise<{ q?: string; cursor?: string; cursorId?: string; soloConStock?: string }>;
+  searchParams: Promise<{ q?: string; cursorId?: string; soloConStock?: string }>;
 }) {
   const { bodegaId } = await params;
-  const { q, cursor, cursorId, soloConStock: soloConStockRaw } = await searchParams;
+  const { q, cursorId, soloConStock: soloConStockRaw } = await searchParams;
   const filtrarSinStock = soloConStockRaw !== "false"; // default: true
   const session = await auth();
   const userRole = session?.user?.role || "operador";
@@ -54,7 +54,7 @@ export default async function BodegaDetailPage({
     `;
 
   let query;
-  if (searchTerm && cursor) {
+  if (searchTerm && cursorId) {
     query = sql`
       SELECT p.id, p.codigo, p.descripcion, p.packing,
              p.codigo_personal, p.observaciones,
@@ -63,9 +63,9 @@ export default async function BodegaDetailPage({
       JOIN productos p ON p.id = s.producto_id
       WHERE s.bodega_id = ${bodegaId}::uuid
         AND (p.codigo ILIKE ${searchTerm} OR p.descripcion ILIKE ${searchTerm})
-        AND (s.updated_at, s.id) < (${cursor}::timestamptz, ${cursorId}::uuid)
+        AND s.id < ${cursorId}::uuid
         ${stockFilter}
-      ORDER BY (CASE WHEN s.cantidad_actual > 0 THEN 0 ELSE 1 END), s.updated_at DESC
+      ORDER BY (CASE WHEN s.cantidad_actual > 0 THEN 0 ELSE 1 END), s.id DESC
       LIMIT ${limit}
     `;
   } else if (searchTerm) {
@@ -78,10 +78,10 @@ export default async function BodegaDetailPage({
       WHERE s.bodega_id = ${bodegaId}::uuid
         AND (p.codigo ILIKE ${searchTerm} OR p.descripcion ILIKE ${searchTerm})
         ${stockFilter}
-      ORDER BY (CASE WHEN s.cantidad_actual > 0 THEN 0 ELSE 1 END), s.updated_at DESC
+      ORDER BY (CASE WHEN s.cantidad_actual > 0 THEN 0 ELSE 1 END), s.id DESC
       LIMIT ${limit}
     `;
-  } else if (cursor) {
+  } else if (cursorId) {
     query = sql`
       SELECT p.id, p.codigo, p.descripcion, p.packing,
              p.codigo_personal, p.observaciones,
@@ -89,9 +89,9 @@ export default async function BodegaDetailPage({
       FROM stock s
       JOIN productos p ON p.id = s.producto_id
       WHERE s.bodega_id = ${bodegaId}::uuid
-        AND (s.updated_at, s.id) < (${cursor}::timestamptz, ${cursorId}::uuid)
+        AND s.id < ${cursorId}::uuid
         ${stockFilter}
-      ORDER BY (CASE WHEN s.cantidad_actual > 0 THEN 0 ELSE 1 END), s.updated_at DESC
+      ORDER BY (CASE WHEN s.cantidad_actual > 0 THEN 0 ELSE 1 END), s.id DESC
       LIMIT ${limit}
     `;
   } else {
@@ -103,7 +103,7 @@ export default async function BodegaDetailPage({
       JOIN productos p ON p.id = s.producto_id
       WHERE s.bodega_id = ${bodegaId}::uuid
         ${stockFilter}
-      ORDER BY (CASE WHEN s.cantidad_actual > 0 THEN 0 ELSE 1 END), s.updated_at DESC
+      ORDER BY (CASE WHEN s.cantidad_actual > 0 THEN 0 ELSE 1 END), s.id DESC
       LIMIT ${limit}
     `;
   }
@@ -121,9 +121,6 @@ export default async function BodegaDetailPage({
 
   const hasMore = rows.length > 20;
   const productos = rows.slice(0, 20);
-  const lastUpdated = productos.length > 0
-    ? productos[productos.length - 1].updated_at
-    : null;
   const lastId = productos.length > 0
     ? productos[productos.length - 1].id
     : null;
@@ -146,8 +143,8 @@ export default async function BodegaDetailPage({
     }
   }
 
-  const cursorParam = lastUpdated && lastId
-    ? `&cursor=${encodeURIComponent(String(lastUpdated))}&cursorId=${encodeURIComponent(lastId)}`
+  const cursorParam = lastId
+    ? `&cursorId=${encodeURIComponent(lastId)}`
     : "";
   const qParam = q ? `&q=${encodeURIComponent(q)}` : "";
   const scsParam = filtrarSinStock ? "" : "&soloConStock=false";
@@ -202,10 +199,8 @@ export default async function BodegaDetailPage({
           bodegas={allBodegas}
           imagenMap={imagenMap}
           hasMore={hasMore}
-          lastUpdated={lastUpdated}
           cursorId={lastId}
           qParam={qParam}
-          cursorParam={cursorParam}
           scsParam={scsParam}
           userRole={userRole}
         />
